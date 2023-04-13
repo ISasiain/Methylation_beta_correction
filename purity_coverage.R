@@ -1,5 +1,8 @@
 purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 ,min_endpoint=0, max_endpoint=1) {
   
+  #Creating a list to store the output
+  output_list = list()
+
   #Removing NA values from the predicted purity dataframe and formatting the values
   #to three decimal positions
   pred_purity_confidence <- round(na.omit(pred_purity_confidence),3)
@@ -28,6 +31,8 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
       coverage_per_section[pos] = coverage_per_section[pos] + 1}
   }
 
+  coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+
   # =======================================================================
   # DETERMINE THE MAXIMUM COVERAGE INTERVALS WITHIN THE PURITY 0-1 INTERVAL
   # =======================================================================
@@ -36,7 +41,8 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
   #threshold percentage selected (default value is 10%)
   selected_values <- as.numeric(names(coverage_per_section[coverage_per_section>=max(coverage_per_section)-round(max(coverage_per_section)*interval_threshold/100)]))
 
-  cat("\n1-Purity estimate: ", mean(as.numeric(names(coverage_per_section[coverage_per_section==max(coverage_per_section)])))," \n")
+  #Creating a vector with the maximum coverage sections of the 0-1 interval. ONLY THE ACTUAL MAXS 
+  output_list[["1-Pur_estimates"]] <- as.numeric(names(coverage_per_section[coverage_per_section>=max(coverage_per_section)]))
 
   #Getting the maximum coverage intervals fro the data
 
@@ -44,8 +50,10 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
   start_val <- selected_values[1] # Start point of the interval
   ref_val <- NULL # Value to use as the refernce for the ref value of the loop
   end_val <- NULL # End point of the interval
-  interval_list = list() # LIst with the different intervals idetified
-    
+
+  interval_list <- list() # A list to store the intervals detected
+
+
   # Iterate through the values over the coverage threshold (except the first element, as 
   # it has already been assigned to start_val)
   for (val in selected_values[-1]) {
@@ -76,22 +84,12 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
   
   #Add the last selected interval to the interval list at the end of the for loop
   end_val <- ref_val #Assign the ref_val to end_val
+
   #Add the interval to the interval list
   interval_list <- c(interval_list, list(c(start_val, end_val)))
-  
-  cat("\nPredicted interval(s):\n")
-  print(interval_list)
+
+  output_list[["interval(s)"]] <- interval_list
 
   #The maximum coverage interval list will be returned
-  return(interval_list)
+  return(output_list)
   }
-
-interval_df <- read.csv("predicted_1-pur_intervals.csv")
-
-interval_df <- data.frame(interval_df[,2], interval_df[,1])
-
-cat("\nThe actual 1-Purity value is: ", 1-purityVector[1], "\n")
-
-cat("================================================")
-
-purity_value_per_sample(interval_df)
