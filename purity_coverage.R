@@ -31,7 +31,7 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
       coverage_per_section[pos] = coverage_per_section[pos] + 1}
   }
 
-  coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+  #coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
 
   # =======================================================================
   # DETERMINE THE MAXIMUM COVERAGE INTERVALS WITHIN THE PURITY 0-1 INTERVAL
@@ -83,13 +83,35 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
   }
   
   #Add the last selected interval to the interval list at the end of the for loop
-  end_val <- ref_val #Assign the ref_val to end_val
+  if (!is.null(ref_val)) { 
+    end_val <- ref_val #Assign the ref_val to end_val if ref_val is defined
+  } else {end_val <- start_val}
 
   #Add the interval to the interval list
   interval_list <- c(interval_list, list(c(start_val, end_val)))
 
   output_list[["interval(s)"]] <- interval_list
+  
+  #Removing the intervals in which there is not a maximum value if more than 
+  #one intervals were detected
+  
+  #Defining a function to check ifone if the values are included into the intervals
+  check_interval <- function (interval, values) {
+    if (length(intersect(seq(interval[1], interval[2], by=0.001),values)) != 0) {
+      interval
+    } else {
+      NaN
+    }
+  }
 
+  #Running the previoudly defined function in afor loop  
+  for (int in 1:length(output_list[["interval(s)"]])) {
+    output_list[["interval(s)"]][[int]] <- check_interval(output_list[["interval(s)"]][[int]], output_list[["1-Pur_estimates"]])
+  }
+  
+  # Use Filter to remove all the NULL values from the resulting list
+  output_list[["interval(s)"]] <- Filter(function(x) !any(is.nan(x)), output_list[["interval(s)"]])
+  
   #The maximum coverage interval list will be returned
   return(output_list)
   }

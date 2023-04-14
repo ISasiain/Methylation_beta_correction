@@ -1,6 +1,6 @@
 ## Function to predict purity values based on the individual betas
 
-predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_freedom,slope_threshold=0.3, RSE_threshold=0.3, alpha=0.7) {
+predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_freedom,slope_threshold=0.4, RSE_threshold=10000, alpha=0.5) {
 
     #DEFINING VARIABLES
 

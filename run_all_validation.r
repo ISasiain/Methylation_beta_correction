@@ -63,7 +63,7 @@ for (sample in colnames(unadj_validation)) {
 
 }
 
-saveRDS(list_of_predicted_intervals, file="out_with_reg.RData")
+saveRDS(list_of_predicted_intervals, file="out_without_reg.RData")
 
 cat("\n**********************\n")
 cat("   PROCESS FINISHED\n")
