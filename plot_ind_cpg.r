@@ -3,10 +3,10 @@ setwd("~/Methylation/adjustBetas")
 
 #Store the name of the individual CpG to plot
 #cpg <- "cg00002719"
-#cpg <- "cg09248054"
+cpg <- "cg09248054"
 #cpg <- "cg25340711"
 #cpg <- "cg16601494"
-cpg <- "cg01258522"
+#cpg <- "cg01258522"
 #cpg <- "cg10244364"
 #cpg <- "cg25370753"
 

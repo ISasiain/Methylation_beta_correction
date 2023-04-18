@@ -1,11 +1,11 @@
-purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 ,min_endpoint=0, max_endpoint=1) {
+purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 ,min_endpoint=0, max_endpoint=1) {
   
   #Creating a list to store the output
   output_list = list()
 
   #Removing NA values from the predicted purity dataframe and formatting the values
   #to three decimal positions
-  pred_purity_confidence <- round(na.omit(pred_purity_confidence),3)
+  pred_purity_confidence <- format(round(na.omit(pred_purity_confidence),3),nsmall=3)
   
 
   # =============================================
@@ -30,8 +30,17 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
     for ( pos in as.character(seq(pred_purity_confidence[beta_est,1],pred_purity_confidence[beta_est,2],by=0.001))) {
       coverage_per_section[pos] = coverage_per_section[pos] + 1}
   }
+  
+  par(mfrow=c(1,2))
+  
+  reg <- lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))
+  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
 
-  #coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+  #Correcting the overrepresentation of purity values between 0.8 and 1. Fittinga linear regression and using the resiuduals
+  coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+  
+  
+  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
 
   # =======================================================================
   # DETERMINE THE MAXIMUM COVERAGE INTERVALS WITHIN THE PURITY 0-1 INTERVAL
@@ -92,12 +101,14 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
 
   output_list[["interval(s)"]] <- interval_list
   
-  #Removing the intervals in which there is not a maximum value if more than 
-  #one intervals were detected
+  # ==============================================
+  # REMOVING THE INTERVALS WITHOUT A MAXIMUM VALUE
+  # ==============================================
   
-  #Defining a function to check ifone if the values are included into the intervals
+  #Defining a function to check if the values are included into the intervals
   check_interval <- function (interval, values) {
-    if (length(intersect(seq(interval[1], interval[2], by=0.001),values)) != 0) {
+    
+    if (length(intersect(seq(interval[1], interval[2], by=0.001),format(values,3))) != 0) {
       interval
     } else {
       NaN
@@ -107,11 +118,11 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=5 
   #Running the previoudly defined function in afor loop  
   for (int in 1:length(output_list[["interval(s)"]])) {
     output_list[["interval(s)"]][[int]] <- check_interval(output_list[["interval(s)"]][[int]], output_list[["1-Pur_estimates"]])
-  }
+    }
   
-  # Use Filter to remove all the NULL values from the resulting list
+  # Use Filter to remove all the NaN values from the resulting list
   output_list[["interval(s)"]] <- Filter(function(x) !any(is.nan(x)), output_list[["interval(s)"]])
   
   #The maximum coverage interval list will be returned
   return(output_list)
-  }
+}

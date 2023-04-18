@@ -96,28 +96,38 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
       m<-lm(y[cl==z]~x2[cl==z])
       RSE <- summary(m)$sigma 
       round(as.numeric(RSE),6)
-    } else { NA } #Null has been changed by NA in order to get allways vectors of the same length
-  }))
-
-  res.deg_f <- unlist(lapply(1:nmax,function(z) { 
-    if(z %in% cl) {
-      m<-lm(y[cl==z]~x2[cl==z])
-      deg_f <- summary(m)$df[2]
     } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))
 
-  res.SSx <- unlist(lapply(1:nmax,function(z) { 
+  res.int_rev <- unlist(lapply(1:nmax,function(z) { 
     if(z %in% cl) {
-      m<-lm(y[cl==z]~x2[cl==z])
-      SSx <- sum((x2[cl==z] - mean(x2[cl==z]))^2)
-    } else { NA } #Null has been changed by NA in order to get allways vectors of the same length
+      m<-lm(x2[cl==z]~y[cl==z])
+      r<-coefficients(m)[1]
+      round(as.numeric(r),3)
+    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))
 
-  res.SSy <- unlist(lapply(1:nmax,function(z) { 
+  res.slope_rev <- unlist(lapply(1:nmax,function(z) { 
     if(z %in% cl) {
-      m<-lm(y[cl==z]~x2[cl==z])
-      SSy <- sum((y[cl==z] - mean(y[cl==z]))^2)
-    } else { NA } #Null has been changed by NA in order to get allways vectors of the same length
+      m<-lm(x2[cl==z]~y[cl==z])
+      r<-coefficients(m)[2]
+      round(as.numeric(r),3)
+    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
+  }))
+  
+  res.RSE_rev <- unlist(lapply(1:nmax,function(z) { 
+    if(z %in% cl) {
+      m<-lm(x2[cl==z]~y[cl==z])
+      RSE <- summary(m)$sigma 
+      round(as.numeric(RSE),6)
+    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
+  }))
+  
+  res.deg_f_rev <- unlist(lapply(1:nmax,function(z) { 
+    if(z %in% cl) {
+      m<-lm(x2[cl==z]~y[cl==z])
+      deg_f <- summary(m)$df[2]
+    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))
 
   ##cap at 0 and 1
@@ -143,9 +153,10 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
     model.intercepts=res.int,
     model.slopes=res.slope,
     model.RSE=res.RSE,
-    model.df=res.deg_f,
-    model.SSx=res.SSx,
-    model.SSy=res.SSy
+    rev_model.intercepts=res.int_rev,
+    rev_model.slopes=res.slope_rev,
+    rev_model.RSE=res.RSE_rev,
+    rev_model.df=res.deg_f_rev
     )
   )
 }

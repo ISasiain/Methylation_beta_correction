@@ -90,12 +90,15 @@ temp1<-do.call("rbind",lapply(res,function(x) x$y.tum)) #Corrected tumor betas
 temp2<-do.call("rbind",lapply(res,function(x) x$y.norm)) #Corrected microenvironment betas
 temp3<-do.call("rbind",lapply(res,function(x) x$y.orig)) #Original data
 temp4 <- do.call("rbind",lapply(res,function(x) x$groups)) #Clustered populations per each CpG
+
 temp5 <- do.call("rbind",lapply(res,function(x) x$model.slopes)) #Slopes of the models
 temp6 <- do.call("rbind",lapply(res,function(x) x$model.intercepts)) #Intercepts of the models
 temp7 <- do.call("rbind",lapply(res,function(x) x$model.RSE)) #Mean of the residual's absolute value per population
-temp8 <- do.call("rbind",lapply(res,function(x) x$model.SSx)) #Sum of squares of the x axis
-temp9 <- do.call("rbind",lapply(res,function(x) x$model.SSy)) #Sum of squares of the y axis
-temp10 <- do.call("rbind",lapply(res,function(x) x$model.df)) #Mean of the residual's absolute value per population
+
+temp8 <- do.call("rbind",lapply(res,function(x) x$rev_model.slopes)) #Intercepts of the reversed regressions
+temp9 <- do.call("rbind",lapply(res,function(x) x$rev_model.intercepts)) #Slopes of the reversed regressions
+temp10 <- do.call("rbind",lapply(res,function(x) x$rev_model.RSE)) #RES of the reversed regressions
+temp11 <- do.call("rbind",lapply(res,function(x) x$rev_model.df)) #Degrees of freedom of the reversed regression
 
 #Adding column names to temp4
 colnames(temp4) <- betaNames
@@ -105,14 +108,14 @@ output_list <- list(
   betas.original=temp3, #Original beta values
   betas.tumor=temp1, #Corrected tumor beta values
   betas.microenvironment=temp2, #Corrected microenvironment beta values
-  cpg.populations=temp4, #Methylation patterns (populations) of eachCpG
+  cpg.populations=temp4, #Methylation patterns (populations) of each CpG
   reg.slopes=temp5, #Slopes of the populations
   reg.intercepts=temp6, #Intercepts of the populations
-  reg.mean_abs_residuals=temp7, #Mean of the residual's absolute value per population
   reg.RSE=temp7, #Residual standard error
-  reg.SSx=temp8, #Sum of squares of the y axis
-  reg.SSy=temp9, #Sum of squares of the x axis
-  reg.df=temp10 #Degrees of freedom
+  rev_reg.slopes=temp8, #Slopes of the reversed regressions
+  rev_reg.intercepts=temp9, #Intercepts of the reversed regressions
+  rev_reg.RSE=temp10, #RSE of the reversed regressions
+  rev_reg.df=temp11 #Degrees of freedom of the reversed regressions
 )
 
 # =====================

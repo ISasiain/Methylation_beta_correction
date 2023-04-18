@@ -56,7 +56,6 @@ for (sample in colnames(unadj_validation)) {
     for (cpg in rownames(unadj_validation)) {
 
         interval_df <- rbind(interval_df, predicting_purity(unadj_validation[cpg,sample], my_slopes[cpg,], my_intercepts[cpg,], my_RSE[cpg,], my_SSx[cpg,], my_SSy[cpg,], my_df[cpg,]))
-        
     }
 
     list_of_predicted_intervals[[sample]] <- purity_value_per_sample(interval_df)
