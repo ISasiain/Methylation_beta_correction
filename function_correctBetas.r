@@ -88,7 +88,7 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
       r<-coefficients(m)[2]
       if(is.na(r)) { r<-0 } ##fix for small number of NAs - set slope to zero
       round(as.numeric(r),3)
-    } else { NA } #Null has been changed by NA in order to get allways vectors of the same length
+    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))
 
   res.RSE <- unlist(lapply(1:nmax,function(z) { 
@@ -111,6 +111,7 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
     if(z %in% cl) {
       m<-lm(x2[cl==z]~y[cl==z])
       r<-coefficients(m)[2]
+      if(is.na(r)) { r<-0 } ##fix for small number of NAs - set slope to zero
       round(as.numeric(r),3)
     } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))

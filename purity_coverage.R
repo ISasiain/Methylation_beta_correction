@@ -34,14 +34,16 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 
   par(mfrow=c(1,2))
   
   reg <- lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))
-  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
+  plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
+  abline(reg, col="lightgreen", lwd=2)
 
-  #Correcting the overrepresentation of purity values between 0.8 and 1. Fittinga linear regression and using the resiuduals
+  #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
   coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
-  
-  
-  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
 
+  
+  plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
+  abline(h=0, col="lightgreen", lwd=2)
+  
   # =======================================================================
   # DETERMINE THE MAXIMUM COVERAGE INTERVALS WITHIN THE PURITY 0-1 INTERVAL
   # =======================================================================

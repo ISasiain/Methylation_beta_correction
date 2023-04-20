@@ -26,12 +26,12 @@ load("workspace_tcgaBrca_top5000.RData")
 
 
 #Reading csv files as dataframes
-total_betas <- read.csv("output_betas.original.csv", sep=",", row.names=1)
+total_betas <- read.csv("output_training_betas.original.csv", sep=",", row.names=1)
 my_slopes <- read.csv("output_training_reg.slopes.csv", sep=",", row.names=1)
 my_intercepts <- read.csv("output_training_reg.intercepts.csv", sep=",", row.names=1)
 my_RSE <- read.csv("output_training_reg.RSE.csv", sep=",", row.names=1)
-my_SSx <- read.csv("output_training_reg.SSx.csv", sep=",", row.names=1)
-my_SSy <- read.csv("output_training_reg.SSy.csv", sep=",", row.names=1)
+#my_SSx <- read.csv("output_training_reg.SSx.csv", sep=",", row.names=1)
+#my_SSy <- read.csv("output_training_reg.SSy.csv", sep=",", row.names=1)
 my_df <- read.csv("output_training_reg.df.csv", sep=",", row.names=1)
 
 #Get the validation data
@@ -55,14 +55,14 @@ for (sample in colnames(unadj_validation)) {
 
     for (cpg in rownames(unadj_validation)) {
 
-        interval_df <- rbind(interval_df, predicting_purity(unadj_validation[cpg,sample], my_slopes[cpg,], my_intercepts[cpg,], my_RSE[cpg,], my_SSx[cpg,], my_SSy[cpg,], my_df[cpg,]))
+        interval_df <- rbind(interval_df, predicting_purity(unadj_validation[cpg,sample], my_slopes[cpg,], my_intercepts[cpg,], my_RSE[cpg,], my_df[cpg,]))
     }
 
     list_of_predicted_intervals[[sample]] <- purity_value_per_sample(interval_df)
-
+    
 }
 
-saveRDS(list_of_predicted_intervals, file="out_without_reg.RData")
+saveRDS(list_of_predicted_intervals, file="out_with_reg_test2.RData")
 
 cat("\n**********************\n")
 cat("   PROCESS FINISHED\n")

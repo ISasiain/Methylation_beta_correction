@@ -4,8 +4,9 @@ setwd("~/Methylation/adjustBetas")
 #Importing the required modules
 library(ggplot2)
 
-out_ls <- readRDS("out_without_reg.RData")
-out_ls_corr <- readRDS("out_with_reg.RData")
+out_ls <- readRDS("out_without_reg_test.RData")
+#out_ls <- readRDS("out_without_reg.RData")
+out_ls_corr <- readRDS("out_with_reg_test.RData")
 
 if(!requireNamespace("caTools", quietly = TRUE)) {
   install.packages("caTools") }
@@ -184,7 +185,7 @@ par(mfrow=c(1,2))
 for (sample in names(out_ls_corr)) {
   
   lower_lim_corr <- c(lower_lim_corr, out_ls_corr[[sample]][["interval(s)"]][[1]][1])
-  estimate_corr <- c(estimate ,mean(out_ls_corr[[sample]][["1-Pur_estimates"]]))
+  estimate_corr <- c(estimate_corr ,mean(out_ls_corr[[sample]][["1-Pur_estimates"]]))
   upper_lim_corr <- c(upper_lim_corr, out_ls_corr[[sample]][["interval(s)"]][[1]][2])
 }
 

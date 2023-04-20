@@ -2,8 +2,9 @@
 setwd("~/Methylation/adjustBetas")
 
 #Store the name of the individual CpG to plot
-#cpg <- "cg00002719"
 cpg <- "cg09248054"
+#cpg <- "cg00002719"
+#cpg <- "cg09248054"
 #cpg <- "cg25340711"
 #cpg <- "cg16601494"
 #cpg <- "cg01258522"
@@ -14,27 +15,40 @@ cpg <- "cg09248054"
 load("workspace_tcgaBrca_top5000.RData")
 
 #Open files with the beta values and store them as a variable.
-original_beta <- read.csv("output_betas.original.csv",sep=",",row.names=1)
-corr_tum_beta <- read.csv("output_betas.tumor.csv",sep=",",row.names=1)
-corr_env_beta <- read.csv("output_betas.microenvironment.csv",sep=",",row.names=1)
+original_beta <- read.csv("output_training_betas.original.csv",sep=",",row.names=1)
+corr_tum_beta <- read.csv("output_training_betas.tumor.csv",sep=",",row.names=1)
+corr_env_beta <- read.csv("output_training_betas.microenvironment.csv",sep=",",row.names=1)
 
 #Open the file with the populations detected per CpG and store it as a variable
-cluster_pops <- read.csv("output_cpg.populations.csv",sep=",",row.names=1)
+cluster_pops <- read.csv("output_training_cpg.populations.csv",sep=",",row.names=1)
 
 #Open file with slopes and intercepts
-slopes_pops <- read.csv("output_reg.slopes.csv", sep=",",row.names = 1)
-intercepts_pops <- read.csv("output_reg.intercepts.csv", sep=",", row.names = 1)
+slopes_pops <- read.csv("output_training_reg.slopes.csv", sep=",",row.names = 1)
+intercepts_pops <- read.csv("output_training_reg.intercepts.csv", sep=",", row.names = 1)
 
-par(mfrow=c(1,3))
+par(mfrow=c(1,2))
+plot(x=as.numeric(original_beta[cpg,]),
+     y=1-as.numeric(purity_training), 
+     col=as.numeric(cluster_pops[cpg,]),
+     xlim=c(0,1), ylim=c(0,1),
+     xlab="Beta", ylab="1-Purity",
+     main="Original data",
+     pch=20)
+
+for (cl in 1:3) {
+  my_reg <- lm(1-purity_training[cluster_pops[cpg,]==cl]~original_beta[cpg,][cluster_pops[cpg,]==cl])
+  abline(my_reg)
+}
+
 
 #Plot original_beta VS purity
 plot(y=as.numeric(original_beta[cpg,]),
-    x=1-as.numeric(purityVector), 
-    col=as.numeric(cluster_pops[cpg,]),
-    xlim=c(0,1), ylim=c(0,1),
-    xlab="1-Purity", ylab="Beta value",
-    main="Original data",
-    pch=20)
+     x=1-as.numeric(purity_training), 
+     col=as.numeric(cluster_pops[cpg,]),
+     xlim=c(0,1), ylim=c(0,1),
+     xlab="1-Purity", ylab="Beta value",
+     main="Original data",
+     pch=20)
 
 #Add regression line per population
 lapply(unique(as.numeric(cluster_pops[cpg,])), function(gr) 
@@ -46,7 +60,7 @@ lapply(unique(as.numeric(cluster_pops[cpg,])), function(gr)
 #Plot corrected tumor beta VS purity
 #Plot original_beta VS purity
 plot(y=as.numeric(corr_tum_beta[cpg,]),
-     x=1-as.numeric(purityVector), 
+     x=1-as.numeric(purity_training), 
      col=as.numeric(cluster_pops[cpg,]),
      xlim=c(0,1), ylim=c(0,1),
      xlab="Purity", ylab="Beta value",
@@ -63,7 +77,7 @@ lapply(unique(as.numeric(cluster_pops[cpg,])), function(gr)
 #Plot corrected microenvironment beta VS purity.
 #Plot original_beta VS purity
 plot(y=as.numeric(corr_env_beta[cpg,]),
-     x=1-as.numeric(purityVector), 
+     x=1-as.numeric(purity_training), 
      col=as.numeric(cluster_pops[cpg,]),
      xlim=c(0,1), ylim=c(0,1),
      xlab="1-Purity", ylab="Beta value",
@@ -81,7 +95,7 @@ lapply(unique(as.numeric(cluster_pops[cpg,])), function(gr)
 )
 
 y <- original_beta["cg01258522",][cluster_pops["cg01258522",]==1]
-x <- 1 - purityVector[cluster_pops["cg01258522",]==1]
+x <- 1 - purity_training[cluster_pops["cg01258522",]==1]
 a <- lm (y ~ x)
 
 RSE <- summary(a)$sigma

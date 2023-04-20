@@ -1,6 +1,6 @@
 ## Function to predict purity values based on the individual betas
 
-predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_freedom,slope_threshold=0.4, RSE_threshold=10000, alpha=0.9) {
+predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slope_threshold=0.4, RSE_threshold=10000, alpha=0.7) {
 
     #DEFINING VARIABLES
 
@@ -12,8 +12,8 @@ predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_fr
     slopes <- slopes[!to_be_ignored]
     intercepts <- intercepts[!to_be_ignored]
     RSE <- RSE[!to_be_ignored]
-    SS_x <- SS_x[!to_be_ignored]
-    SS_y <- SS_y[!to_be_ignored]
+    #SS_x <- SS_x[!to_be_ignored]
+    #SS_y <- SS_y[!to_be_ignored]
     degrees_of_freedom <- degrees_of_freedom[!to_be_ignored]
 
     # Check that all the regressions are not uninformative and execute the following code 
@@ -34,20 +34,27 @@ predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_fr
             identified_pop <- which(matches)
 
             #Calculate the parameters of the inverse regression. 1-Purity VS beta instead of beta VS 1-Purity
-            inv_slope <- 1/slopes[identified_pop]
-            inv_intercept <- -intercepts[identified_pop]/slopes[identified_pop]
-            inv_df <- degrees_of_freedom[identified_pop]
-            inv_RSE <- RSE[identified_pop] * sqrt(SS_y[identified_pop]/SS_y[identified_pop])
+            # inv_slope <- 1/slopes[identified_pop]
+            # inv_intercept <- -intercepts[identified_pop]/slopes[identified_pop]
+            # inv_df <- degrees_of_freedom[identified_pop]
+            # inv_RSE <- RSE[identified_pop] * sqrt(SS_y[identified_pop]/SS_y[identified_pop])
 
             #Predicting the 1-purity value from the inverse regression
-            predicted_1_minus_p <- inv_slope*beta + inv_intercept
+            predicted_1_minus_p <- (beta - intercepts[identified_pop]) /slopes[identified_pop]
 
+            # #Get the prediction interval of the beta identified
+            beta_int <- c(
+               beta - qt((1-alpha)/2, degrees_of_freedom[identified_pop]) * RSE[identified_pop],
+               beta + qt((1-alpha)/2, degrees_of_freedom[identified_pop]) * RSE[identified_pop]
+             )
+            
             #Getting the prediction interval
-            one_minus_purity <- c(
-                predicted_1_minus_p + qt((1-alpha)/2, inv_df) * inv_RSE,
-                predicted_1_minus_p - qt((1-alpha)/2, inv_df) * inv_RSE
-            )
-
+            one_minus_purity <- (beta_int - intercepts[identified_pop]) / slopes[identified_pop]
+            one_minus_purity <- sort(one_minus_purity)
+            
+             one_minus_purity[one_minus_purity < 0] <- 0
+            one_minus_purity[one_minus_purity > 1] <- 1
+            
         } else {
             #If the CpG can not be assigned to a single population (methylation pattern) the 1-purity value will not be assigned.
             one_minus_purity <- c(NA,NA)
@@ -64,7 +71,7 @@ predicting_purity <- function(beta,slopes,intercepts,RSE,SS_x,SS_y,degrees_of_fr
         one_minus_purity[1] <- max(0, one_minus_purity[1])
         one_minus_purity[2] <- min(1, one_minus_purity[2])
     }   
-
+    
     #Returning the 1-purity value and the identified population
     return(one_minus_purity)
 }
