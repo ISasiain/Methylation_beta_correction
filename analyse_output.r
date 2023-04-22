@@ -122,14 +122,26 @@ ggplot(out_df, aes(x=Distance)) +
   xlim(0,0.8) +
   ggtitle("Not corrected") +
   xlab("Distances") +
-  ylab("Frequency")
+  ylab("Frequency") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 ggplot(out_df_corr, aes(x=Distance)) +
   geom_histogram(binwidth=0.01, color="black", fill="lightblue") +
   xlim(0,0.8) +
   ggtitle("Corrected with reg") +
   xlab("Distances") +
-  ylab("Frequency")
+  ylab("Frequency") +  
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Histogram of Interval's width
 ggplot(out_df, aes(x=Interval.s.width)) +
@@ -137,29 +149,41 @@ ggplot(out_df, aes(x=Interval.s.width)) +
   xlim(0,0.16) +
   ggtitle("Not corrected") +
   xlab("Interval's width") +
-  ylab("Frequency")
+  ylab("Frequency") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 ggplot(out_df_corr, aes(x=Interval.s.width)) +
   geom_histogram(binwidth=0.0025, color="black", fill="lightgreen") +
   xlim(0,0.16) +
   ggtitle("Corrected with reg") +
   xlab("Interval's width") +
-  ylab("Frequency")
+  ylab("Frequency")  +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
-# Histogram of Distance.Width
-ggplot(out_df, aes(x=Distance.Width)) +
-  geom_histogram(binwidth=0.0025, color="black", fill="pink") +
-  xlim(0,0.07) +
-  ggtitle("Not corrected") +
-  xlab("Distance * Width") +
-  ylab("Frequency")
-
-ggplot(out_df_corr, aes(x=Distance.Width)) +
-  geom_histogram(binwidth=0.0025, color="black", fill="pink") +
-  xlim(0,0.07) +
-  ggtitle("Corrected with reg") +
-  xlab("Distance * Width") +
-  ylab("Frequency")
+# # Histogram of Distance.Width
+# ggplot(out_df, aes(x=Distance.Width)) +
+#   geom_histogram(binwidth=0.0025, color="black", fill="pink") +
+#   xlim(0,0.07) +
+#   ggtitle("Not corrected") +
+#   xlab("Distance * Width") +
+#   ylab("Frequency")
+# 
+# ggplot(out_df_corr, aes(x=Distance.Width)) +
+#   geom_histogram(binwidth=0.0025, color="black", fill="pink") +
+#   xlim(0,0.07) +
+#   ggtitle("Corrected with reg") +
+#   xlab("Distance * Width") +
+#   ylab("Frequency")
 
 summary(out_df)
 summary(out_df_corr)
@@ -198,8 +222,8 @@ corr_plot_df <- data.frame(
 
 ggplot(data=corr_plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
-  geom_point(size=2) +
-  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633") +
+  geom_point(size=1.5) +
+  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
   ggtitle("Corrected 1-Purity") +
   xlab("Actual 1-Purity") + 
@@ -227,8 +251,8 @@ uncorr_plot_df <- data.frame(
 
 ggplot(data=uncorr_plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
-  geom_point(size=2) +
-  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633") +
+  geom_point(size=1.5) +
+  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
   ggtitle("Uncorrected 1-Purity") +
   xlab("Actual 1-Purity") + 
@@ -248,24 +272,48 @@ par(mfrow=c(1,2))
 ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Distance)) +
   geom_point(color="blue") +
   xlab("Actual 1-Purity") +
-  ylab("Distance")
+  ylab("Distance") + 
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Plot of Distance vs Actual 1-Purity (corrected)
 ggplot(out_df_corr[order(index),], aes(x=actual_1_minus_P[order(index)], y=Distance)) +
   geom_point(color="blue") +
   xlab("Actual 1-Purity") +
-  ylab("Distance")
+  ylab("Distance") + 
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Plot of Distance vs Estimated 1-Purity (not corrected)
 ggplot(out_df, aes(x=uncorr_plot_df$est, y=out_df$Distance[order(index)])) +
   geom_point(color="red") +
   xlab("Estimated 1-Purity") +
-  ylab("Distance")
+  ylab("Distance") + 
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Plot of Distance vs Estimated 1-Purity (corrected)
 ggplot(out_df_corr, aes(y=out_df_corr$Distance[order(index)], x=corr_plot_df$est)) +
   geom_point(color="red") +
   xlab("Estimated 1-Purity") +
-  ylab("Distance")
+  ylab("Distance") + 
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 

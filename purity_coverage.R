@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 ,min_endpoint=0, max_endpoint=1) {
   
   #Creating a list to store the output
@@ -18,52 +20,54 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 
   # Divide the (min_endpoint,max_endpoint) interval in sections of length 0.001.
   #Generating a list with the each section of the interval as keys (the keys 
   #are written as characters)
-  for (section in seq(0,max_endpoint-min_endpoint,by=0.001)) {
-    coverage_per_section[as.character(section)] <- 0
-  }
+  sections <- seq(min_endpoint,max_endpoint,by=0.001)
+  coverage_per_section <- setNames(rep(0,length(sections)), as.character(sections))
   
-  #Iterate through the CpG's predicted beta value intervals per sample
-  for (beta_est in 1:nrow(pred_purity_confidence)) {
-    
+
     #Check if the sections of the 0-1 purity interval are covered in each interval and determine the coverage (how 
     #many times is each section includedin the intervals) per section
-    for ( pos in as.character(seq(pred_purity_confidence[beta_est,1],pred_purity_confidence[beta_est,2],by=0.001))) {
-      coverage_per_section[pos] = coverage_per_section[pos] + 1}
+
+  for (int in 1:nrow(pred_purity_confidence)) {
+
+    pos <- as.character(seq(pred_purity_confidence[int,1], pred_purity_confidence[int,2], by=0.001))
+    included_section <- names(coverage_per_section) %in% pos
+    coverage_per_section[included_section] <- coverage_per_section[included_section] + 1
+
   }
+
+  #par(mfrow=c(1,2))
   
-  par(mfrow=c(1,2))
-  
-  reg <- lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))
-  plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
-  abline(reg, col="lightgreen", lwd=2)
+  #reg <- lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))
+  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
+  #abline(reg, col="lightgreen", lwd=2)
 
   #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
   coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+  
+  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
+  #abline(h=0, col="lightgreen", lwd=2)
+  
+  # ======================================================
+  # DETERMINE THE MAXIMUM COVERAGE ESTIMATES AND INTERVALS
+  # ======================================================
 
-  
-  plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
-  abline(h=0, col="lightgreen", lwd=2)
-  
-  # =======================================================================
-  # DETERMINE THE MAXIMUM COVERAGE INTERVALS WITHIN THE PURITY 0-1 INTERVAL
-  # =======================================================================
+  ## GETTING THE ESTIMATES
+
+  #Appending the max value(s), the 1-Purity estimate(s), to the output_list 
+  output_list[["1-Pur_estimates"]] <- sections[coverage_per_section >= max(coverage_per_section)]
+
+  ## GETTING THE INTERVALS
 
   # Get the intervals with the maximum coverage. The minimum coverage threshold is the maximum value minus the interval_
   #threshold percentage selected (default value is 10%)
-  selected_values <- as.numeric(names(coverage_per_section[coverage_per_section>=max(coverage_per_section)-round(max(coverage_per_section)*interval_threshold/100)]))
+  selected_values <- sections[coverage_per_section >= max(coverage_per_section)-round(max(coverage_per_section)*interval_threshold/100)]
 
-  #Creating a vector with the maximum coverage sections of the 0-1 interval. ONLY THE ACTUAL MAXS 
-  output_list[["1-Pur_estimates"]] <- as.numeric(names(coverage_per_section[coverage_per_section>=max(coverage_per_section)]))
-
-  #Getting the maximum coverage intervals fro the data
-
-  #Defining variables
+  #Defining variables to store parameters of the intervals
   start_val <- selected_values[1] # Start point of the interval
   ref_val <- NULL # Value to use as the refernce for the ref value of the loop
   end_val <- NULL # End point of the interval
 
   interval_list <- list() # A list to store the intervals detected
-
 
   # Iterate through the values over the coverage threshold (except the first element, as 
   # it has already been assigned to start_val)
@@ -100,31 +104,20 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 
 
   #Add the interval to the interval list
   interval_list <- c(interval_list, list(c(start_val, end_val)))
-
-  output_list[["interval(s)"]] <- interval_list
   
+
   # ==============================================
   # REMOVING THE INTERVALS WITHOUT A MAXIMUM VALUE
   # ==============================================
   
-  #Defining a function to check if the values are included into the intervals
-  check_interval <- function (interval, values) {
-    
-    if (length(intersect(seq(interval[1], interval[2], by=0.001),format(values,3))) != 0) {
-      interval
-    } else {
-      NaN
-    }
-  }
+# Checking if any of the maxs identified are inside the detected intervals. If they are the interval will be removed
+interval_list <- Filter(function(interval) {
+    length(intersect(seq(interval[1], interval[2], by = 0.001), format(output_list[["1-Pur_estimates"]], 3))) != 0
+}, interval_list)
+  
+  #Adding the intervals detected to the output list
+  output_list[["interval(s)"]] <- interval_list
 
-  #Running the previoudly defined function in afor loop  
-  for (int in 1:length(output_list[["interval(s)"]])) {
-    output_list[["interval(s)"]][[int]] <- check_interval(output_list[["interval(s)"]][[int]], output_list[["1-Pur_estimates"]])
-    }
-  
-  # Use Filter to remove all the NaN values from the resulting list
-  output_list[["interval(s)"]] <- Filter(function(x) !any(is.nan(x)), output_list[["interval(s)"]])
-  
   #The maximum coverage interval list will be returned
   return(output_list)
 }

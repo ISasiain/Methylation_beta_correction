@@ -1,4 +1,4 @@
-## Function to predict purity values based on the individual betas
+#!/usr/bin/Rscript
 
 predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slope_threshold=0.4, RSE_threshold=10000, alpha=0.7) {
 
