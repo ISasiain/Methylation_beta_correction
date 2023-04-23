@@ -1,10 +1,13 @@
 #!/usr/bin/Rscript
 
-cat("\nPreparing the working envirnonemnt...\n")
-
 # ==================================
 # INSTALLING AND/OR LOADING PACKAGES
 # ==================================
+
+if(!requireNamespace("optparse", quietly = TRUE)) {
+  install.packages("optparse", quietly = TRUE) }
+
+suppressPackageStartupMessages(library(optparse))
 
 if(!requireNamespace("caTools", quietly = TRUE)) {
   install.packages("caTools", quietly = TRUE) }
@@ -21,7 +24,6 @@ if(!requireNamespace("doSNOW", quietly = TRUE)) {
 
 suppressPackageStartupMessages(library(doSNOW))
 
-
 if(!requireNamespace("foreach", quietly = TRUE)) {
   install.packages("foreach", quietly = TRUE) }
 
@@ -31,6 +33,37 @@ if(!requireNamespace("Kendall", quietly = TRUE)) {
   install.packages("Kendall", quietly = TRUE) }
 
 suppressPackageStartupMessages(library(Kendall))
+
+# ==================================
+# CONFIGURING COMMAND LINE ARGUMENTS
+# ==================================
+
+argument_list <- list(
+
+  make_option(c("-c", "--cores"), type="integer", default=1,  
+              help="Number of cores to be used to run the program [default %default]",
+              metavar = "[number]"),
+  
+  make_option(c("-a", "--alpha"), type="double", default=0.7, 
+              help="Alpha value to determine the prediction intervals of each CpG [default %default]",
+              metavar= "[floating number]"),
+
+  make_option(c("-r", "--max_RSE"), type="double", default=0.5,
+              help="Maximum Residual Standard Error allowed per CpG regression [default %default]",
+              metavar="[floating number]"),
+
+  make_option(c("-s", "--min_slope"), type="double", default=0.3,
+              help="Minimum slope allowed per CpG regression [default %default]", 
+              metavar="[floating number]"),
+
+  make_option(c("-p", "--percentage_to_interval"), type="double", default=4.0,
+              help="Percentage of the maximum coverage to include in the 1-Purity interval [default %default]",
+              metavar="[floating number]")
+
+)
+
+arguments <- parse_args(OptionParser(option_list=argument_list, 
+                                    description="This program estimates the Purity values of samples based on the beta values of each sample's CpGs."))
 
 # =====================================================================
 # SETTING WORKING DIRECTORY AND LOADING THE REQUIRED DATA AND FUNCTIONS
@@ -75,11 +108,9 @@ list_of_predicted_intervals <- list()
 # CONFIGURING PARALLELIZATION
 # ===========================
 
-num_of_clusters <- detectCores() - 1
+cat("\nUsing", arguments$cores, "cores\n")
 
-cat("\nUsing", num_of_clusters, "cores\n")
-
-cl <- makeCluster(num_of_clusters)
+cl <- makeCluster(arguments$cores)
 registerDoSNOW(cl)
 
 # ========================================
@@ -102,11 +133,20 @@ list_of_predicted_intervals <- foreach(s = samples, .packages = "Kendall", .opti
 
   interval_df <- data.frame()
   for (cpg in rownames(unadj_validation)) {
-    interval_df <- rbind(interval_df, predicting_purity(unadj_validation[cpg, s], my_slopes[cpg, ], my_intercepts[cpg, ], my_RSE[cpg, ], my_df[cpg, ]))
+    interval_df <- rbind(interval_df, predicting_purity(beta=unadj_validation[cpg, s],
+                                                        slopes=my_slopes[cpg, ],
+                                                        intercepts=my_intercepts[cpg, ],
+                                                        RSE=my_RSE[cpg, ],
+                                                        degrees_of_freedom=my_df[cpg, ],
+                                                        slope_threshold=arguments$min_slope,
+                                                        RSE_threshold=arguments$max_RSE,
+                                                        alpha=arguments$alpha
+                                                        ))
   }
 
   # Return a named list directly
-  list(name = s, value = purity_value_per_sample(interval_df))
+  list(name = s, value = purity_value_per_sample(pred_purity_confidence=interval_df,
+                                                 interval_threshold=arguments$percentage_to_interval))
 }
 
 stopCluster(cl)

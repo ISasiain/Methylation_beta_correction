@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-purity_value_per_sample <- function(pred_purity_confidence,interval_threshold=4 ,min_endpoint=0, max_endpoint=1) {
+purity_value_per_sample <- function(pred_purity_confidence,interval_threshold,min_endpoint=0, max_endpoint=1) {
   
   #Creating a list to store the output
   output_list = list()
