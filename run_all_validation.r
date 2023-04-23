@@ -59,7 +59,6 @@ argument_list <- list(
   make_option(c("-p", "--percentage_to_interval"), type="double", default=4.0,
               help="Percentage of the maximum coverage to include in the 1-Purity interval [default %default]",
               metavar="[floating number]")
-
 )
 
 arguments <- parse_args(OptionParser(option_list=argument_list, 
