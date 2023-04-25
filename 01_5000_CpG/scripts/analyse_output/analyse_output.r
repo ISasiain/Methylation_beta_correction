@@ -72,7 +72,7 @@ for (sample in names(purity_validation[vec_of_vec_nums==1])) {
 # 
 # cat("\nIncluded_in_interval:", included_in_interval)
 
-#Mean-width modified distance score
+#Calculate quality parameters
 
 MWMDS <- function(output_list, purity_vector) {
   
@@ -115,6 +115,9 @@ par(mfrow=c(3,2))
 
 out_df <- MWMDS(out_ls, purity_validation)
 out_df_corr <- MWMDS(out_ls_corr, purity_validation)
+
+purity_validation
+out_df_corr$Distance
 
 # Histogram of Distance
 ggplot(out_df, aes(x=Distance)) +
@@ -234,6 +237,7 @@ ggplot(data=corr_plot_df, aes(x=actual, y=est)) +
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
+#ggsave("corrected_scatterplot.png")
 
 for (sample in names(out_ls)) {
   

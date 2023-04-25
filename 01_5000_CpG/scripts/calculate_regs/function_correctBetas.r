@@ -1,5 +1,5 @@
 #####======================================================================#####
-### Function for correcting Illumina 450/850K beta values for tumor purity
+###  Function for correcting Illumina 450/850K beta values for tumor purity  ###
 #####======================================================================#####
 
 ##Author: Mattias Aine  (mattias.aine@med.lu.se)
