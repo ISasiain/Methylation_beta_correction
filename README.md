@@ -1,0 +1,12 @@
+# METHYLATION DATA CORRECTION
+
+#### Author: Iñaki Sasiain
+
+### EXPLANATION ABOUT THE SCRIPT
+
+### EXAMPLE 5000 CpGs
+
+
+
+Rscript 
+```
