@@ -7,7 +7,7 @@
 ##Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
 
 
-##METHYLATION PURITY CORRECTOR 
+
 
 
 
@@ -16,37 +16,18 @@
 # ===============================================
 
 ##set/create own home directory below:
-setwd("~/Methylation/adjustBetas")
-HOME <- "~/Methylation/adjustBetas"
+setwd("~/Methylation/adjustBetas/01_5000_CpG/scripts/calculate_regs")
+HOME <- "~/Methylation/adjustBetas/01_5000_CpG"
 
-# ============================================================
-# LOADING THE REQUIRED PACKAGES AND SOURCING THE REFERNCE DATA
-# ============================================================
 
-##load required packages
-
-if(!requireNamespace("doParallel", quietly = TRUE)) {
-  install.packages("doParallel") }
-
-library(doParallel)
-
-if(!requireNamespace("parallel", quietly = TRUE)) {
-  install.packages("parallel") }
-
-library(parallel)
-
-if(!requireNamespace("caTools", quietly = TRUE)) {
-  install.packages("caTools") }
-
-library(caTools)
 
 #Loading and sourcing R data and functions
 
 ##data set reduced to top 5000 CpGs in set of 630 TCGA BRCA tumors
-load("workspace_tcgaBrca_top5000.RData")
+load("../../original_data/workspace_tcgaBrca_top5000.RData")
 
 ##source - flexmix loaded on source
-source(paste0(HOME,"/function_correctBetas.r"))
+source(paste0(HOME,"/scripts/calculate_regs/new_function_correctBetas.r"))
 
 # ========================================
 # CREATING TRAINING AND VALIDATION SUBSETS
@@ -90,8 +71,10 @@ clusterEvalQ(cl, {
 betaRun<-cbind(seed=1:nrow(unadj_training),unadj_training)
 betaNames<-colnames(unadj_training)
 
+
 #clusterSetRNGStream(cl, 20200918) ##using this way to pass seed will not make exactly replicable..
-res<-parRapply(cl = cl, betaRun, adjustBeta,purity=purity_training,snames=betaNames,seed=TRUE)
+res<-parRapply(cl = cl, betaRun, adjustBeta, purity=purity_training, snames=betaNames, seed=TRUE)
+
 
 # =======================
 # STORING THE OUTPUT DATA
@@ -137,7 +120,7 @@ output_list <- list(
 
 
 ##Creating a prefix for the output files
-out_prefix <- "output_training"
+out_prefix <- "output_training_new"
 
 #Defining a function to export the dataframes as csv files
 df_to_csv <- function(df, filename) {

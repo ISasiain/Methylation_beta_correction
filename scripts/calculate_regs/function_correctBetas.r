@@ -3,6 +3,7 @@
 #####======================================================================#####
 
 ##Author: Mattias Aine  (mattias.aine@med.lu.se)
+##Adapted by: Iñaki Sasiain
 ##Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
 
 ################################################################################
@@ -30,6 +31,7 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
   x<-as.numeric(purity)
   x2<-1-as.numeric(purity)
   y<-as.numeric(methylation)
+
   #calculate global corr
   gl.corr<-suppressWarnings(cor(x,y))
   gl.corr[is.na(gl.corr)]<-0
@@ -47,7 +49,7 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
   cl<-as.integer(factor(cl))
 
   ##get line parameters for each pop - calculate from data - use original y
-  res.norm<-unlist(lapply(1:nmax,function(z) { 
+  output_list$y.norm <- unlist(lapply(1:nmax,function(z) { 
     if(z %in% cl) {
       m<-lm(y[cl==z]~x[cl==z])
       r<-coefficients(m)[1]+residuals(m)
@@ -55,7 +57,9 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
       r
     } else { NULL }
   }))
-  res.norm<-res.norm[snames]
+  output_list$y.norm <- output_list$y.norm[snames]
+
+
   ##get line parameters for each pop - calculate from data - use original y
   res.tum<-unlist(lapply(1:nmax,function(z) { 
     if(z %in% cl) {
@@ -98,33 +102,8 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
       round(as.numeric(RSE),6)
     } else { NA } #Null has been changed by NA in order to get always vectors of the same length
   }))
-
-  res.int_rev <- unlist(lapply(1:nmax,function(z) { 
-    if(z %in% cl) {
-      m<-lm(x2[cl==z]~y[cl==z])
-      r<-coefficients(m)[1]
-      round(as.numeric(r),3)
-    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
-  }))
-
-  res.slope_rev <- unlist(lapply(1:nmax,function(z) { 
-    if(z %in% cl) {
-      m<-lm(x2[cl==z]~y[cl==z])
-      r<-coefficients(m)[2]
-      if(is.na(r)) { r<-0 } ##fix for small number of NAs - set slope to zero
-      round(as.numeric(r),3)
-    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
-  }))
   
-  res.RSE_rev <- unlist(lapply(1:nmax,function(z) { 
-    if(z %in% cl) {
-      m<-lm(x2[cl==z]~y[cl==z])
-      RSE <- summary(m)$sigma 
-      round(as.numeric(RSE),6)
-    } else { NA } #Null has been changed by NA in order to get always vectors of the same length
-  }))
-  
-  res.deg_f_rev <- unlist(lapply(1:nmax,function(z) { 
+  res.deg_f <- unlist(lapply(1:nmax,function(z) { 
     if(z %in% cl) {
       m<-lm(x2[cl==z]~y[cl==z])
       deg_f <- summary(m)$df[2]
@@ -143,7 +122,8 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
   res.orig<-round(methylation,3)
 
   ##return some stats
-  return( list(y.norm=res.norm,
+  return( list(
+    y.norm=res.norm,
     y.tum=res.tum,
     y.orig=res.orig,
     groups=cl,
@@ -154,10 +134,7 @@ adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed
     model.intercepts=res.int,
     model.slopes=res.slope,
     model.RSE=res.RSE,
-    rev_model.intercepts=res.int_rev,
-    rev_model.slopes=res.slope_rev,
-    rev_model.RSE=res.RSE_rev,
-    rev_model.df=res.deg_f_rev
+    rev_model.df=res.deg_f
     )
   )
 }

@@ -58,47 +58,59 @@ argument_list <- list(
 
   make_option(c("-p", "--percentage_to_interval"), type="double", default=4.0,
               help="Percentage of the maximum coverage to include in the 1-Purity interval [default %default]",
-              metavar="[floating number]")
+              metavar="[floating number]"),
+
+  make_option(c("-d", "--regression_data"), type="character",
+              help="The directory containing the regression parameters must be entered here.",
+              metavar="[directory]"),
+
+  make_option(c("-b", "--betas_to_analyse"), type="character",
+              help="The path to the R object contaoining the betas to analyse must be entered here.",
+              metavar="[directory]"),
+
+  make_option(c("-o", "--output_filename"), type="character", default="prediected purities",
+              help="The name of the output R object containing the predicted values must be entered here. Default [%default]",
+              metavar="[filename]"),
+
+  make_option(c("-l", "--output_location"), type="character", default="./",
+              help="The name of the location output R object containing the predicted values must be entered here. Default [%default]",
+              metavar="[path_to_directory]")  
+
 )
 
 arguments <- parse_args(OptionParser(option_list=argument_list, 
                                     description="This program estimates the Purity values of samples based on the beta values of each sample's CpGs."))
 
-# =====================================================================
-# SETTING WORKING DIRECTORY AND LOADING THE REQUIRED DATA AND FUNCTIONS
-# =====================================================================
 
-#Setting the working directory
-setwd("~/Methylation/adjustBetas")
+# ==============================
+# LOADING THE REQUIRED FUNCTIONS
+# ==============================
+
+dir <- commandArgs()[4]
+dir <- gsub("--file=", "", dir)
+
+
+fun1 <- gsub("run_all_validation.r", "predicting_purity.r", dir)
+fun2 <- gsub("run_all_validation.r", "purity_coverage.r", dir)
 
 #Sourcing the functions to be used
-source("./predicting_purity.R")
-source("./purity_coverage.R")
-
-#Loading data to workspace
-load("workspace_tcgaBrca_top5000.RData")
+source(fun1)
+source(fun2)
 
 # ========================
 # PREPARING THE INPUT DATA
 # ========================
 
-#Reading csv files as dataframes
-total_betas <- read.csv("output_training_betas.original.csv", sep=",", row.names=1)
-my_slopes <- read.csv("output_training_reg.slopes.csv", sep=",", row.names=1)
-my_intercepts <- read.csv("output_training_reg.intercepts.csv", sep=",", row.names=1)
-my_RSE <- read.csv("output_training_reg.RSE.csv", sep=",", row.names=1)
-my_df <- read.csv("output_training_reg.df.csv", sep=",", row.names=1)
 
-#Get the validation data
-#Setting the seed for spliting the datainterval_
-set.seed(1)
+#Reading the R objects containing the regression data as dataframes
+my_slopes <- readRDS(list.files(arguments$regression_data, pattern="*reg.slopes.RData", full.names=TRUE))
+my_intercepts <- readRDS(list.files(arguments$regression_data, pattern="*reg.intercepts.RData", full.names=TRUE))
+my_RSE <- readRDS(list.files(arguments$regression_data, pattern="*reg.RSE.RData", full.names=TRUE))
+my_df <- readRDS(list.files(arguments$regression_data, pattern="*reg.df.RData", full.names=TRUE))
 
-#Splitting the data
-train_samples <- sample.split(colnames(betaUnadjusted), SplitRatio=0.8)
 
-#Creating validation datasets for betas and purity
-unadj_validation <- betaUnadjusted[,!train_samples]
-purity_validation <- purityVector[!train_samples]
+#Reading beta values
+unadj_validation <- readRDS(arguments$betas_to_analyse)
 
 #Create a list to append all the predicted purity intervals
 list_of_predicted_intervals <- list()
@@ -152,7 +164,7 @@ stopCluster(cl)
 
 list_of_predicted_intervals <- setNames(lapply(list_of_predicted_intervals, function(x) x$value), sapply(list_of_predicted_intervals, function(x) x$name))
 
-saveRDS(list_of_predicted_intervals, file="out_with_reg_test2.RData")
+saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
 
 cat("\n\n**********************\n")
 cat("   PROCESS FINISHED\n")
