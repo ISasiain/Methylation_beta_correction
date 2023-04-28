@@ -163,9 +163,9 @@ purity_validation <- purities[!train_samples]
 
 }
 
-# ========================================
-# CREATING TRAINING AND VALIDATION SUBSETS
-# ========================================
+# =======================
+# SAVING OUTPUT R OBJECTS
+# =======================
 
 cat("\n\nSaving the data...\n")
 
