@@ -10,7 +10,7 @@
 
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data; 
-Rscript ../../scripts/get_data_to_analyse/extract_TV_from_Robject.r -d ./workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -s TRUE -v 20; 
+Rscript ../../scripts/get_data_to_analyse/preprocessing data.r -d ./workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -s TRUE -v 20; 
 ```
 
 2. Calculate the corrected values and regression parameters from the training data (it need 21 mins)
@@ -40,12 +40,12 @@ cd /home/Illumina/Iñaki_Sasiain/data;
 conda activate meth_corr;
 R;
 ```
-
+Using R to transform the csv into an R object
 ```R
 #Reading csv file
 purities <- read.csv("TCGA_BRCA_tumorContent.csv");
 
-#Creating a named vector from the cev file
+#Creating a named vector from the csv file
 purityVector <- purities$Cancer.DNA.fraction;
 names(purityVector) <- purities$bcr_patient_barcode;
 
@@ -56,9 +56,13 @@ save(purityVector, file="450k_CpGs_purities.RData")
 2. Running a R script to remove CpGs from sexual chromosomes and split samples in training and validation datasets
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/data;
-Rscript ../scripts/get_data_to_analyse/extract_TV_from_Robject.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -f TRUE -A object_450k_probesKeep.RData -a probesKeep -c chr
+Rscript ../scripts/get_data_to_analyse/preprocessing data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -f TRUE -A object_450k_probesKeep.RData -a probesKeep -c chr
 ```
 
 3. Calculating reference regressions from training dataset.
 ```bash
+cd /home/Illumina/Iñaki_Sasiain/regressions;
+Rscript ../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/betas_training.RData -p ../data/purity_training.RData
 ```
+
+4. Estimate purities using the refernce regressions and the validation beta values.
