@@ -30,3 +30,35 @@ Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regre
 
 - An R script was used.
 
+
+### 450.000 CpGs (All was run in Corsaire)
+
+1. Transforming the purities from csv to Robject;
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/data;
+conda activate meth_corr;
+R;
+```
+
+```R
+#Reading csv file
+purities <- read.csv("TCGA_BRCA_tumorContent.csv");
+
+#Creating a named vector from the cev file
+purityVector <- purities$Cancer.DNA.fraction;
+names(purityVector) <- purities$bcr_patient_barcode;
+
+#Saving vector as a R object
+save(purityVector, file="450k_CpGs_purities.RData")
+```
+
+2. Running a R script to remove CpGs from sexual chromosomes and split samples in training and validation datasets
+```bash
+cd /home/Illumina/Iñaki_Sasiain/data;
+Rscript ../scripts/get_data_to_analyse/extract_TV_from_Robject.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -f TRUE -A object_450k_probesKeep.RData -a probesKeep -c chr
+```
+
+3. Calculating reference regressions from training dataset.
+```bash
+```
