@@ -14,6 +14,8 @@
 # LOADING THE REQUIRED PACKAGES
 # =============================
 
+options(repos = "https://cran.r-project.org/")
+
 if(!requireNamespace("doParallel", quietly = TRUE)) {
   install.packages("doParallel") }
 
