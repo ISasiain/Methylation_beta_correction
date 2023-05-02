@@ -1,101 +1,91 @@
-#Setting the working directory
-setwd("~/Methylation/adjustBetas")
+#!/usr/bin/env Rscript
 
-#Importing the required modules
+# ==========================================
+#      IMPORTING THE REQUIRED PACKAGES 
+# ==========================================
+
+# Set a specific CRAN mirror
+options(repos = "https://cran.r-project.org/")
+
+if(!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2") }
+
 library(ggplot2)
 
-out_ls <- readRDS("out_without_reg_test.RData")
-#out_ls <- readRDS("out_without_reg.RData")
-out_ls_corr <- readRDS("out_with_reg_test.RData")
+if(!requireNamespace("optparse", quietly = TRUE)) {
+  install.packages("optparse") }
 
-if(!requireNamespace("caTools", quietly = TRUE)) {
-  install.packages("caTools") }
+library(optparse)
 
-library(caTools)
+# =============================================================
+#      PARSING COMMAND LINE ARGUMENTS AND LOADING THE DATA
+# =============================================================
 
+argument_list <- list(
 
-##data set reduced to top 5000 CpGs in set of 630 TCGA BRCA tumors
-load("workspace_tcgaBrca_top5000.RData")
+  make_option(c("-e", "--path_to_estimated_1-P"), type="character",  
+              help="The user must especify the path of the R object containing the estimated 1-Pur values",
+              metavar = "[path]"),
 
-#Setting the seed for spliting the data
-set.seed(1)
+  make_option(c("-a", "--path_to_actual_1-P"), type="character",
+              help="The user must especify the path of the R object containing the actual 1-Pur values",
+              metavar = "[path]"),
 
-#Splitting the data
-train_samples <- sample.split(colnames(betaUnadjusted), SplitRatio=0.8)
+  make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
+              help="The user can especify a prefox for the output plots. Default [%default]",
+              metavar = "[prefix]"),
 
-#Creating training and validation datasets for the purity_vector
-purity_training <- purityVector[train_samples]
-purity_validation <- purityVector[!train_samples]
+  make_option(c("-p", "--output_path"), type="character", default=".",
+            help="The directory to store the plots can be entered heres. Default [%default]",
+            metavar = "[prefix]")
 
-vec_of_vec_nums <- c()
+)
 
-#How many intervals per sample
-for (sample in names(purity_validation)) {
-
-    vec_of_vec_nums <- c(vec_of_vec_nums, length((out_ls[[sample]][['interval(s)']])))
-
-}
-
-#How many intervals per sample
-for (sample in names(purity_validation[vec_of_vec_nums==1])) {
-
-    cat("\n____________________________________________\n")
-    print(sample)
-    cat("\nInterval: \n")
-    print(out_ls[[sample]][["interval(s)"]])
-    cat("\nEstimates (maxs) \n")
-    print(out_ls[[sample]][["1-Pur_estimates"]])
-    cat("\n\nActual 1-purity", 1-purity_validation[sample], "")
-    cat("\n____________________________________________\n")
-
-}
+# Parsing command line arguments
+arguments <- parse_args(OptionParser(option_list=argument_list, 
+                                    description="This program produces plots to analyse the performance of the purity prediction algorithm."))
 
 
-# for (i in 1:max(vec_of_vec_nums)){
-# cat(i,"-> ",length(vec_of_vec_nums[vec_of_vec_nums==i]), "\n")
-# }
-# 
-# included_in_interval <- 0
-# close_to_interval <- 0
-# 
-# for (sample in names(purity_validation[vec_of_vec_nums==1])) {
-#   
-#   print(out_ls[[sample]][["interval(s)"]][[1]][1])
-#   print(out_ls[[sample]][["interval(s)"]][[1]][2])
-#   print(1-purity_validation[sample])
-#   if ((1-purity_validation[sample]) >= out_ls[[sample]][["interval(s)"]][[1]][1] & (1-purity_validation[sample]) <= out_ls[[sample]][["interval(s)"]][[1]][2] ) {
-# 
-#     included_in_interval <- included_in_interval + 1
-#     
-#   } 
-# }
-# 
-# cat("\nIncluded_in_interval:", included_in_interval)
+#Loading the estimated and actual purities
+out_ls <- readRDS(arguments$"path_to_estimated_1-P")
+purity_validation <- readRDS(arguments$"path_to_actual_1-P")
 
-#Calculate quality parameters
+#Adding this to adapt the sample names
+names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
-MWMDS <- function(output_list, purity_vector) {
+
+# ===========================================================
+#      CREATING FUNCTION TO DETERMINE QUALITY PARAMETERS
+# ===========================================================
+
+
+det_qual <- function(output_list, purity_vector) {
   
-  columns <- c("Interval's width", "Distance", "Distance*Width")
+  columns <- c("Interval's width", "Dis_to_int", "Dis_to_est", "Distance*Width")
   results <- data.frame(matrix(nrow = 0, ncol = length(columns)))
+
   colnames(results) <- columns
   
   quality_values <- lapply(names(output_list), function(sample) {
-    
+
     # Determining the interval's width
     width <- output_list[[sample]][["interval(s)"]][[1]][2] - output_list[[sample]][["interval(s)"]][[1]][1]
     
-    # Determining the distance
+    # Determining the distance to the interval
     if ((length(intersect(seq(output_list[[sample]][["interval(s)"]][[1]][1], output_list[[sample]][["interval(s)"]][[1]][2], by=0.001),purity_vector[sample])) == 1)) {
-      distance <- 0
+      dis_to_interval <- 0
     } else {
-      distance <- round(min(abs(c(output_list[[sample]][["interval(s)"]][[1]][1] - (1-purity_vector[sample]), output_list[[sample]][["interval(s)"]][[1]][2] - (1-purity_vector[sample])))),3)
+      dis_to_interval <- round(min(abs(c(output_list[[sample]][["interval(s)"]][[1]][1] - (1-purity_validation[sample]), output_list[[sample]][["interval(s)"]][[1]][2] - (1-purity_validation[sample])))),3)
     }
+
+    # Determining the distance to the estimate
+    dis_to_estimate <- round(abs(1-purity_vector[sample] - output_list[[sample]][["1-Pur_estimates"]]),3)
     
     # Adding the calculated values to a dataframe
     data.frame("Interval's width" = width, 
-               "Distance" = distance, 
-               "Distance*Width" = round(distance * width,3))
+               "Dis_to_int" = dis_to_interval,
+               "Dis_to_est" = dis_to_estimate,
+               "Distance*Width" = round(dis_to_interval * width,3))
   })
   
   # Append the results for all samples to the final data frame
@@ -107,24 +97,24 @@ MWMDS <- function(output_list, purity_vector) {
   return(results)
 }
 
+out_df <- det_qual(out_ls, purity_validation)
+
+# =======================================
+#      CALCULATING SUMMARY STATISTICS
+# =======================================
+
+print(summary(out_df)) 
+
 # ==============================
 #      PLOTTING THE RESULTS
 # ==============================
 
-par(mfrow=c(3,2))
-
-out_df <- MWMDS(out_ls, purity_validation)
-out_df_corr <- MWMDS(out_ls_corr, purity_validation)
-
-purity_validation
-out_df_corr$Distance
-
-# Histogram of Distance
-ggplot(out_df, aes(x=Distance)) +
+## HISTOGRAM OF DISTANCE
+ggplot(out_df, aes(x=Dis_to_int)) +
   geom_histogram(binwidth=0.01, color="black", fill="lightblue") +
   xlim(0,0.8) +
   ggtitle("Not corrected") +
-  xlab("Distances") +
+  xlab("Distance to interval") +
   ylab("Frequency") +
   theme_classic() +
   theme(plot.title = element_text(size = 20),
@@ -132,21 +122,9 @@ ggplot(out_df, aes(x=Distance)) +
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "dis_to_int.barplot.png", sep="."))
 
-ggplot(out_df_corr, aes(x=Distance)) +
-  geom_histogram(binwidth=0.01, color="black", fill="lightblue") +
-  xlim(0,0.8) +
-  ggtitle("Corrected with reg") +
-  xlab("Distances") +
-  ylab("Frequency") +  
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
-
-# Histogram of Interval's width
+## HISTOGRAM OF WIDTH
 ggplot(out_df, aes(x=Interval.s.width)) +
   geom_histogram(binwidth=0.0025, color="black", fill="lightgreen") +
   xlim(0,0.16) +
@@ -159,106 +137,42 @@ ggplot(out_df, aes(x=Interval.s.width)) +
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "int_width.barplot.png",sep="."))
 
-ggplot(out_df_corr, aes(x=Interval.s.width)) +
-  geom_histogram(binwidth=0.0025, color="black", fill="lightgreen") +
-  xlim(0,0.16) +
-  ggtitle("Corrected with reg") +
-  xlab("Interval's width") +
-  ylab("Frequency")  +
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
 
-# # Histogram of Distance.Width
-# ggplot(out_df, aes(x=Distance.Width)) +
-#   geom_histogram(binwidth=0.0025, color="black", fill="pink") +
-#   xlim(0,0.07) +
-#   ggtitle("Not corrected") +
-#   xlab("Distance * Width") +
-#   ylab("Frequency")
-# 
-# ggplot(out_df_corr, aes(x=Distance.Width)) +
-#   geom_histogram(binwidth=0.0025, color="black", fill="pink") +
-#   xlim(0,0.07) +
-#   ggtitle("Corrected with reg") +
-#   xlab("Distance * Width") +
-#   ylab("Frequency")
+## SCATTERPLOT WITH INTERVAL
 
-summary(out_df)
-summary(out_df_corr)
-
-#Scatterplot with errors
-
-#Corrected values
-upper_lim_corr <- c()
-estimate_corr <- c()
-lower_lim_corr <- c()
-
-#UNcorrected values
-upper_lim_uncorr <- c()
-estimate_uncorr <- c()
-lower_lim_uncorr <- c()
+#Estimated values
+upper_lim <- c()
+estimate <- c()
+lower_lim <- c()
 
 #Actual 1-P value
 actual_1_minus_P <- 1-purity_validation
 index <- sort(actual_1_minus_P, index.return=TRUE)$ix
 
-par(mfrow=c(1,2))
-
-for (sample in names(out_ls_corr)) {
-  
-  lower_lim_corr <- c(lower_lim_corr, out_ls_corr[[sample]][["interval(s)"]][[1]][1])
-  estimate_corr <- c(estimate_corr ,mean(out_ls_corr[[sample]][["1-Pur_estimates"]]))
-  upper_lim_corr <- c(upper_lim_corr, out_ls_corr[[sample]][["interval(s)"]][[1]][2])
-}
-
-corr_plot_df <- data.frame(
-  actual=actual_1_minus_P[order(index)],
-  upper=upper_lim_corr[order(index)],
-  est=estimate_corr[order(index)],
-  lower=lower_lim_corr[order(index)]
-)
-
-ggplot(data=corr_plot_df, aes(x=actual, y=est)) +
-  xlim(0,1) + ylim(0,1) +
-  geom_point(size=1.5) +
-  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
-  geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
-  ggtitle("Corrected 1-Purity") +
-  xlab("Actual 1-Purity") + 
-  ylab("Estimated 1-Purity") +
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
-#ggsave("corrected_scatterplot.png")
-
+#Getting the values of all the samples in vectors
 for (sample in names(out_ls)) {
   
-  upper_lim_uncorr <- c(upper_lim_uncorr, out_ls[[sample]][["interval(s)"]][[1]][1])
-  estimate_uncorr <- c(estimate_uncorr ,mean(out_ls[[sample]][["1-Pur_estimates"]]))
-  lower_lim_uncorr <- c(lower_lim_uncorr, out_ls[[sample]][["interval(s)"]][[1]][2])
+  lower_lim <- c(lower_lim, out_ls[[sample]][["interval(s)"]][[1]][1])
+  estimate <- c(estimate ,mean(out_ls[[sample]][["1-Pur_estimates"]]))
+  upper_lim <- c(upper_lim, out_ls[[sample]][["interval(s)"]][[1]][2])
 }
 
-uncorr_plot_df <- data.frame(
+#Creating a dataframe with the sorted vectors
+plot_df <- data.frame(
   actual=actual_1_minus_P[order(index)],
-  upper=upper_lim_uncorr[order(index)],
-  est=estimate_uncorr[order(index)],
-  lower=lower_lim_uncorr[order(index)]
+  upper=upper_lim[order(index)],
+  est=estimate[order(index)],
+  lower=lower_lim[order(index)]
 )
 
-ggplot(data=uncorr_plot_df, aes(x=actual, y=est)) +
+ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
   geom_point(size=1.5) +
   geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
-  ggtitle("Uncorrected 1-Purity") +
+  ggtitle("Prediction of 1-Purity") +
   xlab("Actual 1-Purity") + 
   ylab("Estimated 1-Purity") +
   theme_classic() +
@@ -267,16 +181,16 @@ ggplot(data=uncorr_plot_df, aes(x=actual, y=est)) +
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
 
-#Plotting the evoliution of the distances in function of the actual and estimated purity
+## EVOLUTION OF DISTANCE TO INTERVAL IN FUNCTION OF ACTUAL AND ESTIMATED PURITY
 
-par(mfrow=c(1,2))
-
-# Plot of Distance vs Actual 1-Purity (not corrected)
-ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Distance)) +
+# Plot of Distance to interval vs Actual 1-Purity
+ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_int)) +
   geom_point(color="blue") +
   xlab("Actual 1-Purity") +
-  ylab("Distance") + 
+  ylab("Dis_to_interval") + 
+  ggtitle("Distance to interval vs Actual 1-Purity") +
   theme_classic() +
   theme(plot.title = element_text(size = 20),
         axis.title = element_text(size = 16),
@@ -284,23 +198,31 @@ ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Distance))
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
-# Plot of Distance vs Actual 1-Purity (corrected)
-ggplot(out_df_corr[order(index),], aes(x=actual_1_minus_P[order(index)], y=Distance)) +
-  geom_point(color="blue") +
-  xlab("Actual 1-Purity") +
-  ylab("Distance") + 
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png",sep="."))
 
-# Plot of Distance vs Estimated 1-Purity (not corrected)
-ggplot(out_df, aes(x=uncorr_plot_df$est, y=out_df$Distance[order(index)])) +
+# Plot of Distance to interval vs Estimated 1-Purity
+ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
   geom_point(color="red") +
+  ggtitle("Distance to interval vs Estimated 1-Purity") +
   xlab("Estimated 1-Purity") +
-  ylab("Distance") + 
+  ylab("Disance to interval") + 
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "Dis_vs_es1-P.scatterplot.png",sep="."))
+
+
+## ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
+
+ggplot(out_df, aes(x=out_df$Dis_to_est*100, fill="lighred")) +
+  geom_density(alpha=0.5) +
+  ggtitle("Distribution of the deviation") +
+  xlab("% Deviation") +
+  xlim(0,20) +
+  ylab("% of the samples") + 
   theme_classic() +
   theme(plot.title = element_text(size = 20),
         axis.title = element_text(size = 16),
@@ -308,11 +230,16 @@ ggplot(out_df, aes(x=uncorr_plot_df$est, y=out_df$Distance[order(index)])) +
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
-# Plot of Distance vs Estimated 1-Purity (corrected)
-ggplot(out_df_corr, aes(y=out_df_corr$Distance[order(index)], x=corr_plot_df$est)) +
-  geom_point(color="red") +
-  xlab("Estimated 1-Purity") +
-  ylab("Distance") + 
+ggsave(paste(arguments$output_prefix, "error.densityplot.png",sep="."))
+
+## CUMULAIVE ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
+
+ggplot(out_df, aes(x=out_df$Dis_to_est*100)) +
+  stat_ecdf(aes(color="lightred"), size=2) +
+  ggtitle("Cumulative distribution of the deviation") +
+  xlab("% Deviation") +
+  xlim(0,20) +
+  ylab("% of the samples") + 
   theme_classic() +
   theme(plot.title = element_text(size = 20),
         axis.title = element_text(size = 16),
@@ -320,4 +247,4 @@ ggplot(out_df_corr, aes(y=out_df_corr$Distance[order(index)], x=corr_plot_df$est
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
-
+ggsave(paste(arguments$output_prefix, "error.cum_densityplot.png",sep="."))
