@@ -62,7 +62,19 @@ Rscript ../scripts/get_data_to_analyse/preprocessing data.r -s FALSE -B data450k
 3. Calculating reference regressions from training dataset.
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/regressions;
-Rscript ../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/betas_training.RData -p ../data/purity_training.RData
+nohup Rscript ../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/betas_training.RData -p ../data/purity_training.RData &;
 ```
 
 4. Estimate purities using the refernce regressions and the validation beta values.
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/estimate_purities;
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o estimated_purity_450kCpG &;
+```
+
+4. Plotting results;
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/;
+Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr;
+```
