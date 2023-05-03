@@ -20,15 +20,28 @@ cd ~/Methylation/adjustBetas/01_5000_CpG/pop_regressions;
 Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_data/betas_training.RData -p ../original_data/purity_training.RData;
 ```
 
-3. Use the regression parameters determined from the training data to estimate purities from validation data (it need 2 mins)
+3. Use the regression parameters determined from the training data to estimate purities from validation data (it needs 2 mins)
 
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/output;
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o estimated_purity_5000CpG;
+
+#Calculating the results with the correction method
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG;
+
+#Calulating the results without the correction method (The line that corrects the coverage was commented; line 45 of purity_coverage.r)
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG;
 ```
 4. Analyse output data to produce plots. 
 
-- An R script was used.
+```bash
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
+
+#The corrected data
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_corr;
+
+#The uncorrected data
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_uncorr;
+```
 
 
 ### 450.000 CpGs (All was run in Corsaire)
