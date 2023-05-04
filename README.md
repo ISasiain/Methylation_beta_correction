@@ -2,7 +2,7 @@
 
 #### Author: Iñaki Sasiain
 
-### EXPLANATION ABOUT THE SCRIPT
+### SCRIPTS
 
 ### EXAMPLE 5000 CpGs
 
@@ -41,6 +41,46 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimate
 
 #The uncorrected data
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_uncorr;
+```
+
+5. Analyse the signal overestimation in the low purity region;
+ - Splitting the original validation dataset regarding their actual purity values
+```bash
+cd ~/Methylation/adjustBetas/01_5000_CpG/original_data;
+mkdir purity_splitted;
+cd purity_splitted;
+R;
+```
+-Split the dataset using R
+```R
+#Loading the data
+betas <- readRDS("../betas_validation.RData");
+purities <- readRDS("../purity_validation.RData");
+
+#Creating a list with the 8 purity intrevals to split the data into
+list_to_split <- list(
+    one_of_eight=c(0, 0.2),
+    two_of_eight=c(0.2, 0.4),
+    three_of_eight=c(0.4, 0.6),
+    four_of_eight=c(0.6, 0.8),
+    five_of_eight=c(0.8, 1)
+)
+
+#Iterate through the list to create a vector with the sample names included in each interval
+for (interval in names(list_to_split)) {
+    
+    assign(paste("pur_",interval,sep=""),purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])
+    assign(paste("betas_",interval,sep=""), betas[,names(purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])])
+
+    saveRDS(get(paste("betas_",interval,sep="")), file=paste("betas_",interval,".RData",sep=""))
+    saveRDS(get(paste("pur_",interval,sep="")), file=paste("pur_",interval,".RData",sep=""))
+}
+```
+
+- Predicting purity per for each purity group. Creating a plot with all the coverage plots of the samples included into that actual purity interval.
+
+```bash
+Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../../pop_regressions -b betas_one_of_eight.RData -o one_of_eight;
 ```
 
 
