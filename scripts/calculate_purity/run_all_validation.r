@@ -33,7 +33,6 @@ if(!requireNamespace("Kendall", quietly = TRUE)) {
   install.packages("Kendall", quietly = TRUE) }
 
 suppressPackageStartupMessages(library(Kendall))
-
 # ==================================
 # CONFIGURING COMMAND LINE ARGUMENTS
 # ==================================
@@ -130,6 +129,7 @@ registerDoSNOW(cl)
 
 cat("\nRunning the analysis...\n\n")
 
+
 samples <- colnames(unadj_validation)
 
 p_bar <- txtProgressBar(min = 0, 
@@ -162,7 +162,9 @@ list_of_predicted_intervals <- foreach(s = samples, .packages = "Kendall", .opti
 
 stopCluster(cl)
 
+
 list_of_predicted_intervals <- setNames(lapply(list_of_predicted_intervals, function(x) x$value), sapply(list_of_predicted_intervals, function(x) x$name))
+
 
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
 

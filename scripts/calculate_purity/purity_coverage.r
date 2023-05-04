@@ -35,17 +35,24 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold,mi
 
   }
 
-  #par(mfrow=c(1,2))
-  
-  #reg <- lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))
-  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Coverage")
-  #abline(reg, col="lightgreen", lwd=2)
+  uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
+                   y=unname(coverage_per_section),
+                   n=40)
 
   #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
   coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
   
-  #plot(y=coverage_per_section, x=as.numeric(names(coverage_per_section)), type="l", pwd=10, xlab="1 - Purity", ylab = "Adapted coverage")
-  #abline(h=0, col="lightgreen", lwd=2)
+  #Smoothening the plot using spline
+  smooth <- smooth.spline(x=as.numeric(names(coverage_per_section)), 
+                   y=unname(coverage_per_section),
+                   n=40)
+
+  #Predict values per each section using the smoothed function
+  smoothed_coverage_values <- predict(smooth, newdata=list(x=sections))$y
+  names(smoothed_coverage_values) <- as.character(sections)
+
+  #Getting the maximum corrected coverage value
+  max_ccov <- max(smoothed_coverage_values)
   
   # ======================================================
   # DETERMINE THE MAXIMUM COVERAGE ESTIMATES AND INTERVALS
@@ -54,14 +61,14 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold,mi
   ## GETTING THE ESTIMATES
 
   #Appending the max value(s), the 1-Purity estimate(s), to the output_list 
-  output_list[["1-Pur_estimates"]] <- sections[coverage_per_section >= max(coverage_per_section)]
+  output_list[["1-Pur_estimates"]] <- sections[which(smoothed_coverage_values == max_ccov)]
 
   ## GETTING THE INTERVALS
 
   # Get the intervals with the maximum coverage. The minimum coverage threshold is the maximum value minus the interval_
   #threshold percentage selected (default value is 10%)
-  selected_values <- sections[coverage_per_section >= max(coverage_per_section)-round(max(coverage_per_section)*interval_threshold/100)]
-
+  selected_values <- sections[which(smoothed_coverage_values >= max_ccov*(1-interval_threshold/100))]
+  
   #Defining variables to store parameters of the intervals
   start_val <- selected_values[1] # Start point of the interval
   ref_val <- NULL # Value to use as the refernce for the ref value of the loop
@@ -117,6 +124,9 @@ interval_list <- Filter(function(interval) {
   
   #Adding the intervals detected to the output list
   output_list[["interval(s)"]] <- interval_list
+
+  #Uncomment the following command to get to append the original coverage plot to be plotted
+  output_list[["Coverage_plot"]] <- uncor_smooth
 
   #The maximum coverage interval list will be returned
   return(output_list)

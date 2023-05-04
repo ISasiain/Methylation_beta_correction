@@ -33,11 +33,7 @@ argument_list <- list(
 
   make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
               help="The user can especify a prefox for the output plots. Default [%default]",
-              metavar = "[prefix]"),
-
-  make_option(c("-p", "--output_path"), type="character", default=".",
-            help="The directory to store the plots can be entered heres. Default [%default]",
-            metavar = "[prefix]")
+              metavar = "[prefix]")
 
 )
 
@@ -51,7 +47,7 @@ out_ls <- readRDS(arguments$"path_to_estimated_1-P")
 purity_validation <- readRDS(arguments$"path_to_actual_1-P")
 
 #Adding this to adapt the sample names
-names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
+#names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
 
 # ===========================================================
@@ -78,8 +74,8 @@ det_qual <- function(output_list, purity_vector) {
       dis_to_interval <- round(min(abs(c(output_list[[sample]][["interval(s)"]][[1]][1] - (1-purity_validation[sample]), output_list[[sample]][["interval(s)"]][[1]][2] - (1-purity_validation[sample])))),3)
     }
 
-    # Determining the distance to the estimate
-    dis_to_estimate <- round(abs(1-purity_vector[sample] - output_list[[sample]][["1-Pur_estimates"]]),3)
+    # Determining the distance to the estimate (the mean is calculated in case there were more than one maximums. THis must be removed after softening the coverage plot)
+    dis_to_estimate <- mean(round(abs(1-purity_vector[sample] - output_list[[sample]][["1-Pur_estimates"]]),3))
     
     # Adding the calculated values to a dataframe
     data.frame("Interval's width" = width, 
