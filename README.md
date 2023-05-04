@@ -57,13 +57,16 @@ R;
 betas <- readRDS("../betas_validation.RData");
 purities <- readRDS("../purity_validation.RData");
 
-#Creating a list with the 8 purity intrevals to split the data into
+#Creating a list with the 8 purity intrevals to split the data into (The names are 1-Purity, not purities)
 list_to_split <- list(
-    one_of_eight=c(0, 0.2),
-    two_of_eight=c(0.2, 0.4),
-    three_of_eight=c(0.4, 0.6),
-    four_of_eight=c(0.6, 0.8),
-    five_of_eight=c(0.8, 1)
+    from_1_to_0.7 = c(0, 0.3),
+    from_0.7_to_0.6 = c(0.3, 0.4),
+    from_0.6_to_0.5 = c(0.4, 0.5),
+    from_0.5_to_0.4 = c(0.5, 0.6),
+    from_0.4_to_0.35 = c(0.6, 0.65),
+    from_0.35_to_0.3 = c(0.65, 0.7),
+    from_0.3_to_0.2 = c(0.7, 0.8),
+    from_0.2_to_0 = c(0.8, 1)
 )
 
 #Iterate through the list to create a vector with the sample names included in each interval
@@ -77,11 +80,32 @@ for (interval in names(list_to_split)) {
 }
 ```
 
-- Predicting purity per for each purity group. Creating a plot with all the coverage plots of the samples included into that actual purity interval.
+- Predicting purity per for each purity group. Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot. Line 129 must be uncommented in order to get the required data.
 
 ```bash
-Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../../pop_regressions -b betas_one_of_eight.RData -o one_of_eight;
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
+mkdir analyse_overestimation/data_to_plot;
+cd analyse_overestimation/data_to_plot;
+
+
+#Getting the data tlo be plotted through a bash loop;
+for int in $(ls ../../../original_data/purity_splitted/betas_*.RData); 
+    do filename=$(echo ${int} | cut -d \/ -f 6 | sed 's/.RData//');
+       echo ${filename};
+       Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../../../pop_regressions -b ${int} -o ${filename}; 
+    done;
+
+#Plotting the data using a bash loop and a R script
+cd ../;
+
+for my_file in $(ls ./data_to_plot/*);
+    do plotname=$(echo ${my_file} | cut -d \/ -f 3 | sed 's/.RData//' | sed 's/betas_//' );
+       Rscript plot_coverage.R -i ${my_file} -t ${plotname} -o ${plotname}
+    done;
+
 ```
+
+!!!! CHANGE THE LOCATION OF THE SCRIPTS !!!!!!
 
 
 ### 450.000 CpGs (All was run in Corsaire)
