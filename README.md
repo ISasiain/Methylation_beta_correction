@@ -30,6 +30,9 @@ Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regre
 
 #Calulating the results without the correction method (The line that corrects the coverage was commented; line 45 of purity_coverage.r)
 Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG;
+
+#Calculate the results with the correction method and smoothening the coverage line (THe run_all_validation script was changed to do so adding some lines; 46,47 and 48 and detremining the amx and the intervalk from there)
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_smooth_estimated_purity_5000CpG;
 ```
 4. Analyse output data to produce plots. 
 
@@ -41,9 +44,12 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimate
 
 #The uncorrected data
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_uncorr;
+
+#The corrected and smoothened data
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_smooth_corr;
 ```
 
-5. Analyse the signal overestimation in the low purity region;
+5. Analyse the signal overestimation in the low purity region (this was done with the smootehned data);
  - Splitting the original validation dataset regarding their actual purity values
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data;
