@@ -64,6 +64,26 @@
 #
 ## - USAGE:
 #
+#     The script must be run on the command line using the following flags. Keep in mind that the functions that the script calls
+#     must be stored in the same directory of the main script.
+#
+#     """
+#     Rscript path_to_script/run_all_validation.r -c [cores] -a [alpha] -r [threshold_rse] -s [threshold_slope] -p [percentage_to_interval] 
+#     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location]
+#     """
+#     
+#     *The function of the command line options is the following; 
+#
+#       -c: Especify the number of cores to run the program
+#       -a: The alpha value used to determine the prediction intervals from the regressions
+#       -r: Maximum Residual Standard Error allowed per CpG regression
+#       -s: Minimum slope allowed per regression. The regressions with lower slopes will be ignored
+#       -p: Percentage of the maximum coverage detected to include in estimated the 1-Purity interval
+#       -d: The directory containing the regression parameters must be entered here
+#       -b: The path to the R object contaoining the betas to analyse must be entered here
+#       -o: The name of the output R object containing the predicted values must be entered here
+#       -l: The name of the location output R object containing the predicted values must be entered here
+#
 ## - VERSION: 1.0
 #
 ## - DATE: 08/05/2023
