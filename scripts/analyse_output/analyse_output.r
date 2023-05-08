@@ -213,7 +213,7 @@ ggsave(paste(arguments$output_prefix, "Dis_vs_es1-P.scatterplot.png",sep="."))
 
 ## ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
-ggplot(out_df, aes(x=out_df$Dis_to_est*100, fill="lighred")) +
+ggplot(out_df, aes(x=out_df$Dis_to_est*100), fill="lighred") +
   geom_density(alpha=0.5) +
   ggtitle("Distribution of the deviation") +
   xlab("% Deviation") +
