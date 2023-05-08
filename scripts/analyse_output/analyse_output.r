@@ -231,7 +231,7 @@ ggsave(paste(arguments$output_prefix, "error.densityplot.png",sep="."))
 ## CUMULAIVE ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
 ggplot(out_df, aes(x=out_df$Dis_to_est*100)) +
-  stat_ecdf(aes(color="lightred"), size=2) +
+  stat_ecdf(color="lightred", size=2) +
   ggtitle("Cumulative distribution of the deviation") +
   xlab("% Deviation") +
   xlim(0,20) +
