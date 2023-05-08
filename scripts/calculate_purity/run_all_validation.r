@@ -1,5 +1,75 @@
 #!/usr/bin/Rscript
 
+## -SCRIPT'S NAME: run_all_validation.r
+#
+## - DESCRIPTION: 
+#
+#   This script predicts the purity of the cancer samples based on the CpG's beta values and refernce
+# regressions that reflect the different methylation patterns of the different populations.
+# 
+## - USED R PACKAGES:
+#
+#   *OPTPARSE. Parsing command line arguments
+#   *PARALLEL. Parallelization of the script
+#   *DOSNOW. Parallelization of the script
+#   *FOREACH. Parallelization of the script
+#   *KENDALL. Analyse progess through progress bar
+#
+## - USER DEFINED FUNCTIONS:
+#   
+#   * predicting_purity(). This function creates a dataframe contaiing the predicted 1-Purity values 
+#                          from each CpG of each sample
+#   * purity_coverage(). This function calculates a 1-Purity estimate per sample and confidence interval
+#                        based on the intervals predicted for all the CpGs of each sample.
+#
+## - PROCEDURE:
+#
+#   1. Installing (if necessary) and loading packages, configuring command line arguments and surcing the 
+#      functions to be used.
+#
+#   2. Loading the required data. The R objects containing the parameters of the regressions and the beta
+#      values which will be used for the analysis are loaded.
+#
+#   3. Configure parallelization of the script. The number of cores tu be used mut be specified using the
+#      corresponding command line flag.
+#
+#   4. Running the analysis per each sample. Firstly the predicting_purity() function is used to predict
+#      1-Purity intervals per each CpG of the sample analysed. Then, the purity_coverage() function is
+#      used to calculate a single 1-Purity estimate and an interval per each sample based on all the 
+#      predicted intervals calculated for each CpG.
+#
+#   5. Storing the output data, a list with teh estimate and interval calculated per sample, as an R object.
+#
+## - INPUT FILES:
+#
+#    -> Dataframe stored as an R object with the SLOPES of the calculated regressions. All the parameters of
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.slopes.RData".
+#
+#    -> Dataframe stored as an R object with the INTERCEPTS of the calculated regressions. All the parameters of
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.intercepts.RData".
+#
+#    -> Dataframe stored as an R object with the RESIDUAL STANDARD ERRORS of the calculated regressions. All the parameters of
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.RSE.RData".
+#
+#    -> Dataframe stored as an R object with the DEGREES OF FREEDOM of the calculated regressions. All the parameters of
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.df.RData".
+#
+#    -> Dataframe stored as an R object with the BETA VALUES of the CpGs of the SAMPLES to analyse. The CpG Ids have to be 
+#       the rows and the sample names the columns of the dataframe. 
+#
+## - OUTPUT FILES:
+#
+#    -> R object, whose name must be specified by the user, containing a list with the estimate 1-Purity values and intervals
+#       predicted per each sample
+#
+## - USAGE:
+#
+## - VERSION: 1.0
+#
+## - DATE: 08/05/2023
+#
+## - AUTHOR: Iñaki Sasiain Casado
+
 # ==================================
 # INSTALLING AND/OR LOADING PACKAGES
 # ==================================
