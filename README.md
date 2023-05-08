@@ -151,8 +151,15 @@ nohup Rscript ../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/
 4. Estimate purities using the refernce regressions and the validation beta values.
 
 ```bash
+
+#Using the same thresholds than in the first step
 cd /home/Illumina/Iñaki_Sasiain/estimate_purities;
 nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o estimated_purity_450kCpG &;
+
+#Using more strict thresholds
+cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s1_estimated_purity_450kCpG -a 0.5 -r 0.4 -s 0.5 -p 5 &;
+
 ```
 
 4. Plotting results;
