@@ -168,3 +168,28 @@ nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regre
 cd /home/Illumina/Iñaki_Sasiain/;
 Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr;
 ```
+
+### Checking the effect of the beta estimation method (infinium I and II)
+
+1. Transforming the data into an R object
+
+```R
+methodology <- read.csv("infiniumInfo_421368CpGs.csv");
+rownames(methodology) <- methodology$id;
+saveRDS(methodology, file="infinium_info.RData")
+```
+
+2. Getting vectors of the CpGs quantified with each method in a list
+```R
+infinium_info <- readRDS("infinium_info.RData");
+
+design_I <- rownames(infinium_info[infinium_info$designType=="I",]);
+design_II <- rownames(infinium_info[infinium_info$designType=="II",]);
+
+design_type <- list(
+    "I" = design_I,
+    "II" = design_II
+)
+
+saveRDS(design_type, file="designType_list.RData")
+```
