@@ -153,8 +153,9 @@ if (arguments$split_based_on_design) {
 
   designs <- readRDS(arguments$path_to_design_list)
 
-  betas_I <- betas[rownames(betas) %in% designs[["I"]]]
-  betas_II <- betas[rownames(betas) %in% designs[["II"]]]
+
+  betas_I <- betas[rownames(betas) %in% designs[["I"]],]
+  betas_II <- betas[rownames(betas) %in% designs[["II"]],]
 
 }
 
