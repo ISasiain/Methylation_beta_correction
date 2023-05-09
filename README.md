@@ -10,7 +10,7 @@
 
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data; 
-Rscript ../../scripts/get_data_to_analyse/preprocessing data.r -d ./workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -s TRUE -v 20; 
+Rscript ../../scripts/get_data_to_analyse/preprocessing data.r -s TRUE-B ./workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20; 
 ```
 
 2. Calculate the corrected values and regression parameters from the training data (it need 21 mins)
@@ -192,4 +192,11 @@ design_type <- list(
 )
 
 saveRDS(design_type, file="designType_list.RData")
+```
+
+2. Creating training and validation datasets for each infinium method
+
+```bash
+cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/infinium_splitted;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ../workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20 -d TRUE -D ../designType_list.RData;
 ```
