@@ -171,6 +171,8 @@ Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/estimat
 
 ### Checking the effect of the beta estimation method (infinium I and II)
 
+I HAVE CHANGED THE DIRECTORIES, ADAPT THE COMMANDS
+
 1. Transforming the data into an R object
 
 ```R
@@ -199,4 +201,42 @@ saveRDS(design_type, file="designType_list.RData")
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/infinium_splitted;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ../workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20 -d TRUE -D ../designType_list.RData;
+```
+
+3. Determining population regressions
+
+```bash
+cd ~/Methylation/adjustBetas/03_infinium/pop_regs;
+
+#Creating refernce regression datasets for each infinium type
+for inf in ../original_data/infinium_splitted/betas_training_*; 
+    do Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ${inf} -p ../original_data/infinium_splitted/purity_training.RData -o $(echo ${inf} | cut -d \/ -f 4 | sed 's/.RData//'); 
+    done
+
+#Creating different directories for the created output files and moving the files
+mkdir infinium_I;
+mkdir infinium_II;
+
+mv betas_training_Ioutput_* ./infinium_I/;
+mv betas_training_IIoutput_* ./infinium_II/;
+```
+
+
+4. Predicting purity
+```bash
+cd ~/Methylation/adjustBetas/03_infinium/output;
+
+#Predicting from infinium I CpGs (correction + smoothening)
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_I -b ../original_data/infinium_splitted/betas_validation_I.RData -o corr_smooth_infI_5000CpG;
+
+#Predicting from infinium II CpGs (correction + smoothening)
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_II -b ../original_data/infinium_splitted/betas_validation_II.RData -o corr_smooth_infII_5000CpG;
+```
+
+5. Creating plots per ecah infinium type
+```bash
+cd ~/Methylation/adjustBetas/03_infinium/plots;
+
+#Producing plots for infinium I
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_infI_5000CpG.RData -a ../original_data/infinium_splitted/purity_validation.RData -o 5k_corr_smooth_infI;
 ```
