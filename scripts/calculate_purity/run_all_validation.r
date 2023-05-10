@@ -165,8 +165,7 @@ argument_list <- list(
 
   make_option(c("-l", "--output_location"), type="character", default="./",
               help="The name of the location output R object containing the predicted values must be entered here. Default [%default]",
-              metavar="[path_to_directory]")  
-
+              metavar="[path_to_directory]")
 )
 
 #Parsing arguments

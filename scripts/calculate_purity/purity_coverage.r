@@ -1,6 +1,9 @@
 #!/usr/bin/Rscript
 
-purity_value_per_sample <- function(pred_purity_confidence,interval_threshold,min_endpoint=0, max_endpoint=1) {
+purity_value_per_sample <- function(pred_purity_confidence,
+                                    interval_threshold,
+                                    min_endpoint=0, 
+                                    max_endpoint=1) {
   
   #Creating a list to store the output
   output_list = list()
@@ -35,9 +38,9 @@ purity_value_per_sample <- function(pred_purity_confidence,interval_threshold,mi
 
   }
 
-  uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
-                   y=unname(coverage_per_section),
-                   n=40)
+  #uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
+  #                 y=unname(coverage_per_section),
+  #                 n=40)
 
   #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
   coverage_per_section <- setNames(residuals(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section)))),names(coverage_per_section))
@@ -126,7 +129,7 @@ interval_list <- Filter(function(interval) {
   output_list[["interval(s)"]] <- interval_list
 
   #Uncomment the following command to get to append the original coverage plot to be plotted
-  output_list[["Coverage_plot"]] <- uncor_smooth
+  #output_list[["Coverage_plot"]] <- uncor_smooth
 
   #The maximum coverage interval list will be returned
   return(output_list)
