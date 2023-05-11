@@ -156,17 +156,27 @@ nohup Rscript ../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/
 cd /home/Illumina/Iñaki_Sasiain/estimate_purities;
 nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o estimated_purity_450kCpG &;
 
-#Using more strict thresholds
+#Using more strict thresholds (worse performance)
 cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
 nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s1_estimated_purity_450kCpG -a 0.5 -r 0.4 -s 0.5 -p 5 &;
 
+#Running it without filtering based on RSE and slope
+cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.6 -r 100000 -s 0 -p 5 &;
+
 ```
+
 
 4. Plotting results;
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/;
+#Using the same thresholds than in the first step
+cd /home/Illumina/Iñaki_Sasiain/analyse_output;
 Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr;
+
+#Using more strict thresholds
+cd /home/Illumina/Iñaki_Sasiain/analyse_output;
+Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/s1_estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr -o s1_result_analysis;
 ```
 
 ### Checking the effect of the beta estimation method (infinium I and II)
@@ -227,7 +237,7 @@ mv betas_training_IIoutput_* ./infinium_II/;
 cd ~/Methylation/adjustBetas/03_infinium/output;
 
 #Predicting from infinium I CpGs (correction + smoothening)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_I -b ../original_data/infinium_splitted/betas_validation_I.RData -o corr_smooth_infI_5000CpG;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_I -b ../original_data/infinium_splitted/betas_validation_I.RData -o corr_smooth_infI_5000CpG ;
 
 #Predicting from infinium II CpGs (correction + smoothening)
 Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_II -b ../original_data/infinium_splitted/betas_validation_II.RData -o corr_smooth_infII_5000CpG;
@@ -239,4 +249,7 @@ cd ~/Methylation/adjustBetas/03_infinium/plots;
 
 #Producing plots for infinium I
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_infI_5000CpG.RData -a ../original_data/infinium_splitted/purity_validation.RData -o 5k_corr_smooth_infI;
+
+#Producing plots for infinium II
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_infII_5000CpG.RData -a ../original_data/infinium_splitted/purity_validation.RData -o 5k_corr_smooth_infII;
 ```
