@@ -30,9 +30,9 @@ purity_value_per_sample <- function(pred_purity_confidence,
     #Check if the sections of the 0-1 purity interval are covered in each interval and determine the coverage (how 
     #many times is each section includedin the intervals) per section
 
-  for (int in 1:nrow(pred_purity_confidence)) {
+  for (cpg in rownames(pred_purity_confidence)) {
 
-    pos <- as.character(seq(pred_purity_confidence[int,1], pred_purity_confidence[int,2], by=0.001))
+    pos <- as.character(seq(pred_purity_confidence[cpg,1], pred_purity_confidence[cpg,2], by=0.001))
     included_section <- names(coverage_per_section) %in% pos
     coverage_per_section[included_section] <- coverage_per_section[included_section] + 1
 
@@ -65,7 +65,7 @@ purity_value_per_sample <- function(pred_purity_confidence,
   # intercept of the regerssion used to correct the data will be set to 0 when
   # the 1-P is predicted to be 0 and the 1-P recalculated based on that.
 
-  if (sections[which(smoothed_coverage_values == max_ccov)] == 0) {
+  if (sections[which(smoothed_coverage_values == max_ccov)] <= 0.1) {
 
   #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
   corrected_coverage <- setNames(residuals(lm( unname(coverage_per_section)~ 0 + as.numeric(names(coverage_per_section)))),names(coverage_per_section))

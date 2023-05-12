@@ -72,6 +72,6 @@ predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slop
         one_minus_purity[2] <- min(1, one_minus_purity[2])
     }   
     
-    #Returning the 1-purity value and the identified population
+    #Returning the 1-purity vector
     return(one_minus_purity)
 }

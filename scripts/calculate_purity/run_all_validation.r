@@ -241,39 +241,51 @@ progress <- function(n) setTxtProgressBar(p_bar, n)
 opts <- list(progress = progress)
 
 # Running the sourced functions in parallel for each sample. The execution level will be followed through a progress bar
-list_of_predicted_intervals <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %dopar% {
+out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %dopar% {
 
-  # Defining an empty dataframe to add the all the 1-Purity predicted intervals for all the CpGs of a sample
-  interval_df <- data.frame()
+  # Defining an empty matrix with the cpg ids as rownames to add the all the 1-Purity predicted intervals for all 
+  # the CpGs of a sample
+  interval_mat <- matrix(ncol=2, nrow=length(rownames(unadj_validation)))
+  rownames(interval_mat) <- rownames(unadj_validation)
+  
 
-  # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_df
+  # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_mat
   for (cpg in rownames(unadj_validation)) {
-    interval_df <- rbind(interval_df, predicting_purity(beta=unadj_validation[cpg, s],
-                                                        slopes=my_slopes[cpg, ],
-                                                        intercepts=my_intercepts[cpg, ],
-                                                        RSE=my_RSE[cpg, ],
-                                                        degrees_of_freedom=my_df[cpg, ],
-                                                        slope_threshold=arguments$min_slope,
-                                                        RSE_threshold=arguments$max_RSE,
-                                                        alpha=arguments$alpha
-                                                        ))
+    interval_mat[cpg,] <- predicting_purity(beta=unadj_validation[cpg, s],
+                                            slopes=my_slopes[cpg, ],
+                                            intercepts=my_intercepts[cpg, ],
+                                            RSE=my_RSE[cpg, ],
+                                            degrees_of_freedom=my_df[cpg, ],
+                                            slope_threshold=arguments$min_slope,
+                                            RSE_threshold=arguments$max_RSE,
+                                            alpha=arguments$alpha)
   }
 
   # Calculate the 1-Purity estimate and interval for the sample analysed.
   # The results with be shown in list named with the sample id
-  list(name = s, value = purity_value_per_sample(pred_purity_confidence=interval_df,
-                                                 interval_threshold=arguments$percentage_to_interval))
+  list(name = s, 
+       value = purity_value_per_sample(
+                      pred_purity_confidence=interval_mat,
+                      interval_threshold=arguments$percentage_to_interval),
+        cpgs = rownames(na.omit(interval_mat))
+       )
 }
 
 # Stop the defined clusters
 stopCluster(cl)
 
+
 # Append the list defined for each sample to the list containing the predicted values for all the samples.
 # The sample id is used to identify each element of the list
-list_of_predicted_intervals <- setNames(lapply(list_of_predicted_intervals, function(x) x$value), sapply(list_of_predicted_intervals, function(x) x$name))
+list_of_predicted_intervals <- setNames(lapply(out_list, function(x) x$value), sapply(out_list, function(x) x$name))
+list_of_used_cpgs <- setNames(sapply(out_list, function(x) x$cpgs), sapply(out_list, function(x) x$name))
 
 # Save the list of predicted values as an R object
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
+
+# Save the list containing the cpgs used to estimate each purity value
+saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$output_filename, ".used_cpgs.RData", sep=""))
+
 
 #Print message to show the end of the execution
 cat("\n\n**********************\n")
