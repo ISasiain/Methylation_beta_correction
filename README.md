@@ -160,9 +160,9 @@ nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regre
 cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
 nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s1_estimated_purity_450kCpG -a 0.5 -r 0.4 -s 0.5 -p 5 &;
 
-#Running it without filtering based on RSE and slope
+#Running it without filtering based on RSE and slope.
 cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
-nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.6 -r 100000 -s 0.2 -p 5 &;
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5; &;
 
 ```
 
