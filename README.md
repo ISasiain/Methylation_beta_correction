@@ -22,17 +22,17 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_
 
 3. Use the regression parameters determined from the training data to estimate purities from validation data (it needs 2 mins)
 
+The smoothening and the correction of the correction has also been included
+
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/output;
 
 #Calculating the results with the correction method
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5;
 
 #Calulating the results without the correction method (The line that corrects the coverage was commented; line 45 of purity_coverage.r)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5; NOT REPEATED
 
-#Calculate the results with the correction method and smoothening the coverage line (THe run_all_validation script was changed to do so adding some lines; 46,47 and 48 and detremining the amx and the intervalk from there)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_smooth_estimated_purity_5000CpG;
 ```
 4. Analyse output data to produce plots. 
 
@@ -40,7 +40,7 @@ Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regre
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
 
 #The corrected data
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_corr;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -c ../output/corr_estimated_purity_5000CpG.used_cpgs.RData  -b ../original_data/betas_validation.RData  -o 5k_corr;
 
 #The uncorrected data
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_uncorr;
@@ -162,7 +162,7 @@ nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regre
 
 #Running it without filtering based on RSE and slope
 cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
-nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.6 -r 100000 -s 0 -p 5 &;
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.6 -r 100000 -s 0.2 -p 5 &;
 
 ```
 
@@ -237,10 +237,10 @@ mv betas_training_IIoutput_* ./infinium_II/;
 cd ~/Methylation/adjustBetas/03_infinium/output;
 
 #Predicting from infinium I CpGs (correction + smoothening)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_I -b ../original_data/infinium_splitted/betas_validation_I.RData -o corr_smooth_infI_5000CpG ;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_I -b ../original_data/infinium_splitted/betas_validation_I.RData -o corr_smooth_infI_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5;
 
 #Predicting from infinium II CpGs (correction + smoothening)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_II -b ../original_data/infinium_splitted/betas_validation_II.RData -o corr_smooth_infII_5000CpG;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regs/infinium_II -b ../original_data/infinium_splitted/betas_validation_II.RData -o corr_smooth_infII_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5;
 ```
 
 5. Creating plots per ecah infinium type
