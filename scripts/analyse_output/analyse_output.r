@@ -12,6 +12,11 @@ if(!requireNamespace("ggplot2", quietly = TRUE)) {
 
 library(ggplot2)
 
+if(!requireNamespace("reshape2", quietly = TRUE)) {
+  install.packages("reshape2") }
+
+library(reshape2)
+
 if(!requireNamespace("optparse", quietly = TRUE)) {
   install.packages("optparse") }
 
@@ -26,6 +31,14 @@ argument_list <- list(
   make_option(c("-e", "--path_to_estimated_1-P"), type="character",  
               help="The user must especify the path of the R object containing the estimated 1-Pur values",
               metavar = "[path]"),
+
+  make_option(c("-c", "--path_to_cpgs_used_per_sample"), type="character",  
+              help="The user must especify the path of the R object containing the cpgs used to estimate purity per sample",
+              metavar = "[path]"),
+
+  make_option(c("-b", "--path_to_original_betas"), type="character",
+              help="The user must especify the path of the R object containing the original betas used to estimate purity per sample",
+              metavar="[path]"),
 
   make_option(c("-a", "--path_to_actual_1-P"), type="character",
               help="The user must especify the path of the R object containing the actual 1-Pur values",
@@ -42,9 +55,11 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
                                     description="This program produces plots to analyse the performance of the purity prediction algorithm."))
 
 
-#Loading the estimated and actual purities
+#Loading the estimated and actual purities and the cpgs used
 out_ls <- readRDS(arguments$"path_to_estimated_1-P")
 purity_validation <- readRDS(arguments$"path_to_actual_1-P")
+cpgs_ls <- readRDS(arguments$"path_to_cpgs_used_per_sample")
+original_betas <- readRDS(arguments$"path_to_original_betas")
 
 #Adding this to adapt the sample names
 #names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
@@ -244,3 +259,97 @@ ggplot(out_df, aes(x=out_df$Dis_to_est*100)) +
         panel.grid.minor = element_blank())
 
 ggsave(paste(arguments$output_prefix, "error.cum_densityplot.png",sep="."))
+
+## COMPUTING PARAMETERS TO ANALYSE THE USAGE OG CPGS TO ESTIMATE PURITY
+
+all_the_cpgs <- row.names(original_betas)
+all_the_samples <- names(cpgs_ls)
+
+matrix_to_heatmap <- matrix(ncol = length(all_the_cpgs), nrow = length(all_the_samples))
+colnames(matrix_to_heatmap) <- all_the_cpgs
+rownames(matrix_to_heatmap) <- all_the_samples
+
+# Filling the matrix
+for (sample in all_the_samples) {
+  for (cpg in all_the_cpgs) {
+    if (cpg %in% cpgs_ls[[sample]]) {
+      matrix_to_heatmap[sample, cpg] <- TRUE
+    } else {
+      matrix_to_heatmap[sample, cpg] <- FALSE
+    }
+  }
+}
+
+
+## PLOT THE PERCENTAGE OF TIMES IN WHICH EACH CPG IS INCLUDED
+cpg_counts_df <- data.frame(
+  TRUES = colSums(matrix_to_heatmap),
+  FALSES = colSums(!matrix_to_heatmap),
+  per_TRUES = colSums(matrix_to_heatmap)/nrow(matrix_to_heatmap),
+  per_FALSES = colSums(!matrix_to_heatmap)/nrow(matrix_to_heatmap)
+)
+
+#Sorting the cpg dataframe based on the number of samples in which each cpg is included
+cpg_counts_df <- cpg_counts_df[order(cpg_counts_df$TRUES, decreasing=TRUE),]
+
+ggplot(cpg_counts_df, aes(x=per_TRUES)) +
+  geom_histogram(binwidth=0.0025, color="black", fill="red") +
+  ggtitle("Usage of CpGs for the prediction") +
+  xlab("% of samples in which each CpGs are included") +
+  ylab("CpGs") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
+
+ggsave(paste(arguments$output_prefix, "prop_cpgs_included.png",sep="."))
+
+
+## HISTOGRAM OF THE CPGS USED TO ESTIMATE SAMPLE PURITY
+
+#Creating and sorting the vector
+num_cpgs <- sapply(cpgs_ls, length)
+num_cpgs <- num_cpgs[order(num_cpgs, decreasing=TRUE)]
+
+df_to_hist <- data.frame()
+df_to_hist <- cbind(num_cpgs)
+colnames(df_to_hist) <- c("num_of_cpgs")
+
+ggplot(data.frame(df_to_hist), aes(x=num_cpgs)) +
+  geom_histogram(binwidth=50, color="black", fill="red") +
+  ggtitle("CpGs used to each sample's purity") +
+  xlab("Number of CpGs used to estimate purity") +
+  ylab("Number of samples") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
+
+ggsave(paste(arguments$output_prefix, "num_cpg_per_sample.png",sep="."))
+
+## PLOTTING HEATMAP OF THE CPGS USED IN EACH SAMPLE
+
+#Sorting matrix_to_heatmap
+matrix_to_heatmap <- matrix_to_heatmap[names(num_cpgs),rownames(cpg_counts_df)]
+
+# Transforming the format of the matrix
+df_to_heatmap <- melt(matrix_to_heatmap)
+
+# Define custom color scale
+custom_colors <- c("red", "green")
+custom_breaks <- c(TRUE, FALSE)
+custom_labels <- c("Not included", "Included")
+
+# Plotting the heat map
+heatmap_plot <- ggplot(df_to_heatmap, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() +
+  scale_fill_manual(values = custom_colors,
+                    breaks = custom_breaks,
+                    labels = custom_labels) +
+  labs(x = "CpGs", y = "Samples", title = "CpGs included per sample")
+
+ggsave(paste(arguments$output_prefix, "heatmap_cpg_per_sample.png",sep="."), width = 10, height = 30, limitsize=FALSE)
