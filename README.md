@@ -162,8 +162,7 @@ nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regre
 
 #Running it without filtering based on RSE and slope.
 cd /home/Illumina/Iñaki_Sasiain/estimate_purity;
-nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 25 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5; &;
-
+nohup Rscript ../scripts/calculate_purity/run_all_validation.r -c 30 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5 &;
 ```
 
 
@@ -252,4 +251,14 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 
 #Producing plots for infinium II
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_infII_5000CpG.RData -a ../original_data/infinium_splitted/purity_validation.RData -o 5k_corr_smooth_infII;
+```
+
+### Estimating purity using different number of CpGs based on variability
+
+1. Generating beta datasets with the 100, 250, 500, 1.000, 2.500, 5.000, 10.000, 50.000 and 100.000 most variable CpGs
+
+```bash
+cd ~/Methylation/adjustBetas/04_CpG_nums/original_data;
+
+Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ../../01_5000_CpG/original_data/workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20 -N TRUE -n 100
 ```
