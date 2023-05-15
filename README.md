@@ -253,12 +253,30 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_infII_5000CpG.RData -a ../original_data/infinium_splitted/purity_validation.RData -o 5k_corr_smooth_infII;
 ```
 
-### Estimating purity using different number of CpGs based on variability
+### Estimating purity using different number of CpGs based on variability (Run in Corsaire)
 
-1. Generating beta datasets with the 100, 250, 500, 1.000, 2.500, 5.000, 10.000, 50.000 and 100.000 most variable CpGs
+1. Generating beta datasets with the 100, 250, 500, 1.000, 2.500, 5.000, 10.000, 50.000 and 100.000 most variable CpGs. The sexual chromosomes will be ignored
 
 ```bash
-cd ~/Methylation/adjustBetas/04_CpG_nums/original_data;
+cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data;
 
-Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ../../01_5000_CpG/original_data/workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20 -N TRUE -n 100
+#Determining training and validation datasets for thw following number of cpgs
+cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+for num in ${cpg_list[@]}; 
+    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
+    cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
+    Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n ${num};
+    done;
+```
+
+2. Determining the regression for each beta dataset
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
+for num in ${cpg_list[@]}; 
+    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
+    cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
+    Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
+    done;
+
 ```
