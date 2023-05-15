@@ -88,7 +88,15 @@ argument_list <- list(
 
   make_option(c("-D", "--path_to_design_list"), type="character",
               help="The path to the r object containing a list with the CpGs quantified with each infinium method.",
-              metavar="[path]")          
+              metavar="[path]"),
+
+  make_option(c("-N", "--get_only_CpGs_with_highest_variance"), type="logical", default=FALSE,
+              help="This argument should be sent to true if the user wants to get only the betas of the CpGs with the highest variance",
+              metavar="[TRUE/FALSE]"),
+
+  make_option(c("-n", "--number_of_most_variable_CpGs_to_include"), type="numeric",
+              help="The number of the most variant CpGs to be included in the output should be included here",
+              metavar="[number]")       
 
 )
 
@@ -120,12 +128,11 @@ if (arguments$in_same_object) {
 betas <- get(arguments$betas)
 purities <- get(arguments$purity)
 
-
 # ======================================
 # FILTERING CpGs FROM SEXUAL CHROMOSOMES
 # ======================================
 
-#If the user has selected to filter sexual chromosomes the following code will be run
+# If the user has selected to filter sexual chromosomes the following code will be run
 if (arguments$filter_non_autosomes) {
   
   cat("\n\nFiltering CpGs from sexual chromosomes...\n")
@@ -144,6 +151,32 @@ if (arguments$filter_non_autosomes) {
   betas <- betas[included_CpGs,]
 
 }
+
+
+# =================================
+# GETTING MOST VARIABLE CHROMOSOMES
+# =================================
+
+# If the user has selected to get only the most variable CpGs the following code will be run
+if(arguments$get_only_CpGs_with_highest_variance) {
+
+  # Detemine the variance of all the rows (CpGs)
+  cpgs_variance <- apply(
+                        betas,
+                        MARGIN=1,
+                        FUN=var
+                   )
+
+  # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
+  sorting_vec <- order(cpgs_variance)[1:arguments$number_of_most_variable_CpGs_to_include]
+
+  # Sorting the betas dataframe and getting only the number of CpGs selected
+  betas <- betas[sorting_vec,]
+
+  print(nrow(betas))
+
+}
+
 
 # ===================================================
 # DIVIDING DATASET IN FUNCTION OF THE INFINIUM METHOD
