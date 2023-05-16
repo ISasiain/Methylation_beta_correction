@@ -147,6 +147,8 @@ lapply(names(result_list), function(n) {
   df_to_RObj(result_list[[n]],filename=paste(arguments$output, out_prefix,"_",n,".RData",sep=""))
 })
 
+stopCluster(cl)
+
 #cat("\n=================\n")
 #cat ("PROCESS FINISHED")
 #cat("\n=================\n")
