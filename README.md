@@ -258,13 +258,13 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 1. Generating beta datasets with the 100, 250, 500, 1.000, 2.500, 5.000, 10.000, 50.000 and 100.000 most variable CpGs. The sexual chromosomes will be ignored
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data;
+cd ~/Iñaki_Sasiain/04_CpG_nums/data;
 
 #Determining training and validation datasets for thw following number of cpgs
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 for num in ${cpg_list[@]}; 
-    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
-    cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
+    do mkdir ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
+    cd ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
     Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n ${num};
     done;
 ```
@@ -272,11 +272,27 @@ for num in ${cpg_list[@]};
 2. Determining the regression for each beta dataset
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
+cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
+cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 for num in ${cpg_list[@]}; 
     do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
-    cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
-    Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p /home/Illumina/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
+    cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
+    Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
     done;
 
 ```
+
+3. Estimate purity for each beta dataset
+
+```bash
+cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
+cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+    for num in ${cpg_list[@]};
+        do mkdir ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
+        cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
+        Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../calculate_regressions/cpgs_${num} -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num}.corr.smooth -a 0.75 -r 0.6 -s 0.25 -p 5;
+        done;
+
+```
+
+4. Determine graphs for each dataset
