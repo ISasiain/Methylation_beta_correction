@@ -1,10 +1,77 @@
 #!/usr/bin/Rscript
 
-# ***************************************************
-# *****           preprocessing_data.r          *****
-# ***************************************************
+## -SCRIPT'S NAME: preprocessing_data.r
+#
+## - DESCRIPTION: 
+#
+#   This script preprocesses methylation beta values of different samples, allowing to split
+# the data in training and validation datasets, filter cpgs from sexual chromosomes, split
+# the cpgs based on the infinium design and get only the number of the most variable cpgs.
+# 
+## - USED R PACKAGES:
+#
+#   *OPTPARSE. Parsing command line arguments
+#   *CATOOLS. Splitting dataset in training and validation
+#
+## - USER DEFINED FUNCTIONS:
+#   
+#   None
+#
+## - PROCEDURE:
+#
+#   1. Installing (if necessary) and loading packages and configuring command line arguments.
+#
+#   2. Loading the data. A single R object will be loaded if the betas and purities are stored
+#      in the same R object, if they weren't, the two R objects would be loaded independently.
+# 
+#   3. Filter cpgs from sexual chromosomes if the user had selected to do so. Only the cpgs not 
+#      belonging to ChrX or ChrY will be kept in the dataframe.
+#
+#   4. Keepeing the specified number of most variable cpgs if the user had selected to do so. The
+#      remaining cpgs will be deleted from the dataframe.
+#
+#   5. Dividing dataset in function of the infinium design if the user has selected to do so. The
+#      dataframe containing the beta values will be splitted in two, one for each infinium design.
+#
+#   6. Creating training and validation datasets based on the specified proportion if the user has
+#      selected to do so. If the beta dataset had previously been splitted regarding the infinium 
+#      design one training and validation dataset will be generated for each infinium type.
+#
+#   7. Saving filtered and splitted datasets as R objects. The number of produced files will depend
+#      on the times in which the beta values have been splitted (infinium design and 
+#      training/validation).
+#
+## - INPUT FILES:
+#
+#
+#
+## - OUTPUT FILES:
+#
+#
+#
+## - USAGE:
+#
+#     The script must be run on the command line using the following flags. 
+#
+#     """
+#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -b [path_to_betas] 
+#     -p [path_to_puritied] -o [path_to_save_output_files] -n [prefix_output_files]
+#     """
+#     
+#     *The function of the command line options are the following; 
+#
+#       -c: Number of cores to be used to run the program. Default: 1.
+#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
+#       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
+#       -n: The prefix to be used to name the output files. Default: output.
+#
+## - VERSION: 1.0
+#
+## - DATE: 17/05/2023
+#
+## - AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
 
-# Author: Iñaki Sasiain
 
 
 
