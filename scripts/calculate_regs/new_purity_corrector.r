@@ -1,14 +1,90 @@
 #!/usr/bin/Rscript
 
-#####======================================================================#####
-###    Methylation beta value corrector based on the actual sample purity    ###
-#####======================================================================#####
+#!/usr/bin/Rscript
 
-##Author: Mattias Aine  (mattias.aine@med.lu.se)
-##Adapted by: Iñaki Sasiain
-##Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
-
-
+## -SCRIPT'S NAME: new_purity_corrector.r
+#
+## - DESCRIPTION: 
+#
+#   This script correct purities and generates the corrected data and the parameters
+# of the regressions used for the correction.
+# 
+## - USED R PACKAGES:
+#
+#   *OPTPARSE. Parsing command line arguments
+#   *DOPARALLEL. Parallelizing execution
+#   *PARALLEL. Parallelizing script
+#
+## - USER DEFINED FUNCTIONS:
+#   
+#   *adjustBeta(). This function corrects beta values based on the sample purity generating
+#    corrected betas for the actual cancer cells and the tumor microenvironment. It also outputs
+#    the parameters of the regressions used for the correction
+#
+## - PROCEDURE:
+#
+#   1. Installing (if necessary) and loading packages, configuring command line arguments and sourcing 
+#      user defined functions.
+#
+#   2. Configuring parallelization.
+#
+#   3. Loading the data, adding the seed to run the analysis with and running the adjustBeta() function
+#      per each CpG using a parallelized apply function.
+#
+#   4. Adding the produced results to a result list.
+#
+#   5. Saving each element of the result list as an independent R object.
+#
+## - INPUT FILES:
+#
+#    -> Dataframe stored as an R object containig the original beta values of the cpgs and samples
+#       to be corrected.
+#
+#    -> Named vector stored as an R object containing the purity values of the samples used for the analysis
+#
+#
+## - OUTPUT FILES:
+#
+#    -> R object file containinga dataframe with the original beta values
+#
+#    -> R object file containing a dataframe with the corrected tumor beta values
+#
+#    -> R object file containing a dataframe with the corrected microenvironment beta values
+#
+#    -> R object file containing a dataframe with the slopes of the regressions used for the beta correction
+#
+#    -> R object containing a dataframe with the intercepts of the regressions used for the beta correction.
+#
+#    -> R object containing a dataframe with the Residual Standard Error of the regressions used for the beta correction.
+#
+#    -> R object containing a dataframe with the degrees of freedom of the regressions used for the beta correction.
+#
+#    -> R object containing a dataframe with the methylation patterns (populations) detected during the correction.
+#
+## - USAGE:
+#
+#     The script must be run on the command line using the following flags. 
+#
+#     """
+#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -b [path_to_betas] 
+#     -p [path_to_puritied] -o [path_to_save_output_files] -n [prefix_output_files]
+#     """
+#     
+#     *The function of the command line options are the following; 
+#
+#       -c: Number of cores to be used to run the program. Default: 1.
+#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
+#       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
+#       -n: The prefix to be used to name the output files. Default: output.
+#
+## - VERSION: 1.0
+#
+## - DATE: 17/05/2023
+#
+##AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
+##ADAPTED BY: Iñaki Sasiain
+##AFFILIATION: Johan Staaf lab @ Lund University / Oncology & Pathology
 
 # =============================
 # LOADING THE REQUIRED PACKAGES
@@ -50,7 +126,7 @@ argument_list <- list(
               metavar = "[file path]"),
 
   make_option(c("-o", "--output"), type="character", default="./",
-              help="The path to the location where the output file will be saved must be entered here. The output is an R object. Default [%default]",
+              help="The path to the location where the output files will be saved must be entered here. The output is an R object. Default [%default]",
               metavar = "[file path]"),
 
   make_option(c("-n", "--output_name"), type="character", default="output",
@@ -64,9 +140,9 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 
 
 
-# =============================
-# SOURCING THE FUNCTION
-# =============================
+# =====================================
+#   SOURCING THE CORRECT BETAS FUNCTION
+# =====================================
 
 dir <- commandArgs()[4]
 dir <- gsub("--file=", "", dir)
@@ -88,7 +164,6 @@ registerDoParallel(cl)
 #to avoid proning anything in the terminal
 
 invisible(clusterEvalQ(cl, {library("flexmix")}))
-
 
 
 # =============================================
@@ -117,6 +192,7 @@ res <- parRapply(cl = cl, #ClusterS to run the process
 # CREATING RESULT LIST
 # ====================
 
+# Creating a list to add the results
 result_list <- list(
 
   betas.original = do.call("rbind",lapply(res,function(x) x$y.orig)), #Original beta values
@@ -134,19 +210,17 @@ result_list <- list(
 # CREATING OUTPUT FILES
 # =====================
 
-##Creating a prefix for the output files
-out_prefix <- arguments$output_name
-
-#Defining a function to export the dataframes as csv files
+#Defining a function to store the elements of the result list to RData files
 df_to_RObj <- function(df, filename) {
   saveRDS(df, filename)
 }
 
 #Creating output files per each dataframe of the output_list list
 lapply(names(result_list), function(n) {
-  df_to_RObj(result_list[[n]],filename=paste(arguments$output, out_prefix,"_",n,".RData",sep=""))
+  df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
 })
 
+# Stop clusters used in parallelization
 stopCluster(cl)
 
 #cat("\n=================\n")
