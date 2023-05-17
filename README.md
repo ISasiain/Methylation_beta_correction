@@ -260,8 +260,11 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/data;
 
-#Determining training and validation datasets for thw following number of cpgs
+# Defining cpg number list
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+
+# Creating the training (80 %) and validation (20 %) datasets through a bash loop.
+# The cpgs belonging to sexual chromosomes have been excluded
 for num in ${cpg_list[@]}; 
     do mkdir ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
@@ -273,20 +276,28 @@ for num in ${cpg_list[@]};
 
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
+
+# Defining cpg number list
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+
+#Calculating regressions for each cpg number using a bash loop
 for num in ${cpg_list[@]}; 
-    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
+    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_$  {num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
         Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
     done;
 
 ```
 
-3. Estimate purity for each beta dataset
+3. Estimating purity for each beta dataset
 
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
+
+# Defining cpg number list
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+
+#Estimating purity for each cpg number through a bash loop
 for num in ${cpg_list[@]};
     do mkdir ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
@@ -298,13 +309,15 @@ for num in ${cpg_list[@]};
 4. Producing plots for each dataset
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/plots;
+
+# Defining cpg number list
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 
-# IMPORTANT! Line 65 of analyse_output.r has been uncommented to adapt the sample 3 # name
-
+# Producing plots for each cpg number through loop
 for num in ${cpg_list[@]};
     do mkdir ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
+        # IMPORTANT! Line 65 of analyse_output.r has been uncommented to adapt the sample 3 # name
         Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.RData -a ../../data/cpgs_${num}/purity_validation.RData -c ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.used_cpgs.RData -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num};
     done;
 
