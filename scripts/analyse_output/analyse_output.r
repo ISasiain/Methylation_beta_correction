@@ -376,7 +376,7 @@ ggsave(paste(arguments$output_prefix, "Dis_vs_es1-P.scatterplot.png",sep="."))
 
 ## ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
-ggplot(out_df, aes(x=out_df$Dis_to_est*100)) +
+ggplot(out_df, aes(x=Dis_to_est*100)) +
   geom_density(alpha=0.5, fill="red") +
   ggtitle("Distribution of the deviation") +
   xlab("% Deviation") +
@@ -393,7 +393,7 @@ ggsave(paste(arguments$output_prefix, "error.densityplot.png",sep="."))
 
 ## CUMULAIVE ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
-ggplot(out_df, aes(x=out_df$Dis_to_est*100)) +
+ggplot(out_df, aes(x=Dis_to_est*100)) +
   stat_ecdf(color="red", size=2) +
   ggtitle("Cumulative distribution of the deviation") +
   xlab("% Deviation") +
