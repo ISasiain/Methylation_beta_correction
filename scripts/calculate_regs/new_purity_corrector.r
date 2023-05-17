@@ -1,7 +1,5 @@
 #!/usr/bin/Rscript
 
-#!/usr/bin/Rscript
-
 ## -SCRIPT'S NAME: new_purity_corrector.r
 #
 ## - DESCRIPTION: 
