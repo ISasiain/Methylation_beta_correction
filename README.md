@@ -264,8 +264,8 @@ cd ~/Iñaki_Sasiain/04_CpG_nums/data;
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 for num in ${cpg_list[@]}; 
     do mkdir ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
-    cd ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
-    Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n ${num};
+        cd ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num};
+        Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -p purityVector -S TRUE -v 20 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n ${num};
     done;
 ```
 
@@ -276,8 +276,8 @@ cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 for num in ${cpg_list[@]}; 
     do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
-    cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
-    Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
+        cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
+        Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
     done;
 
 ```
@@ -287,12 +287,25 @@ for num in ${cpg_list[@]};
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
 cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
-    for num in ${cpg_list[@]};
-        do mkdir ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
+for num in ${cpg_list[@]};
+    do mkdir ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity/cpgs_${num};
         Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../calculate_regressions/cpgs_${num} -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num}.corr.smooth -a 0.75 -r 0.6 -s 0.25 -p 5;
-        done;
+    done;
 
 ```
 
-4. Determine graphs for each dataset
+4. Producing plots for each dataset
+```bash
+cd ~/Iñaki_Sasiain/04_CpG_nums/plots;
+cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+
+# IMPORTANT! Line 65 of analyse_output.r has been uncommented to adapt the sample 3 # name
+
+for num in ${cpg_list[@]};
+    do mkdir ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
+        cd ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
+        Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.RData -a ../../data/cpgs_${num}/purity_validation.RData -c ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.used_cpgs.RData -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num};
+    done;
+
+```
