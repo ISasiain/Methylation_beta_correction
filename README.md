@@ -317,7 +317,7 @@ cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
 for num in ${cpg_list[@]};
     do mkdir ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/plots/cpgs_${num};
-        # IMPORTANT! Line 65 of analyse_output.r has been uncommented to adapt the sample 3 # name
+        # IMPORTANT! Line 65 of analyse_output.r has been uncommented to adapt the sample name
         Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.RData -a ../../data/cpgs_${num}/purity_validation.RData -c ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.used_cpgs.RData -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num};
     done;
 
