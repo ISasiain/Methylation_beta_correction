@@ -80,9 +80,9 @@
 #
 ## - DATE: 17/05/2023
 #
-##AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
-##ADAPTED BY: Iñaki Sasiain
-##AFFILIATION: Johan Staaf lab @ Lund University / Oncology & Pathology
+## - AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
+## - ADAPTED BY: Iñaki Sasiain
+## - AFFILIATION: Johan Staaf lab @ Lund University / Oncology & Pathology
 
 # =============================
 # LOADING THE REQUIRED PACKAGES
