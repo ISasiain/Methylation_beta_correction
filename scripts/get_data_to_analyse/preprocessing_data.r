@@ -43,36 +43,82 @@
 #
 ## - INPUT FILES:
 #
+#     -> File stored as an R object containing the beta values used for the purity prediction. This
+#        file can be an independen .RData file or included in the same object than the purity values.
 #
+#     -> File stored as an R object containing the actual purity values of the predicted samples. This
+#        file can be an independen .RData file or included in the same object than the beta values.
+#
+#     -> If the option to filter sexual chromosomes has been activated an annotation file containing the
+#        chromosomes to which each cpg belong should be provided stored as an R object.
+#
+#     -> If the option to split the data based on the infinium technique has been activated an annotation 
+#        file containing the design used for the determination of the beta value of each cpg should be
+#        entered as an R object.
 #
 ## - OUTPUT FILES:
 #
+#    The number of output files will depend on the options chosen;
 #
+#     * If the user has not selected to split the data on training and validation datasets and in function 
+#       of the infinium design;
+#
+#       -> An R object file containing a dataframe with the betas of each sample and cpg.
+#       -> An R object file containing a named vector with the actual purity values of each sample.
+#
+#     * If the user has selected to split the data on training and validation datasets but not in function 
+#       of the infinium design;
+#
+#       -> Two R object files, training and validation, containing dataframe with the betas of ecah sample and cpg. 
+#       -> Two R object files, training and validation, containing named vectors with the actual purity values of each sample.
+#
+#     * If the user has selected not to split the data on training and validation datasets but splitting it in function 
+#       of the infinium design;
+#
+#       -> Two R object files, with cpgs determined using infiniumI and infiniumII, containing dataframe with the betas of ecah sample and cpg. 
+#       -> An R object file containing a named vector with the actual purity values of each sample.
+#
+#     * If the user has selected to split the data on training and validation datasets qnd also in function 
+#       of the infinium design;
+#
+#       -> Four R object files, training and validation with cpgs determined using infiniumI and infiniumII, containing dataframe with the betas
+#          of ecah sample and cpg. 
+#       -> Two R object files, training and validation, containing named vectors with the actual purity values of each sample.
 #
 ## - USAGE:
 #
 #     The script must be run on the command line using the following flags. 
 #
 #     """
-#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -b [path_to_betas] 
-#     -p [path_to_puritied] -o [path_to_save_output_files] -n [prefix_output_files]
+#     Rscript path_to_script/preprocessing_data.r -s [TRUE/FALSE] -B [path_to_betas] -P [path_to_purities] -b [betas_name] -p [purities_name]
+#     -S [TRUE/FALSE] -v [float/int] -o [path_to_output] -f [TRUE/FALSE] -a [path_to_annotation_file] -a [name_of_annotation_df] -c [chr_column_name]
+#     -d [TRUE/FALSE] -D [path_to_design_file] -N [TRUE/FALSE] -n [integer]
 #     """
 #     
 #     *The function of the command line options are the following; 
 #
-#       -c: Number of cores to be used to run the program. Default: 1.
-#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
-#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
-#       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
-#       -n: The prefix to be used to name the output files. Default: output.
+#       -a: The user must especify if the purity and betas are in the same R object.
+#       -B: The path to the R object with the data to process must be entered here. If the purities and betas are in different R object files the one containing the betas should be entered here
+#       -P: The path to the R object with the purities must be entered here. This should only be used if the purities and betas are in different R objects.
+#       -b: The name of the object that contains the beta values inside the R object must be entered here
+#       -p: The name of the object that contains the beta values inside the R object must be entered here
+#       -S: This argument must be entered to specify if the data has to be splitted to create training and validation datasets.
+#       -v: The percentage of the samples to be included in the validation data must be entered here. Default = 20 %.
+#       -o: The directory in which the output files will be stored can be. The default value is the current directory.
+#       -f: Set this argument to TRUE to filter CpGs from sexual chromosomes
+#       -A: Specify the name of the path containing the annotation file.
+#       -a: Specify the name of the dataframe containing the annotation information.
+#       -c: Select the name of column of the dataframe containig the information about the chromosomes.
+#       -d: If the user wants to split the data based on the infinium design (infinium I or II) this argument should be set to TRUE
+#       -D: he path to the r object containing a list with the CpGs quantified with each infinium method.
+#       -N: This argument should be sent to true if the user wants to get only the betas of the CpGs with the highest variance
+#       -n: The number of the most variant CpGs to be included in the output should be included here
 #
 ## - VERSION: 1.0
 #
-## - DATE: 17/05/2023
+## - DATE: 18/05/2023
 #
-## - AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
-
-
+## - AUTHOR: Iñaki Sasiain Casado
 
 
 # =============================
@@ -126,7 +172,7 @@ argument_list <- list(
               metavar = "[boolean]"),
 
   make_option(c("-v", "--percentage_to_validation"), type="double", default=20.0,
-              help="The percentage of the samples to be included in the validation data must be entered here.",
+              help="The percentage of the samples to be included in the validation data must be entered here. Default [%default]",
               metavar = "[number]"),
 
   make_option(c("-o", "--output_directory"), type = "character", default =".",
@@ -138,11 +184,11 @@ argument_list <- list(
               metavar="[TRUE/FALSE]"),
 
   make_option(c("-A", "--path_to_annotation"), type="character",
-              help="Select the name of the path containing the annotation file.",
+              help="Specify the name of the path containing the annotation file.",
               metavar="[path]"),
 
   make_option(c("-a", "--annotation_dataframe_name"), type="character",
-              help="Select the name of the dataframe containing the annotation information.",
+              help="Specify the name of the dataframe containing the annotation information.",
               metavar="[variable name]"),
 
   make_option(c("-c", "--column_chromosomes"), type="character",
@@ -150,7 +196,7 @@ argument_list <- list(
               metavar="[column name]"),
 
   make_option(c("-d", "--split_based_on_design"), type="logical", default=FALSE,
-              help="If the user want to split the data based on the beta value detremination methods (infinium I or II) this argument should be set to TRUE)",
+              help="If the user wants to split the data based on the beta value detremination methods (infinium I or II) this argument should be set to TRUE",
               metavar="[TRUE/FALSE]"),
 
   make_option(c("-D", "--path_to_design_list"), type="character",
