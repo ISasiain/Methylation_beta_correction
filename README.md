@@ -322,3 +322,21 @@ for num in ${cpg_list[@]};
     done;
 
 ```
+
+### Estimating purity only with the CpGs used in all the sample's estimation (Corsaire 450k)
+
+1. Copying original data and the regressions calculated for the 450k CpGs to the current directory
+```bash
+cd /home/Illumina/Iñaki_Sasiain/05_common_CpGs;
+
+#Copying the directories
+cp -r ../data .;
+cp -r ../regressions .;
+```
+
+2. Estimating purity using only the common CpGs
+```bash
+cd /home/Illumina/Iñaki_Sasiain/05_common_CpGs/estimate_purity;
+
+nohup Rscript  ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5 -i TRUE &;
+```
