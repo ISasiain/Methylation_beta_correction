@@ -87,6 +87,8 @@
 #       -o: The name of the output R object containing the predicted values must be entered here. This name 
 #           will also be used as the prefix of the file containing the cpgs used per sample
 #       -l: The name of the location output R object containing the predicted values must be entered here
+#       -i: If the user wants to include only the cpgs that are used in all the samples for the final purity 
+#           estimation this flag should be set to TRUE.
 #
 ## - VERSION: 1.0
 #
