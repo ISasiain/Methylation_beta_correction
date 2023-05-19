@@ -62,6 +62,9 @@
 #    -> R object, whose name must be specified by the user, containing a list with the estimate 1-Purity values and intervals
 #       predicted per each sample
 #
+#    -> R object, whose name's prefix must be specified by the user, containing a list with the cpgs used for the purity estimation 
+#       of  per each sample
+#
 ## - USAGE:
 #
 #     The script must be run on the command line using the following flags. Keep in mind that the functions that the script calls
@@ -69,7 +72,7 @@
 #
 #     """
 #     Rscript path_to_script/run_all_validation.r -c [cores] -a [alpha] -r [threshold_rse] -s [threshold_slope] -p [percentage_to_interval] 
-#     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location]
+#     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location] -i [TRUE/FALSE]
 #     """
 #     
 #     *The function of the command line options is the following; 
@@ -81,7 +84,8 @@
 #       -p: Percentage of the maximum coverage detected to include in estimated the 1-Purity interval
 #       -d: The directory containing the regression parameters must be entered here
 #       -b: The path to the R object contaoining the betas to analyse must be entered here
-#       -o: The name of the output R object containing the predicted values must be entered here
+#       -o: The name of the output R object containing the predicted values must be entered here. This name 
+#           will also be used as the prefix of the file containing the cpgs used per sample
 #       -l: The name of the location output R object containing the predicted values must be entered here
 #
 ## - VERSION: 1.0
@@ -159,8 +163,8 @@ argument_list <- list(
               help="The path to the R object contaoining the betas to analyse must be entered here.",
               metavar="[directory]"),
 
-  make_option(c("-o", "--output_filename"), type="character", default="prediected purities",
-              help="The name of the output R object containing the predicted values must be entered here. Default [%default]",
+  make_option(c("-o", "--output_filename"), type="character", default="output",
+              help="The name of the output R object containing the predicted values must be entered here. This name will also be used as the prefix of the file containing the cpgs used per sample. Default [%default]",
               metavar="[filename]"),
 
   make_option(c("-l", "--output_location"), type="character", default="./",
