@@ -294,10 +294,10 @@ list_of_used_cpgs <- setNames(sapply(out_list, function(x) x$cpgs), sapply(out_l
 if (arguments$include_cpgs_all_samples) {
 
 # Getting the CpGs used for the purity prediction in all the samples
-common_cpgs <- Reduce(intercept, list_of_used_cpgs)
+common_cpgs <- Reduce(intersect, list_of_used_cpgs)
 
 # Printing command line message
-cat("\nRecalculating purity only with the common CpGs of all the samples...\n\n")
+cat("\n\nRecalculating purity only with the common CpGs of all the samples...\n\n")
 
 # Reseting the progress bar
 p_bar <- txtProgressBar(min = 0, 
@@ -310,12 +310,13 @@ opts <- list(progress = progress)
 
 # Running the functions in parallel for each sample with the common Cpgs. 
 # The execution level will be followed through a progress bar
+out_list <- list()
 out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %dopar% {
 
   # Defining an empty matrix with the cpg ids as rownames to add the all the 1-Purity predicted intervals for all 
   # the CpGs of a sample
   interval_mat <- matrix(ncol=2, nrow=length(common_cpgs))
-  rownames(interval_mat) <- rownames(unadj_validation)
+  rownames(interval_mat) <- na.omit(rownames(unadj_validation[common_cpgs,]))
   
 
   # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_mat
@@ -340,12 +341,17 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
        )
 }
 
+print(out_list)
+
 # Renaming output lists
+list_of_predicted_intervals <- list()
+list_of_used_cpgs <- list()
 # The sample id is used to identify each element of the list
 list_of_predicted_intervals <- setNames(lapply(out_list, function(x) x$value), sapply(out_list, function(x) x$name))
-list_of_used_cpgs <- setNames(sapply(out_list, function(x) x$cpgs), sapply(out_list, function(x) x$name))
+list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_list, function(x) x$name))
 
 }
+
 
 # =====================
 # CREATING OUTPUT FILES
@@ -353,6 +359,8 @@ list_of_used_cpgs <- setNames(sapply(out_list, function(x) x$cpgs), sapply(out_l
 
 # Stop the defined clusters
 stopCluster(cl)
+
+print(class(list_of_used_cpgs))
 
 # Save the list of predicted values as an R object
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
