@@ -176,6 +176,10 @@ Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/estimat
 #Using more strict thresholds
 cd /home/Illumina/Iñaki_Sasiain/analyse_output;
 Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/s1_estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr -o s1_result_analysis;
+
+#Using different thesholds
+cd /home/Illumina/Iñaki_Sasiain/analyse_output;
+Rscript ../scripts/analyse_output/analyse_output.r -e ../estimate_purity/s2_estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -p 450k_corr -o s2_result_analysis;
 ```
 
 ### Checking the effect of the beta estimation method (infinium I and II)
@@ -310,8 +314,8 @@ for num in ${cpg_list[@]};
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/plots;
 
-# Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+# Defining cpg number list RERUN THIS WITH NEW CPGS NUMBERS AND 
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
 
 # Producing plots for each cpg number through loop
 for num in ${cpg_list[@]};
@@ -339,4 +343,48 @@ cp -r ../regressions .;
 cd /home/Illumina/Iñaki_Sasiain/05_common_CpGs/estimate_purity;
 
 nohup Rscript  ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5 -i TRUE &;
+```
+
+3. Plotting the results
+```bash
+cd /home/Illumina/Iñaki_Sasiain/05_common_CpGs/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/s2_estimated_purity_450kCpG.RData -a ../data/purity_validation.RData -c ../estimate_purity/s2_estimated_purity_450kCpG.used_cpgs.RData -b ../data/betas_validation.RData -o common_cpgs;
+
+```
+The results obtained were really unaccurate. The value obtained for the most of the samples correspons to the noise. May the common cpgs be responsible of the noise? In order to check that I will rerun the analysis only with the cpgs that are not common.
+
+### Estimating purity only with the CpGs NOT used in all the sample's estimation (Corsaire 450k)
+
+1. Copying original data and the regressions calculated for the 450k CpGs to the current directory
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/06_without_common_CpGs;
+
+#Copying the directories
+cp -r ../data .;
+cp -r ../regressions .;
+```
+
+2. Estimate purity using only NOT COMMON CpGs. Line 300 was added and teh common_cpgs vector was changed for cpgs_to_use when recalculating the purity.
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/06_without_common_CpGs/estimate_purity;
+
+nohup Rscript  ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5 -i TRUE &;
+```
+
+### Checking the effect of the alpha value
+
+```bash
+# Defining list of alpha values to be checked
+alphas=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+
+```
+
+### Checking the effect of the threshold slope value
+
+```bash
+slopes=(0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5 0.6)
+
 ```
