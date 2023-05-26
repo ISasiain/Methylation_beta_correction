@@ -416,7 +416,7 @@ for s in ${slopes[@]};
 
 2. Estimating purity using different max RSE thresholds; 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities;
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/rse_purities;
 
 #Defining a list of max RSE thresholds
 rse=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 10000)
@@ -426,4 +426,20 @@ for r in ${rse[@]};
         cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities/rse_${r};
         Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions -b ../../data/betas_validation.RData -o rse_${r}.corr.smooth -a 0.75 -r ${r} -s 0.25 -p 5;
     done;
+```
+
+
+
+# TEST
+
+- Comparing predictions
+```bash
+cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/plots;
+
+paths_to_compare=$(for dir in ../estimate_purity/*; 
+    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/cpgs_100/purity_validation.RData -o num_cpg_comparison;
+
 ```
