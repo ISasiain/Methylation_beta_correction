@@ -55,8 +55,9 @@ prediction_ls <- list()
 for (path in vec_of_paths) {
 
     # Getting the variable name to store the predicted purities
-    var_name <- strsplit(path, split="\\")[[1]][length(strsplit(path, split="\\"))]
-    var_name <- strsplit(var_name, split=".")[[1]][1]
+    var_name <- strsplit(path, split="/")[[1]][length(strsplit(path, split="/")[[1]])]
+    var_name <- strsplit(var_name, split="\\.")[[1]][1]
+
 
     # Append elements to the list using the value stored in var_name as id
     prediction_ls[[var_name]] <- readRDS(path)
@@ -69,6 +70,9 @@ for (path in vec_of_paths) {
 # Loading the actual 1-Purity vector into a variable
 actual_1_minus_P <- readRDS(arguments$reference_purity)
 
+#Adding this to adapt the sample names
+names(actual_1_minus_P) <- paste(names(actual_1_minus_P), "-01A", sep="")
+
 # =======================================
 #      CALCULATING QUALITY METRICS
 # =======================================
@@ -80,12 +84,11 @@ metrics_df <- data.frame()
 for (prediction in names(prediction_ls)) {
 
   mean_dis_to_est <- mean(
-    lapply(
+    sapply(
       names(prediction_ls[[prediction]]),
       FUN = function (sample) {
-
       # Determining the distance to the estimate (the mean is calculated in case there were more than one maximums. THis must be removed after softening the coverage plot)
-      dis_to_estimate <- mean(round(abs(1-actual_1_minus_P[sample] - prediction_ls[[prediction]][[sample]][["1-Pur_estimates"]]),4))
+      dis_to_estimate <- mean(abs(1-actual_1_minus_P[sample] - prediction_ls[[prediction]][[sample]][["1-Pur_estimates"]]),4)
       }
     )
   )
@@ -93,7 +96,7 @@ for (prediction in names(prediction_ls)) {
   # Calculating correlation between actual and estimate purities. The estimated values are obtained using an lapply command
   # and sorted as the vector containing the actual 1-Purity values
 
-  correlation <- cor(actual_1_minus_P, lapply(names(prediction_ls[[prediction]]), FUN = function(sample) {1-sample[["1-Pur_estimates"]]})[names(actual_1_minus_P)])
+  correlation <- cor(actual_1_minus_P, sapply(names(prediction_ls[[prediction]]), FUN = function(sample) {1-prediction_ls[[prediction]][[sample]][["1-Pur_estimates"]]})[names(actual_1_minus_P)])
 
   metrics_df <- rbind(metrics_df, c(prediction, mean_dis_to_est, correlation))
 
@@ -103,41 +106,47 @@ for (prediction in names(prediction_ls)) {
 colnames(metrics_df) <- c("Prediction", "Mean_dis_to_est", "Correlation")
 rownames(metrics_df) <- metrics_df$Prediction
 
-#Setting the prediction id as a factor
-metrics_df$Prediction <- as.factor(metrics_df$Prediction)
+#Transform metrics to numeric values
+metrics_df$Correlation <- as.numeric(metrics_df$Correlation)
+metrics_df$Mean_dis_to_est <- as.numeric(metrics_df$Mean_dis_to_est)
+
+# ====================================================================
+#      SORTING DATAFRAME (only if numeric parameters are compared)
+# ====================================================================
+
+# Apply strsplit to each element of the Prediction column
+to_order <- as.numeric(sapply(metrics_df$Prediction, function(x) strsplit(x, split = "_")[[1]][2]))
+
+# Sorting the dataframe
+metrics_df <- metrics_df[order(to_order),]
 
 # ===========================
 #      PLOTTING RESULTS
 # ===========================
 
+#Setting the prediction id as a factor
+metrics_df$Prediction <- factor(metrics_df$Prediction, levels=metrics_df$Prediction)
+
+print(metrics_df)
+
 # Plotting and saving a barplot of the distance to estimate
 
-ggplot(metrics_df, aes(y=Mean_dis_to_est, x=Prediction)) +
-  geom_bar( color="black", fill="lightblue") +
-  ggtitle("DISTANCE TO ESTIMATE") +
+ggplot(metrics_df, aes(x = Prediction, y = Mean_dis_to_est)) +
+  geom_bar(stat = "identity", fill = "blue") +
   xlab("Prediction") +
-  ylab("Distance to estimate") +
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
+  ylab("Mean Distance to Estimate") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 
 ggsave(paste(arguments$output_prefix, "dis_to_int.barplot_comp.png", sep="."))
 
 # Plotting and saving a barplot of the correlation
 
-ggplot(metrics_df, aes(y=Correlation, x=Prediction)) +
-  geom_bar( color="black", fill="lightgreen") +
-  ggtitle("CORRELATION") +
+ggplot(metrics_df, aes(x = Prediction, y = Correlation)) +
+  geom_bar(stat = "identity", fill = "blue") +
   xlab("Prediction") +
   ylab("Correlation") +
-  theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
-        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
-        panel.grid.minor = element_blank())
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
 
 ggsave(paste(arguments$output_prefix, "correlation.barplot_comp.png", sep="."))
