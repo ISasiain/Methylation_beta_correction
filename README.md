@@ -282,13 +282,13 @@ for num in ${cpg_list[@]};
 cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
 
 # Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
 
 #Calculating regressions for each cpg number using a bash loop
 for num in ${cpg_list[@]}; 
     do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_$  {num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
-        Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_validation.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_validation.RData -o cpgs${num}; 
+        Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_training.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_training.RData -o cpgs${num}; 
     done;
 
 ```
@@ -299,7 +299,7 @@ for num in ${cpg_list[@]};
 cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
 
 # Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
 
 #Estimating purity for each cpg number through a bash loop
 for num in ${cpg_list[@]};
@@ -374,17 +374,56 @@ cd /home/Illumina/Iñaki_Sasiain/06_without_common_CpGs/estimate_purity;
 nohup Rscript  ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions -b ../data/betas_validation.RData -o s2_estimated_purity_450kCpG -a 0.75 -r 0.6 -s 0.25 -p 5 -i TRUE &;
 ```
 
-### Checking the effect of the alpha value
+### Optimizing parameters (Run in corsaire)
+
+1. Copying the data and regressions calculated to new directory (using 30.000 CpGs)
 
 ```bash
-# Defining list of alpha values to be checked
-alphas=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/data;
+cp ../../04_CpG_nums/data/cpgs_30000/* .;
 
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/regressions;
+cp ../../04_CpG_nums/calculate_regressions/cpgs_30000/* .;
 ```
 
-### Checking the effect of the threshold slope value
-
+2. Estimating purity using different alpha values; 
 ```bash
-slopes=(0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5 0.6)
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/alpha_purities;
 
+#Defining a list of alphas
+alphas=(0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95)
+
+for a in ${alphas[@]};
+    do mkdir /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/alpha_purities/alpha_${a};
+        cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/alpha_purities/alpha_${a};
+        Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions -b ../../data/betas_validation.RData -o alpha_${a}.corr.smooth -a ${a} -r 0.6 -s 0.25 -p 5;
+    done;
+```
+
+2. Estimating purity using different slope threshold values; 
+```bash
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities;
+
+#Defining a list of slopes
+slopes=(0.01 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8)
+
+for s in ${slopes[@]};
+    do mkdir /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities/slope_${s};
+        cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities/slope_${s};
+        Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions -b ../../data/betas_validation.RData -o slope_${s}.corr.smooth -a 0.75 -r 0.6 -s ${s} -p 5;
+    done;
+```
+
+2. Estimating purity using different max RSE thresholds; 
+```bash
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities;
+
+#Defining a list of max RSE thresholds
+rse=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 10000)
+
+for r in ${rse[@]};
+    do mkdir /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities/rse_${r};
+        cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities/rse_${r};
+        Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions -b ../../data/betas_validation.RData -o rse_${r}.corr.smooth -a 0.75 -r ${r} -s 0.25 -p 5;
+    done;
 ```
