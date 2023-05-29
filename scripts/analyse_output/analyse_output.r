@@ -201,28 +201,25 @@ out_df <- det_qual(out_ls, purity_validation)
 all_the_cpgs <- row.names(original_betas)
 all_the_samples <- names(cpgs_ls)
 
-# Creating a matrix with cpgs as columns and samples as rows
-matrix_to_heatmap <- matrix(ncol = length(all_the_cpgs), nrow = length(all_the_samples))
+# Creating a boolean matrix with cpgs as columns and samples as rows
+matrix_to_heatmap <- matrix(FALSE, ncol = length(all_the_cpgs), nrow = length(all_the_samples))
 colnames(matrix_to_heatmap) <- all_the_cpgs
 rownames(matrix_to_heatmap) <- all_the_samples
 
-# Filling the matrix with TRUE if included and FALSE if not included
+# Setting the positions of the matrix to TRUE if the cpg is included for each sample
 for (sample in all_the_samples) {
-  for (cpg in all_the_cpgs) {
-    if (cpg %in% cpgs_ls[[sample]]) {
-      matrix_to_heatmap[sample, cpg] <- TRUE
-    } else {
-      matrix_to_heatmap[sample, cpg] <- FALSE
-    }
-  }
+
+  included_cpgs <- all_the_cpgs %in% cpgs_ls[[sample]]
+  matrix_to_heatmap[sample, included_cpgs] <- TRUE
+
 }
 
-# Determine the times in which the each cpg is used for the purity prediction
+# Determine how many times is each cpgs used to predict the purity of each sample
 cpg_counts_df <- data.frame(
   TRUES = colSums(matrix_to_heatmap),
   FALSES = colSums(!matrix_to_heatmap),
-  per_TRUES = colSums(matrix_to_heatmap)/nrow(matrix_to_heatmap),
-  per_FALSES = colSums(!matrix_to_heatmap)/nrow(matrix_to_heatmap)
+  per_TRUES = colSums(matrix_to_heatmap)/length(all_the_samples),
+  per_FALSES = colSums(!matrix_to_heatmap)/length(all_the_samples)
 )
 
 # Sorting the cpg dataframe based on the number of samples in which each cpg is included
@@ -230,12 +227,16 @@ cpg_counts_df <- cpg_counts_df[order(cpg_counts_df$TRUES, decreasing=TRUE),]
 
 # Creating and sorting a vector with the number of cpgs used to predict purity per sample
 num_cpgs <- sapply(cpgs_ls, length)
-num_cpgs <- num_cpgs[order(num_cpgs, decreasing=TRUE)]
+num_cpgs <- num_cpgs[order(num_cpgs)]
 
 #Converting te vector into a dataframe to be plotted using ggplot
-df_to_hist <- data.frame()
-df_to_hist <- cbind(num_cpgs)
-colnames(df_to_hist) <- c("num_of_cpgs")
+cpgs_per_sample_df <- data.frame()
+cpgs_per_sample_df <- cbind(num_cpgs)
+cpgs_per_sample_df <- cbind(cpgs_per_sample_df, purity_validation[order(num_cpgs)])
+
+colnames(cpgs_per_sample_df) <- c("num_of_cpgs", "actual_1_minus_P")
+
+
 
 #Sorting matrix_to_heatmap based on the num_cpgs and cpg_counts data
 matrix_to_heatmap <- matrix_to_heatmap[names(num_cpgs),rownames(cpg_counts_df)]
@@ -408,7 +409,7 @@ ggplot(out_df, aes(x=Dis_to_est*100)) +
 
 ggsave(paste(arguments$output_prefix, "error.cum_densityplot.png",sep="."))
 
-## PLOT THE PERCENTAGE OF TIMES IN WHICH EACH CPG IS USED TO ESTIMATE PURITY
+# PLOT THE PERCENTAGE OF TIMES IN WHICH EACH CPG IS USED TO ESTIMATE PURITY
 
 ggplot(cpg_counts_df, aes(x=per_TRUES)) +
   geom_histogram(binwidth=0.0025, color="black", fill="red") +
@@ -427,7 +428,7 @@ ggsave(paste(arguments$output_prefix, "prop_cpgs_included.png",sep="."))
 
 ## HISTOGRAM OF THE CPGS USED TO ESTIMATE SAMPLE PURITY
 
-ggplot(data.frame(df_to_hist), aes(x=num_cpgs)) +
+ggplot(data.frame(cpgs_per_sample_df), aes(x=num_cpgs)) +
   geom_histogram(color="black", fill="red") +
   ggtitle("CpGs used to each sample's purity") +
   xlab("Number of CpGs used to estimate purity") +
@@ -444,9 +445,9 @@ ggsave(paste(arguments$output_prefix, "num_cpg_per_sample.png",sep="."))
 ## PLOTTING HEATMAP OF THE CPGS USED IN EACH SAMPLE
 
 # Define custom color scale
-custom_colors <- c("red", "green")
+custom_colors <- c("green", "red")
 custom_breaks <- c(TRUE, FALSE)
-custom_labels <- c("Not included", "Included")
+custom_labels <- c("Included", "Not included")
 
 # Plotting the heat map
 ggplot(df_to_heatmap, aes(x = Var2, y = Var1, fill = value)) +
@@ -457,3 +458,20 @@ ggplot(df_to_heatmap, aes(x = Var2, y = Var1, fill = value)) +
   labs(x = "CpGs", y = "Samples", title = "CpGs included per sample")
 
 ggsave(paste(arguments$output_prefix, "heatmap_cpg_per_sample.png",sep="."), width = 10, height = 30, limitsize=FALSE)
+
+
+##  CpG USAGE VS ACTUAL PURITY OF SAMPLES
+
+ggplot(data=data.frame(cpgs_per_sample_df), aes(x= actual_1_minus_P, y= num_of_cpgs )) +
+  geom_point() +
+  ggtitle("CpGs used VS actul 1-Purity") +
+  xlab("Actual 1-P") +
+  ylab("Number of CpGs used to estimate purity") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
+
+ggsave(paste(arguments$output_prefix, "num_cpgs_actual_1-P.scatterplot.png",sep="."))
