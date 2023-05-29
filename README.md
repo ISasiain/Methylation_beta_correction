@@ -264,8 +264,9 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/data;
 
-# Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 50000 100000 200000);
+# Defining cpg number list 
+#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+cpg_list=(421368);
 
 # Creating the training (80 %) and validation (20 %) datasets through a bash loop.
 # The cpgs belonging to sexual chromosomes have been excluded
@@ -281,12 +282,13 @@ for num in ${cpg_list[@]};
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
 
-# Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
+# Defining cpg number list 
+#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+cpg_list=(421368);
 
 #Calculating regressions for each cpg number using a bash loop
 for num in ${cpg_list[@]}; 
-    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_$  {num};
+    do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
         Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_training.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_training.RData -o cpgs${num}; 
     done;
@@ -298,8 +300,9 @@ for num in ${cpg_list[@]};
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
 
-# Defining cpg number list
-cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
+# Defining cpg number list 
+#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+cpg_list=(421368);
 
 #Estimating purity for each cpg number through a bash loop
 for num in ${cpg_list[@]};
@@ -314,8 +317,9 @@ for num in ${cpg_list[@]};
 ```bash
 cd ~/Iñaki_Sasiain/04_CpG_nums/plots;
 
-# Defining cpg number list RERUN THIS WITH NEW CPGS NUMBERS AND 
-cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000);
+# Defining cpg number list 
+#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+cpg_list=(421368);
 
 # Producing plots for each cpg number through loop
 for num in ${cpg_list[@]};
