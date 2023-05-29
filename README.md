@@ -325,6 +325,18 @@ for num in ${cpg_list[@]};
         Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.RData -a ../../data/cpgs_${num}/purity_validation.RData -c ../../estimate_purity/cpgs_${num}/cpgs_${num}.corr.smooth.used_cpgs.RData -b ../../data/cpgs_${num}/betas_validation.RData -o cpgs_${num};
     done;
 
+# Comparing predictions
+cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/plots;
+
+paths_to_compare=$(for dir in ../estimate_purity/*; 
+    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/cpgs_100/purity_validation.RData -o num_cpg_comparison;
+
+# Plotting the percentages of the populations detcted in each cpg
+
+
 ```
 
 ### Estimating purity only with the CpGs used in all the sample's estimation (Corsaire 450k)
@@ -400,7 +412,7 @@ for a in ${alphas[@]};
     done;
 ```
 
-2. Estimating purity using different slope threshold values; 
+3. Estimating purity using different slope threshold values; 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/slope_purities;
 
@@ -414,7 +426,7 @@ for s in ${slopes[@]};
     done;
 ```
 
-2. Estimating purity using different max RSE thresholds; 
+4. Estimating purity using different max RSE thresholds; 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/rse_purities;
 
@@ -428,6 +440,31 @@ for r in ${rse[@]};
     done;
 ```
 
+5. Comparing predictions
+```bash
+cd /home/Illumina/Iñaki_Sasiain/07_Estimating_parameters/comparing_results/;
+
+# Comparing predictions made with different alphas
+paths_to_compare=$(for dir in ../alpha_purities/*; 
+    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/purity_validation.RData -o alpha_comparison;
+
+# Comparing predictions made with different slope thresholds
+paths_to_compare=$(for dir in ../slope_purities/*; 
+    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/purity_validation.RData -o slope_comparison;
+
+# Comparing predictions made with different RSE thresholds
+paths_to_compare=$(for dir in ../rse_purities/*; 
+    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/purity_validation.RData -o rse_comparison;
+```
 
 
 # TEST
