@@ -334,8 +334,14 @@ paths_to_compare=$(for dir in ../estimate_purity/*;
 
 Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/cpgs_100/purity_validation.RData -o num_cpg_comparison;
 
-# Plotting the percentages of the populations detcted in each cpg
+# Plotting the percentages of the populations detcted in each cpg (using the slopes of the regressions)
+cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/plots;
 
+paths_to_compare=$(for dir in ../calculate_regressions/*; 
+    do ls ${dir}/*output_reg.intercepts.RData | tr "\n" ",";
+    done);
+
+Rscript ../../scripts/analyse_output/evolution_pops_detected.r -f ${paths_to_compare[@]} -o num_cpgs;
 
 ```
 
