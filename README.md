@@ -265,8 +265,7 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_smooth_i
 cd ~/Iñaki_Sasiain/04_CpG_nums/data;
 
 # Defining cpg number list 
-#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
-cpg_list=(421368);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
 # Creating the training (80 %) and validation (20 %) datasets through a bash loop.
 # The cpgs belonging to sexual chromosomes have been excluded
@@ -283,11 +282,10 @@ for num in ${cpg_list[@]};
 cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions;
 
 # Defining cpg number list 
-#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
-cpg_list=(421368);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
 #Calculating regressions for each cpg number using a bash loop
-for num in ${cpg_list[@]}; 
+nohup for num in ${cpg_list[@]}; 
     do mkdir /home/Illumina/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
         cd ~/Iñaki_Sasiain/04_CpG_nums/calculate_regressions/cpgs_${num};
         Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/betas_training.RData -p ~/Iñaki_Sasiain/04_CpG_nums/data/cpgs_${num}/purity_training.RData -o cpgs${num}; 
@@ -301,8 +299,7 @@ for num in ${cpg_list[@]};
 cd ~/Iñaki_Sasiain/04_CpG_nums/estimate_purity;
 
 # Defining cpg number list 
-#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
-cpg_list=(421368);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
 #Estimating purity for each cpg number through a bash loop
 for num in ${cpg_list[@]};
@@ -474,19 +471,4 @@ paths_to_compare=$(for dir in ../rse_purities/*;
     done);
 
 Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/purity_validation.RData -o rse_comparison;
-```
-
-
-# TEST
-
-- Comparing predictions
-```bash
-cd /home/Illumina/Iñaki_Sasiain/04_CpG_nums/plots;
-
-paths_to_compare=$(for dir in ../estimate_purity/*; 
-    do ls ${dir}/*.corr.smooth.RData | tr "\n" ",";
-    done);
-
-Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/cpgs_100/purity_validation.RData -o num_cpg_comparison;
-
 ```
