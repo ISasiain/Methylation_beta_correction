@@ -267,7 +267,7 @@ if (arguments$filter_non_autosomes) {
 
 
 # =================================
-# GETTING MOST VARIABLE CHROMOSOMES
+# GETTING MOST VARIABLE CPGs
 # =================================
 
 # If the user has selected to get only the most variable CpGs the following code will be run
