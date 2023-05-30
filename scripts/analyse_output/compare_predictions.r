@@ -12,6 +12,11 @@ if(!requireNamespace("ggplot2", quietly = TRUE)) {
 
 library(ggplot2)
 
+if(!requireNamespace("stringr", quietly = TRUE)) {
+  install.packages("stringr") }
+
+library(stringr)
+
 if(!requireNamespace("optparse", quietly = TRUE)) {
   install.packages("optparse") }
 
@@ -32,9 +37,9 @@ argument_list <- list(
     help="The path of the R object containing the refernce purity values to compare the predictions with must be entered here",
     metavar="[path_to_purities]"),
 
-  make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
-              help="The user can especify a prefox for the output plots. Default [%default]",
-              metavar = "[prefix]")
+    make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
+    help="The user can especify a prefox for the output plots. Default [%default]",
+    metavar = "[prefix]")
 )
 
 # Parsing command line arguments
@@ -56,8 +61,7 @@ for (path in vec_of_paths) {
 
     # Getting the variable name to store the predicted purities
     var_name <- strsplit(path, split="/")[[1]][length(strsplit(path, split="/")[[1]])]
-    var_name <- strsplit(var_name, split="\\.")[[1]][1]
-
+    var_name <- str_remove(var_name, ".corr.smooth.RData")
 
     # Append elements to the list using the value stored in var_name as id
     prediction_ls[[var_name]] <- readRDS(path)
