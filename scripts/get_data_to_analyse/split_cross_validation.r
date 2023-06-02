@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # =============================
 # LOADING THE REQUIRED PACKAGES
 # =============================
@@ -41,7 +43,7 @@ argument_list <- list(
               help="The name of the object that contains the beta values inside the R object must be entered here",
               metavar = "[var_name]"),
 
-  make_option(c("-p", "--purity"), type="character",  
+  make_option(c("-u", "--purity"), type="character",  
               help="The name of the object that contains the beta values inside the R object must be entered here",
               metavar = "[var_name]"),
 
@@ -119,6 +121,11 @@ if (arguments$in_same_object) {
 betas <- get(arguments$betas)
 purities <- get(arguments$purity)
 
+#Adapting the names of the vector
+names(purities) <- lapply(names(purities), 
+                         function (name) {paste(name, "-01A", sep="")})
+
+
 # ======================================
 # FILTERING CpGs FROM SEXUAL CHROMOSOMES
 # ======================================
@@ -150,7 +157,7 @@ if (arguments$filter_non_autosomes) {
 
 if (arguments$split_for_cross_validation) {
 
-    cat("Splitting the data for the cross validation...")
+    cat("\n\nSplitting the data for the cross validation...\n")
 
     # Using the createFoldas from the caret package to create groups for the cross validation
     # The number of groups was set to 6 generate have around 100 samples per group
@@ -169,7 +176,7 @@ if (arguments$split_for_cross_validation) {
                             test <- betas[,-groups[[fold]]]
 
                             # Getting the training and test purity values
-                            purity_training <- puities[colnames(training)]
+                            purity_training <- purities[colnames(training)]
                             purity_test <- purities[colnames(test)]
 
                             # Adding the created dataframes to a list and returning it
@@ -186,7 +193,7 @@ if (arguments$split_for_cross_validation) {
 }
 
 # ========================================
-# CREATING TRAINING AND test SUBSETS
+# CREATING TRAINING AND TEST SUBSETS
 # ========================================
 
 #If the user has selected to filter sexual chromosomes the following code will be run
@@ -263,6 +270,8 @@ if(arguments$get_only_CpGs_with_highest_variance) {
 
 if (arguments$split_in_training_and_validation) {
 
+    cat("\n\nSaving output files...\n")
+
     #Saving beta values
     saveRDS(unadj_training, paste(arguments$output_directory, "/BetasTraining.RData", sep=""))
     saveRDS(unadj_validation, paste(arguments$output_directory, "/BetasTest.RData", sep=""))
@@ -273,15 +282,20 @@ if (arguments$split_in_training_and_validation) {
 
 } else if (arguments$split_for_cross_validation) {
 
+    cat("\n\nSaving output files...\n")
+
     for (fold in names(folds_list)) {
 
         # Saving training and test datasets
-        saveRDS(fold_list[[fold]][["Training"]], paste(arguments$output_directory, "/", fold, "_BetasTraining.RData", sep=""))
-        saveRDS(fold_list[[fold]][["Test"]], paste(arguments$output_directory, "/", fold, "_BetasTest.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Training"]], paste(arguments$output_directory, "/", fold, "_BetasTraining.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Test"]], paste(arguments$output_directory, "/", fold, "_BetasTest.RData", sep=""))
 
-        saveRDS(fold_list[[fold]][["Purity_training"]], paste(arguments$output_directory, "/", fold, "_PurityTraining.RData", sep=""))
-        saveRDS(fold_list[[fold]][["Purity_test"]], paste(arguments$output_directory, "/", fold, "_PurityTest.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Purity_training"]], paste(arguments$output_directory, "/", fold, "_PurityTraining.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Purity_test"]], paste(arguments$output_directory, "/", fold, "_PurityTest.RData", sep=""))
     }
 
 }
 
+cat("\n\n****************\n")
+cat("PROCESS FINISHED\n")
+cat("****************\n")
