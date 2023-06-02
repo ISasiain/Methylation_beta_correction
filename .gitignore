@@ -1,2 +1,5 @@
 *.png
 *.RData
+*.pdf
+*.csv
+*.tsv
