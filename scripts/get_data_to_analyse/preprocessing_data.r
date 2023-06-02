@@ -267,7 +267,7 @@ if (arguments$filter_non_autosomes) {
 
 
 # =================================
-# GETTING MOST VARIABLE CPGs
+#    GETTING MOST VARIABLE CPGs
 # =================================
 
 # If the user has selected to get only the most variable CpGs the following code will be run
@@ -285,9 +285,6 @@ if(arguments$get_only_CpGs_with_highest_variance) {
 
   # Sorting the betas dataframe and getting only the number of CpGs selected
   betas <- betas[sorting_vec,]
-
-  print(nrow(betas))
-
 }
 
 
@@ -329,6 +326,7 @@ if (arguments$split_in_training_and_validation) {
     #Creating training and validation datasets for the purity_vector
     purity_training <- purities[train_samples]
     purity_validation <- purities[!train_samples]
+    
   } else {
 
     cat("\n\nCreating training and validation datasets for each of the beta estimation method...\n")
