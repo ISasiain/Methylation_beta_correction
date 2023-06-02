@@ -480,6 +480,6 @@ Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data;
 
-Rscript ../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -C TRUE -k 6 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n 30000;
+Rscript ../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n 30000;
 
 ```
