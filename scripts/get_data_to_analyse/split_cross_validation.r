@@ -121,9 +121,9 @@ if (arguments$in_same_object) {
 betas <- get(arguments$betas)
 purities <- get(arguments$purity)
 
-#Adapting the names of the vector
-names(purities) <- lapply(names(purities), 
-                         function (name) {paste(name, "-01A", sep="")})
+#Adapting the names of the colnames of the beta value dataframe
+colnames(betas) <- lapply(colnames(betas), 
+                         function (name) {strsplit(name, "-01")[[1]][1]})
 
 
 # ======================================
