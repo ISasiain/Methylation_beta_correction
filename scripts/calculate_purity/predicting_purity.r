@@ -1,19 +1,17 @@
 #!/usr/bin/Rscript
 
-predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slope_threshold, RSE_threshold, alpha) {
+predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slope_threshold, alpha) {
 
     #DEFINING VARIABLES
 
     #Identifying the regressions whose residual standard error is over the threshold
     # and whose slope is too close to 0 to be informative
-    to_be_ignored <- RSE > RSE_threshold | (slopes > -slope_threshold & slopes < slope_threshold) | is.na(slopes)
+    to_be_ignored <- (slopes > -slope_threshold & slopes < slope_threshold) | is.na(slopes)
 
     # Removing the values that do not meet the conditions previously analysed.
     slopes <- slopes[!to_be_ignored]
     intercepts <- intercepts[!to_be_ignored]
     RSE <- RSE[!to_be_ignored]
-    #SS_x <- SS_x[!to_be_ignored]
-    #SS_y <- SS_y[!to_be_ignored]
     degrees_of_freedom <- degrees_of_freedom[!to_be_ignored]
 
     # Check that all the regressions are not uninformative and execute the following code 
@@ -32,12 +30,6 @@ predicting_purity <- function(beta,slopes,intercepts,RSE,degrees_of_freedom,slop
 
             #Store the identified population (indexes of matches vector) into a variable
             identified_pop <- which(matches)
-
-            #Calculate the parameters of the inverse regression. 1-Purity VS beta instead of beta VS 1-Purity
-            # inv_slope <- 1/slopes[identified_pop]
-            # inv_intercept <- -intercepts[identified_pop]/slopes[identified_pop]
-            # inv_df <- degrees_of_freedom[identified_pop]
-            # inv_RSE <- RSE[identified_pop] * sqrt(SS_y[identified_pop]/SS_y[identified_pop])
 
             #Predicting the 1-purity value from the inverse regression
             predicted_1_minus_p <- (beta - intercepts[identified_pop]) /slopes[identified_pop]

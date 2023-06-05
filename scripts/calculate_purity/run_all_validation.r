@@ -145,10 +145,6 @@ argument_list <- list(
               help="Alpha value to determine the prediction intervals of each CpG [default %default]",
               metavar= "[floating number]"),
 
-  make_option(c("-r", "--max_RSE"), type="double", default=0.5,
-              help="Maximum Residual Standard Error allowed per CpG regression [default %default]",
-              metavar="[floating number]"),
-
   make_option(c("-s", "--min_slope"), type="double", default=0.3,
               help="Minimum slope allowed per CpG regression [default %default]", 
               metavar="[floating number]"),
@@ -267,7 +263,6 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
                                             RSE=my_RSE[cpg, ],
                                             degrees_of_freedom=my_df[cpg, ],
                                             slope_threshold=arguments$min_slope,
-                                            RSE_threshold=arguments$max_RSE,
                                             alpha=arguments$alpha)
   }
 
