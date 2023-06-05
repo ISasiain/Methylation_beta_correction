@@ -159,6 +159,9 @@ if (arguments$split_for_cross_validation) {
 
     cat("\n\nSplitting the data for the cross validation...\n")
 
+    # Setting seed to guarantee replicability
+    set.seed(2)
+
     # Using the createFoldas from the caret package to create groups for the cross validation
     # The number of groups was set to 6 generate have around 100 samples per group
     groups <- createFolds(y=colnames(betas),
