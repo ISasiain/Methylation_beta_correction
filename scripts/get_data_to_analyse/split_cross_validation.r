@@ -159,9 +159,6 @@ if (arguments$split_for_cross_validation) {
 
     cat("\n\nSplitting the data for the cross validation...\n")
 
-    # Setting seed to guarantee replicability
-    set.seed(2)
-
     # Using the createFoldas from the caret package to create groups for the cross validation
     # The number of groups was set to 6 generate have around 100 samples per group
     groups <- createFolds(y=colnames(betas),
@@ -246,21 +243,22 @@ if(arguments$get_only_CpGs_with_highest_variance) {
     } else if (arguments$split_for_cross_validation) {
 
 
-        for (fold in folds_list) {
+        for (fold in names(folds_list)) {
 
             # Detemine the variance of all the rows (CpGs)
             cpgs_variance <- apply(
-                                fold$"Training",
+                                folds_list[[fold]][["Training"]],
                                 MARGIN=1,
                                 FUN=var
                         )
 
             # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
-            sorting_vec <- order(cpgs_variance)[1:arguments$number_of_most_variable_CpGs_to_include]
+            sorting_vec <- order(cpgs_variance, decreasing=TRUE)
+            sorting_vec <- sorting_vec[1:arguments$number_of_most_variable_CpGs_to_include]
 
             # Getting only the cpgs selected in the training and test datasets
-            fold$"Training" <- fold$"Training"[sorting_vec,]
-            fold$"Test" <- fold$"Test"[sorting_vec,]
+            folds_list[[fold]][["Training"]] <- folds_list[[fold]][["Training"]][sorting_vec,]
+            folds_list[[fold]][["Test"]] <- folds_list[[fold]][["Test"]][sorting_vec,]
 
         }
     }
