@@ -498,18 +498,22 @@ for num in ${cpg_list[@]};
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions;
 
+nohup bash -c '
 #Defining cpg number list 
 cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
 #Creating the regerssion datasets using nohup. The process takes a very long time!
 for num in ${cpg_list[@]}; 
-    do for dir in ../data/cpgs_${num}/*_BetasTraining.RData; 
-        do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
-        mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
-        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
-        Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/${fold}_PurityTraining.RData -o ${fold};
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num};
+       cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions;
+       for dir in $(ls ../data/cpgs_${num}/*_BetasTraining.RData); 
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+          mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
+          cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
+          Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_${num}/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_${num}/${fold}_PurityTraining.RData -o ${fold};
     done;
 done;
+'
 
 ```
 
