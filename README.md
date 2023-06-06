@@ -473,13 +473,47 @@ paths_to_compare=$(for dir in ../rse_purities/*;
 Rscript ../../scripts/analyse_output/compare_predictions.r -c ${paths_to_compare} -p ../data/purity_validation.RData -o rse_comparison;
 ```
 
-### Checking performance and optimizing parametres through 6-fold-cross-validation (Run in corsaire)
+### Checking performance and CpG numbers to use through 6-fold-cross-validation (Run in corsaire)
 
-1. Generating the datasets
+1. Generating test and training datasets for each CpG number using cross validation;
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data;
 
-Rscript ../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n 30000;
+#Defining cpg number list 
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
+# Producing plots for each cpg number through loop
+for num in ${cpg_list[@]};
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_${num};
+        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_${num};
+
+        Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -A object_450k_probesKeep.RData -a probesKeep -c chr -N TRUE -n ${num};
+    done;
+```
+
+
+2. Generating the regressions for included cpg  number and fold
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions;
+
+#Defining cpg number list 
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+
+#Creating the regerssion datasets using nohup. The process takes a very long time!
+for num in ${cpg_list[@]}; 
+    do for dir in ../data/cpgs_${num}/*_BetasTraining.RData; 
+        do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+        mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
+        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/cpgs_${num}/${fold};
+        Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/${fold}_PurityTraining.RData -o ${fold};
+    done;
+done;
+
+```
+
+2. Estimating purity for each fold. Reestimating parameters
+
+```bash
 ```
