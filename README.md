@@ -514,10 +514,15 @@ for num in ${cpg_list[@]};
     done;
 done;
 '
-
 ```
 
-2. Estimating purity for each fold. Reestimating parameters
+2. Estimating purity for cpg number and fold
 
 ```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+
+#Defining cpg number list 
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+
+
 ```
