@@ -521,8 +521,22 @@ done;
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 
+#Running the scripts using nohup
+nohup bash -c '
+
 #Defining cpg number list 
 cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 
-
+#Determining purity for each cpg number and fold
+for num in ${cpg_list[@]}; 
+    do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/cpgs_${num};
+       for dir in $(ls ../data/cpgs_${num}/*_BetasTraining.RData); 
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/cpgs_${num}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/cpgs_${num}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_${num}/${fold} -b ../../../data/cpgs_${num}/${fold}_BetasTest.RData  -o PredPurity_${fold}_cpgs${num} -a 0.75 -s 0.25 -p 5;
+    done;
+done;
+'
 ```
