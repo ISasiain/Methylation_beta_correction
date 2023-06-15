@@ -79,7 +79,6 @@
 #
 #       -c: Especify the number of cores to run the program
 #       -a: The alpha value used to determine the prediction intervals from the regressions
-#       -r: Maximum Residual Standard Error allowed per CpG regression
 #       -s: Minimum slope allowed per regression. The regressions with lower slopes will be ignored
 #       -p: Percentage of the maximum coverage detected to include in estimated the 1-Purity interval
 #       -d: The directory containing the regression parameters must be entered here
@@ -322,7 +321,6 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
                                             RSE=my_RSE[cpg, ],
                                             degrees_of_freedom=my_df[cpg, ],
                                             slope_threshold=arguments$min_slope,
-                                            RSE_threshold=arguments$max_RSE,
                                             alpha=arguments$alpha)
   }
 
