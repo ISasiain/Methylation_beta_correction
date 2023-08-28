@@ -516,7 +516,7 @@ done;
 '
 ```
 
-2. Estimating purity for cpg number and fold
+3. Estimating purity for cpg number and fold
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
@@ -539,4 +539,21 @@ for num in ${cpg_list[@]};
     done;
 done;
 '
+```
+
+4. Comparing results. Folds and cpg numbers
+
+```bash
+
+# Creating a R object with the actual purity 
+cd /home/Illumina/Iñaki_Sasiain/data;
+Rscript ../scripts/get_data_to_analyse/preprocessing data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -f TRUE -A object_450k_probesKeep.RData -a probesKeep -c chr -N FALSE; 
+
+# Define variables required to run the script
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_preds=$(find ../estimate_purity/ -mindepth 1 -maxdepth 1 -type d  | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
 ```

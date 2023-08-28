@@ -82,13 +82,12 @@ prediction_list <- vector("list", length(vec_of_preds))
 names(prediction_list) <- vec_of_preds
 
 # Assign a list with the fold name as id to each prediction made
-for (prediction in prediction_list) {
+for (prediction in names(prediction_list)) {
 
-    prediction_list$prediction <- vector("list", length(vec_of_folds))
-    names(prediction_list$prediction) <- vec_of_folds
+    prediction_list[[prediction]] <- vector("list", length(vec_of_folds))
+    names(prediction_list[[prediction]]) <- vec_of_folds
 
 }
-
 
 # ===============================================
 #            GETTING VALUES TO COMPARE
@@ -104,7 +103,6 @@ actual_1_minus_P <- readRDS(arguments$reference_purity)
 names(actual_1_minus_P) <- paste(names(actual_1_minus_P), "-01A", sep="")
 
 
-
 # ESTIMATED PURITIES
 
 # Get all the combinations of predictions and folds
@@ -114,11 +112,26 @@ combinations <- expand.grid(vec_of_preds, vec_of_folds)
 
 append_prediction <- function(prediction, fold, directory) {
 
-    #Getting the path to each prediction
+    #Getting the path to each prediction (SLIGHTLY HARDCODED!!!  WE ARE ASSUMING THAT THE FILE ENDS WITH cpgXXX.RData)
     path_to_prediction <- paste(directory, "/", prediction, "/", fold, sep="")
+    pattern <- paste("*_", gsub("_", "", prediction), "\\.RData", sep="")
+
+    # List files in the directory that match the pattern
+    matching_files <- list.files(path_to_prediction, pattern = pattern, full.names = TRUE)
+
+    #PROBLEM!!! SOME FILES HAVE NOT BEEN GENERATED!!!!!!!1
+    print(prediction)
+    # Print the matching files
+    print(matching_files)
+
+    if (length(matching_files) != 1) {
+
+      stop("More than one file containing the estimated purity per prediction and fold has been detected. Execution halted.")
+
+    }
 
     #Appending each prediction
-    prediction_list$prediction$fold <- readRDS(path_to_prediction)
+    prediction_list$prediction$fold <- readRDS(matching_files[1])
 }
 
 #Applying the function to each row of the combinations dataframe using lapply
