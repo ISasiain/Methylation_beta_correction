@@ -15,7 +15,7 @@ library(ggplot2)
 if(!requireNamespace("stringr", quietly = TRUE)) {
   install.packages("stringr") }
 
-library(ggplot2)
+library(stringr)
 
 if(!requireNamespace("tibble", quietly = TRUE)) {
   install.packages("tibble") }
@@ -131,7 +131,7 @@ append_prediction <- function(prediction, fold, directory) {
     }
 
     #Appending each prediction
-    prediction_list$prediction$fold <- readRDS(matching_files[1])
+    prediction_list[[prediction]][[fold]] <- readRDS(matching_files[1])
 }
 
 #Applying the function to each row of the combinations dataframe using lapply
@@ -185,7 +185,7 @@ dti_df_long <- pivot_longer(dti_df, cols="Prediction", names_to="Fold", values_t
 
 # Plotting the results 
 
-ggplot(cv_data_long, aes(x = Prediction, y = Quality, color = Fold)) +
+ggplot(dti_df_long, aes(x = Prediction, y = Quality, color = Fold)) +
   geom_boxplot() +
   geom_point(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.7)) +
   labs(x = "Prediction", y = "Quality Metric") +
