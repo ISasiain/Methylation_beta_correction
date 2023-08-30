@@ -334,7 +334,6 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
        )
 }
 
-print(out_list)
 
 # Renaming output lists
 list_of_predicted_intervals <- list()
