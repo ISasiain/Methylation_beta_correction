@@ -547,12 +547,18 @@ done;
 
 # Creating a R object with the actual purity 
 cd /home/Illumina/Iñaki_Sasiain/data;
-Rscript ../scripts/get_data_to_analyse/preprocessing data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -f TRUE -A object_450k_probesKeep.RData -a probesKeep -c chr -N FALSE; 
+Rscript ../scripts/get_data_to_analyse/preprocessing:data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -f FALSE -N FALSE; 
 
 # Define variables required to run the script
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
-list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
-list_of_preds=$(find ../estimate_purity/ -mindepth 1 -maxdepth 1 -type d  | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+#list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+#list_of_preds=$(find ../estimate_purity/ -mindepth 1 -maxdepth 1 -type d  | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+
+#### IMPORTANT: list_of_folds and list_of_preds have been hardcoded to test the script
+list_of_folds=("Fold1,Fold2,Fold3,Fold4,Fold5,Fold6")
+list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000")
+
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
