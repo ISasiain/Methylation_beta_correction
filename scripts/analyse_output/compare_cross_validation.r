@@ -181,17 +181,10 @@ dti_df <- dti_df %>% pivot_longer(cols=all_of(vec_of_folds),
                                   names_to="Fold", 
                                   values_to="Distance_to_estimate")
 
-# Estimating the median of each prediction in order to add a smoothened line showing
-# the evolution of the distance to the estimate
-medians_df <- medians <- dti_df %>%
-  group_by(Prediction) %>%
-  summarise(Median = median(Distance_to_estimate))
-
-
 # Plotting the results 
 ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
-  geom_boxplot(fill="olivedrab4") +  
-  geom_smooth(data = medians, aes(x = factor(Prediction, levels = vec_of_preds), y = Median), method = "lm", formula = y ~ x, color = "blue") +
+  geom_boxplot(fill="olivedrab4", ) +
+  geom_smooth(aes(group=1), linewidth=2, se=FALSE) +
   labs(x = "Prediction", y = "Mean distance to estimate (% points)") +
   theme_classic() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
