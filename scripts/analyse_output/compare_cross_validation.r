@@ -27,6 +27,11 @@ if(!requireNamespace("tidyr", quietly = TRUE)) {
 
 library(tidyr)
 
+if(!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr") }
+
+library(dplyr)
+
 if(!requireNamespace("optparse", quietly = TRUE)) {
   install.packages("optparse") }
 
@@ -144,9 +149,6 @@ dti_df <- data.frame(matrix(nrow = length(vec_of_preds), ncol = length(vec_of_fo
 rownames(dti_df) <- vec_of_preds
 colnames(dti_df) <- vec_of_folds
 
-print(vec_of_preds)
-print(vec_of_folds)
-
 # Iterate through the predictions and folds to determine the dist_to_est (quality metric) per each
 for (pred in vec_of_preds) {
 
@@ -166,8 +168,6 @@ for (pred in vec_of_preds) {
   }
 }
 
-print(dti_df)
-
 # ================================================
 #                PLOTTING RESULTS
 # ================================================
@@ -181,9 +181,17 @@ dti_df <- dti_df %>% pivot_longer(cols=all_of(vec_of_folds),
                                   names_to="Fold", 
                                   values_to="Distance_to_estimate")
 
+# Estimating the median of each prediction in order to add a smoothened line showing
+# the evolution of the distance to the estimate
+medians_df <- medians <- dti_df %>%
+  group_by(Prediction) %>%
+  summarise(Median = median(Distance_to_estimate))
+
+
 # Plotting the results 
 ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
-  geom_boxplot(fill="olivedrab4") +  # Add a boxplot for each prediction
+  geom_boxplot(fill="olivedrab4") +  
+  geom_smooth(data = medians, aes(x = factor(Prediction, levels = vec_of_preds), y = Median), method = "lm", formula = y ~ x, color = "blue") +
   labs(x = "Prediction", y = "Mean distance to estimate (% points)") +
   theme_classic() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
