@@ -525,8 +525,8 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 nohup bash -c '
 
 #Defining cpg number list 
-cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
-
+#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
+cpg_list=(200000 421368);
 #Determining purity for each cpg number and fold
 for num in ${cpg_list[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
@@ -556,10 +556,66 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
 
 
 #### IMPORTANT: list_of_folds and list_of_preds have been hardcoded to test the script
-list_of_folds=("Fold1,Fold2,Fold3,Fold4,Fold5,Fold6")
-list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000")
+list_of_folds=("Fold1,Fold2,Fold3,Fold4,Fold5,Fold6");
+list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000,cpgs_200000");
 
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
+```
+
+3. Estimating purity for alpha value and fold
+
+# The regressions that were estimated to calculate the cross validation for the cpg number will be used.
+
+
+# Eatimating purities. Using 30.000 as the cpgs number for the predictions
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+
+#Running the scripts using nohup
+nohup bash -c '
+
+#Defining alpha list 
+alphas=(0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95);
+#Determining purity for each alpha and fold
+for num in ${alphas[@]}; 
+    do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num};
+       for dir in $(ls ../data/cpgs_30000/*_BetasTraining.RData); #Using 30000 cpgs in the prediction
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 1 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
+    done;
+done;
+'
+```
+
+4. Estimating purity for slope threshold and fold
+
+# The regressions that were estimated to calculate the cross validation for the cpg number will be used.
+
+
+# Eatimating purities. Using 30.000 as the cpgs number for the predictions
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+
+#Running the scripts using nohup
+nohup bash -c '
+
+#Defining slope threshold list 
+slopes=(0.01 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8)
+#Determining purity for each slope threshold and fold
+for num in ${slopes[@]}; 
+    do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num};
+       for dir in $(ls ../data/cpgs_30000/*_BetasTraining.RData); #Using 30000 cpgs in the prediction
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 1 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a 0.75 -s ${num} -p 5;
+    done;
+done;
+'
 ```
