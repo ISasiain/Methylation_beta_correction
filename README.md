@@ -541,30 +541,7 @@ done;
 '
 ```
 
-4. Comparing results. Folds and cpg numbers
-
-```bash
-
-# Creating a R object with the actual purity 
-cd /home/Illumina/Iñaki_Sasiain/data;
-Rscript ../scripts/get_data_to_analyse/preprocessing:data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -f FALSE -N FALSE; 
-
-# Define variables required to run the script
-cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
-#list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
-#list_of_preds=$(find ../estimate_purity/ -mindepth 1 -maxdepth 1 -type d  | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
-
-
-#### IMPORTANT: list_of_folds and list_of_preds have been hardcoded to test the script
-list_of_folds=("Fold1,Fold2,Fold3,Fold4,Fold5,Fold6");
-list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000,cpgs_200000");
-
-path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
-
-Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
-```
-
-3. Estimating purity for alpha value and fold
+4. Estimating purity for alpha value and fold
 
 # The regressions that were estimated to calculate the cross validation for the cpg number will be used.
 
@@ -586,13 +563,13 @@ for num in ${alphas[@]};
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
              mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
              cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
-             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 1 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
     done;
 done;
 '
 ```
 
-4. Estimating purity for slope threshold and fold
+5. Estimating purity for slope threshold and fold
 
 # The regressions that were estimated to calculate the cross validation for the cpg number will be used.
 
@@ -614,8 +591,63 @@ for num in ${slopes[@]};
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
              mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
              cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
-             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 1 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a 0.75 -s ${num} -p 5;
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_slope${num} -a 0.75 -s ${num} -p 5;
     done;
 done;
 '
+```
+
+4. Comparing results. 
+
+```bash
+
+# Creating a R object with the actual purity 
+cd /home/Illumina/Iñaki_Sasiain/data;
+Rscript ../scripts/get_data_to_analyse/preprocessing:data.r -s FALSE -B data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P 450k_CpGs_purities.RData -b betaOrig -p purityVector -S FALSE -f FALSE -N FALSE; 
+
+
+ #                             #
+ # COMPARE RESULTS: CPG NUMBER #
+ #                             #
+
+# Define variables required to run the script
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+#list_of_cpgs=$(find ../estimate_purity/cpgs* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+
+#### IMPORTANT: list_of_folds and list_of_preds have been hardcoded to test the script
+list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000,cpgs_200000");
+
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
+
+
+ #                        #
+ # COMPARE RESULTS: ALPHA #
+ #                        #
+
+# Define variables required to run the script
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_alphas=$(find ../estimate_purity/alpha* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_alphas} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o alpha_CrossVal;
+
+
+ #                        #
+ # COMPARE RESULTS: SLOPE #
+ #                        #
+
+# Define variables required to run the script
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_slopes=$(find ../estimate_purity/slope* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o slope_CrossVal; 
 ```
