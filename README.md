@@ -525,8 +525,7 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 nohup bash -c '
 
 #Defining cpg number list 
-#cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
-cpg_list=(200000 421368);
+cpg_list=(100 250 500 1000 2500 5000 10000 20000 30000 40000 50000 75000 100000 200000 421368);
 #Determining purity for each cpg number and fold
 for num in ${cpg_list[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
@@ -613,14 +612,11 @@ Rscript ../scripts/get_data_to_analyse/preprocessing:data.r -s FALSE -B data450k
 # Define variables required to run the script
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
 list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
-#list_of_cpgs=$(find ../estimate_purity/cpgs* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
-
-
-#### IMPORTANT: list_of_folds and list_of_preds have been hardcoded to test the script
-list_of_preds=("cpgs_100,cpgs_250,cpgs_500,cpgs_1000,cpgs_2500,cpgs_5000,cpgs_10000,cpgs_20000,cpgs_30000,cpgs_50000,cpgs_100000,cpgs_200000");
+list_of_cpgs=$(find ../estimate_purity/cpgs* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
 
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
+#Potting the results
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
 
 
@@ -635,6 +631,7 @@ list_of_alphas=$(find ../estimate_purity/alpha* -maxdepth 0 | cut -d \/ -f 3 | t
 
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
+#Potting the results
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_alphas} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o alpha_CrossVal;
 
 
@@ -649,5 +646,6 @@ list_of_slopes=$(find ../estimate_purity/slope* -maxdepth 0 | cut -d \/ -f 3 | t
 
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
+#Potting the results
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o slope_CrossVal; 
 ```
