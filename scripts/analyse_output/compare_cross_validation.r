@@ -182,7 +182,7 @@ dti_df <- dti_df %>% pivot_longer(cols=all_of(vec_of_folds),
                                   values_to="Distance_to_estimate")
 
 # Plotting the results 
-ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
+ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate * 100)) +
   geom_boxplot(fill="olivedrab4", ) +
   geom_smooth(aes(group=1), linewidth=2, se=FALSE) +
   labs(x = "Prediction", y = "Mean distance to estimate (% points)") +
