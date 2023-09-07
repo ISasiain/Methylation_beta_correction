@@ -36,7 +36,8 @@
 #   4. Running the analysis per each sample. Firstly the predicting_purity() function is used to predict
 #      1-Purity intervals per each CpG of the sample analysed. Then, the purity_coverage() function is
 #      used to calculate a single 1-Purity estimate and an interval per each sample based on all the 
-#      predicted intervals calculated for each CpG.
+#      predicted intervals calculated for each CpG. If the analysed CpG is not included into the reference 
+#      regression dataset it will be ignored.
 #
 #   5. Storing the output data, a list with teh estimate and interval calculated per sample, as an R object.
 #
@@ -256,13 +257,20 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
 
   # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_mat
   for (cpg in rownames(unadj_validation)) {
-    interval_mat[cpg,] <- predicting_purity(beta=unadj_validation[cpg, s],
-                                            slopes=my_slopes[cpg, ],
-                                            intercepts=my_intercepts[cpg, ],
-                                            RSE=my_RSE[cpg, ],
-                                            degrees_of_freedom=my_df[cpg, ],
-                                            slope_threshold=arguments$min_slope,
-                                            alpha=arguments$alpha)
+
+    # The following if statement will be used to take into account only cpgs included into the
+    # refernce regression dataset
+    if (cpg in rownames(my_slopes)) {
+
+      interval_mat[cpg,] <- predicting_purity(beta=unadj_validation[cpg, s],
+                                              slopes=my_slopes[cpg, ],
+                                              intercepts=my_intercepts[cpg, ],
+                                              RSE=my_RSE[cpg, ],
+                                              degrees_of_freedom=my_df[cpg, ],
+                                              slope_threshold=arguments$min_slope,
+                                              alpha=arguments$alpha)
+    
+    }
   }
 
   # Calculate the 1-Purity estimate and interval for the sample analysed.
@@ -312,17 +320,21 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
   interval_mat <- matrix(ncol=2, nrow=length(common_cpgs))
   rownames(interval_mat) <- na.omit(rownames(unadj_validation[common_cpgs,]))
   
+    # The following if statement will be used to take into account only cpgs included into the
+    # refernce regression dataset
+    if (cpg in rownames(my_slopes)) {
 
-  # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_mat
-  for (cpg in common_cpgs) {
-    interval_mat[cpg,] <- predicting_purity(beta=unadj_validation[cpg, s],
-                                            slopes=my_slopes[cpg, ],
-                                            intercepts=my_intercepts[cpg, ],
-                                            RSE=my_RSE[cpg, ],
-                                            degrees_of_freedom=my_df[cpg, ],
-                                            slope_threshold=arguments$min_slope,
-                                            alpha=arguments$alpha)
-  }
+      # Predicting all the 1-Purity intervals for each CpG of each sample and append them to the empty interval_mat
+      for (cpg in common_cpgs) {
+        interval_mat[cpg,] <- predicting_purity(beta=unadj_validation[cpg, s],
+                                              slopes=my_slopes[cpg, ],
+                                              intercepts=my_intercepts[cpg, ],
+                                              RSE=my_RSE[cpg, ],
+                                              degrees_of_freedom=my_df[cpg, ],
+                                              slope_threshold=arguments$min_slope,
+                                              alpha=arguments$alpha)
+      }
+    }
 
   # Calculate the 1-Purity estimate and interval for the sample analysed.
   # The results with be shown in list named with the sample id
