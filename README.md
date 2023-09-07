@@ -649,3 +649,51 @@ path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 #Potting the results
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o slope_CrossVal; 
 ```
+
+
+### Testing the tool with new data (Run in Corsaire)
+
+#### Using GSE148748 as new validation/test data
+
+1. Getting and preprocessing GSE148748 data
+
+```bash
+# Creating new directory to store the new data
+mkdir /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
+cd /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
+
+# Getting and unzipping the data
+wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE148nnn/GSE148748/matrix/GSE148748_series_matrix.txt.gz;
+gunzip GSE148748/matrix/GSE148748_series_matrix.txt.gz;
+
+# Preprocessing the downloaded file in R
+```R
+# Converting the tsv in a R object and removing headers.
+GSE148748 <- read.csv("GSE148748_series_matrix.txt", sep="\t", skip=56, na.strings=c("", NA), head=1);
+
+# Setting the sample and cpg ids as colnames and rownames
+rownames(GSE148748) <- GSE148748$"ID_REF";
+GSE148748 <- GSE148748[,-which(names(GSE148748)=="ID_REF")];
+
+# Removing cpgs without beta values
+GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),];
+
+#Saving the dataframe as an R object
+saveRDS(GSE148748, file="GSE148748_betas.RData");
+```
+
+2. Getting test and training data to run the analysis
+
+```bash
+# Getting training dataset (TNBC TCGA data)
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training;
+cp ../../../data/betas.RData .; # Complete betas dataset (450K CpG)
+cp ../../../data/purity.RData .; # Complete purity dataset
+
+# Getting test dataset (GSE148748)
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test;
+cp ../../../data/GSE148748_data/GSE148748_betas.RData .;
+```
+
+3. Using the whole TNBC samples of TCGA-Breast cancer to determint the reference regressions
+
