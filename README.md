@@ -692,8 +692,20 @@ cp ../../../data/purity.RData .; # Complete purity dataset
 
 # Getting test dataset (GSE148748)
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test;
-cp ../../../data/GSE148748_data/GSE148748_betas.RData .;
+cp ../../../data/GSE148748_data/GSE148748_betas.RData .; # Complete betas dataset
 ```
 
 3. Using the whole TNBC samples of TCGA-Breast cancer to determint the reference regressions
 
+```bash
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/regressions;
+Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training/betas.RData -p ../data/training/purity.RData -o ref_reg_TNBC;
+```
+
+4. Estimating purity for GSE148748 based on the reference regressions
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/******* -b ../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
+
+```
