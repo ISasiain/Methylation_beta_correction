@@ -653,7 +653,7 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 
 ### Testing the tool with new data (Run in Corsaire)
 
-#### Using GSE148748 as new validation/test data
+#### Using GSE148748 as new test data
 
 1. Getting and preprocessing GSE148748 data
 
@@ -706,6 +706,44 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/tra
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity;
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/******* -b ../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 
 ```
+
+#### Using LUAD data from TGCA for training and test
+
+1. Getting the data. Obtained from the group and reformatted.
+ 
+```R
+#The LUAD_LUSC_purity.RData file was first reformatted to meet the required format
+load("LUAD_LUSC_purity.RData")
+
+purity_LUAD <- setNames(as.vector(purity_LUAD[,1]), as.vector(purity_LUAD[,3]))
+purity_LUSC <- setNames(as.vector(purity_LUSC[,1]), as.vector(purity_LUSC[,3]))
+
+save(purity_LUAD, purity_LUSC, file="LUAD_LUSC_purity.RData")
+```
+
+``` bash
+# Getting complete dataset (without splitting in training and test)
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -S FALSE -f FALSE -N FALSE; 
+
+# Getting splitted dataset. 80% training 20% test.
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE; 
+```
+
+
+#### Using LUSC data from TCGA for training and test
+
+1. Getting the data. Obtained from the group and reformatted.
+
+``` bash
+# Getting complete dataset (without splitting in training and test)
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -S FALSE -f FALSE -N FALSE; 
+
+# Getting splitted dataset. 80% training 20% test.
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE;
