@@ -734,6 +734,18 @@ cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE; 
 ```
 
+2. Calculating regressions. TO RUN!!!!!!!
+
+```bash
+# Getting the regerssions for the complete dataset
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/full_data/betas.RData -p ../data/full_data/purity.RData -o ref_reg_LUAD;
+
+#Getting the regressions for only with the splitted validation dataset
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training_test/betas.RData -p ../data/training_test/purity.RData -o splitted_reg_LUAD;
+```
+
 
 #### Using LUSC data from TCGA for training and test
 
@@ -747,3 +759,16 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /h
 # Getting splitted dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE;
+```
+
+2. Calculating regressions. TO RUN!!!!!
+
+```bash
+# Getting the regerssions for the complete dataset
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/full_data;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/full_data/betas.RData -p ../data/full_data/purity.RData -o ref_reg_LUSC;
+
+#Getting the regressions for only with the splitted validation dataset
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training_test/betas.RData -p ../data/training_test/purity.RData -o splitted_reg_LUSC;
+```
