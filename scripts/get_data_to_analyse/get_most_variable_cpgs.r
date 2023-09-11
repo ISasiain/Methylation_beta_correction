@@ -19,7 +19,7 @@ suppressPackageStartupMessages(library(optparse))
 #Creating argument list
 argument_list <- list(
 
-  make_option(c("-r", "--refernce_dataset"), type="character",  
+  make_option(c("-r", "--reference_dataset"), type="character",  
               help="The path to the RObject containing the reference data (betas of each CpG) must be entered here.",
               metavar = "[PATH_TO_REFERNCE]"),
 
@@ -31,14 +31,14 @@ argument_list <- list(
               help="The nomber of the most variable CpGs to keep must be entered here.",
               metavar = "[CpG_NUM]"),
 
-  make_option(c("-l", "--included_CpG_list"), type="logical",  
+  make_option(c("-l", "--include_CpG_list"), type="logical",  
               help="This argument must be set to TRUE to generate a file containing the included CpG names as an output. The default argument is [%default]",
-              default=FALSE.
-              metavar = "[TRUE/FALSE]").RData
+              default=FALSE,
+              metavar = "[TRUE/FALSE]"),
 
   make_option(c("-p", "--prefix"), type="character",  
               help="The prefix of the output files can be selected here. The default argument is [%default]",
-              default="output".
+              default="output",
               metavar = "[PREFIX]")
 )
 
@@ -70,19 +70,19 @@ to_analyse <- readRDS(arguments$data_to_analyse)
                    )
 
 # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
-sorting_vec <- order(cpgs_variance)[1:arguments$number_of_most_variable_CpGs_to_include]
+sorting_vec <- order(cpgs_variance)[1:arguments$number_of_CpGs]
 
 # Sorting the betas dataframe and getting only the CpGs to include
-cpgs <- colnames(refernce[sorting_vec,])
+cpgs <- colnames(reference[sorting_vec,])
 
 
 # ===========================
 #     GENERATING OUTPUT
 # ===========================
 
-data_to_analyse <- data_to_analyse[cpgs,]
+to_analyse <- to_analyse[cpgs,]
 
-saveRDS(data_to_analyse, file=paste(arguments$prefix, "_most_variable_CpGs.RData", sep=""))
+saveRDS(to_analyse, file=paste(arguments$prefix, "_most_variable_CpGs.RData", sep=""))
 
 if (arguments$include_CpG_list) {
 
