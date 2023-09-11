@@ -1,3 +1,4 @@
+
 # METHYLATION DATA CORRECTION
 
 #### Author: Iñaki Sasiain
@@ -685,6 +686,8 @@ saveRDS(GSE148748, file="GSE148748_betas.RData");
 2. Getting test and training data to run the analysis
 
 ```bash
+#Using all the cpgs
+
 # Getting training dataset (TNBC TCGA data)
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training;
 cp ../../../data/betas.RData .; # Complete betas dataset (450K CpG)
@@ -693,6 +696,11 @@ cp ../../../data/purity.RData .; # Complete purity dataset
 # Getting test dataset (GSE148748)
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test;
 cp ../../../data/GSE148748_data/GSE148748_betas.RData .; # Complete betas dataset
+
+# Getting test dataset. Using only the 30.000 most variant CpGs of the refernce dataset
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000;
+
+Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -l TRUE -p TNBC;
 ```
 
 3. Using the whole TNBC samples of TCGA-Breast cancer to determint the reference regressions
@@ -705,9 +713,13 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/tra
 4. Estimating purity for GSE148748 based on the reference regressions
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity;
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
+# Using all the CpGs to estimate purity
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/all_cpgs;
+Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 
+#Using only the 30000 most variable reference of the reference dataset
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/30000_cpgs;
+Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 ```
 
 #### Using LUAD data from TGCA for training and test
