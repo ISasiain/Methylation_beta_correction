@@ -281,7 +281,7 @@ if(arguments$get_only_CpGs_with_highest_variance) {
                    )
 
   # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
-  sorting_vec <- order(cpgs_variance)[1:arguments$number_of_most_variable_CpGs_to_include]
+  sorting_vec <- order(cpgs_variance, decreasing=TRUE)[1:arguments$number_of_most_variable_CpGs_to_include]
 
   # Sorting the betas dataframe and getting only the number of CpGs selected
   betas <- betas[sorting_vec,]
