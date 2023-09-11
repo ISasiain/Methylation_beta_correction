@@ -70,11 +70,10 @@ to_analyse <- readRDS(arguments$data_to_analyse)
                    )
 
 # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
-sorting_vec <- order(cpgs_variance)[1:arguments$number_of_CpGs]
+sorting_vec <- order(cpgs_variance, decreasing=TRUE)[1:arguments$number_of_CpGs]
 
 # Sorting the betas dataframe and getting only the CpGs to include
-cpgs <- colnames(reference[sorting_vec,])
-
+cpgs <- rownames(reference[sorting_vec,])
 
 # ===========================
 #     GENERATING OUTPUT
