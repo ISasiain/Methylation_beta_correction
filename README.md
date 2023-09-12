@@ -730,8 +730,8 @@ Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../re
 #The LUAD_LUSC_purity.RData file was first reformatted to meet the required format
 load("LUAD_LUSC_purity.RData")
 
-purity_LUAD <- setNames(as.vector(purity_LUAD[,1]), as.vector(purity_LUAD[,3]))
-purity_LUSC <- setNames(as.vector(purity_LUSC[,1]), as.vector(purity_LUSC[,3]))
+purity_LUAD <- setNames(object=as.vector(purity_LUAD[,3]), as.vector(purity_LUAD[,1]))
+purity_LUSC <- setNames(object=as.vector(purity_LUSC[,3]), as.vector(purity_LUSC[,1]))
 
 save(purity_LUAD, purity_LUSC, file="LUAD_LUSC_purity.RData")
 ```
@@ -751,7 +751,7 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 ```bash
 # Getting the regerssions for the complete dataset
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/full_data/betas.RData -p ../data/full_data/purity.RData -o ref_reg_LUAD;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUAD;
 
 #Getting the regressions for only with the splitted validation dataset
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
