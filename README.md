@@ -667,21 +667,48 @@ cd /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
 wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE148nnn/GSE148748/matrix/GSE148748_series_matrix.txt.gz;
 gunzip GSE148748/matrix/GSE148748_series_matrix.txt.gz;
 
+
+# Getting only rows of interest
+cat GSE148748_series_matrix.txt | sed -n '27p; 58,$p' | sed 's/Breast cancer //g' > GSE148748_filtered_betas.txt;
+
 # Preprocessing the downloaded file in R
 ```R
 # Converting the tsv in a R object and removing headers.
-GSE148748 <- read.csv("GSE148748_series_matrix.txt", sep="\t", skip=56, na.strings=c("", NA), head=1);
+GSE148748 <- read.csv("GSE148748_filtered_betas.txt", sep="\t", na.strings=c("", NA), head=1)
 
 # Setting the sample and cpg ids as colnames and rownames
-rownames(GSE148748) <- GSE148748$"ID_REF";
-GSE148748 <- GSE148748[,-which(names(GSE148748)=="ID_REF")];
+rownames(GSE148748) <- GSE148748$"X.Sample_title"
+GSE148748 <- GSE148748[,-which(names(GSE148748)=="X.Sample_title")]
 
 # Removing cpgs without beta values
-GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),];
+GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),]
 
 #Saving the dataframe as an R object
-saveRDS(GSE148748, file="GSE148748_betas.RData");
+saveRDS(GSE148748, file="GSE148748_betas.RData")
 ```
+
+# Getting and formatting purity data
+
+```bash
+cat n235_WGS_PD_ID_TumFrac_Ploidy.txt | cut -f 1,3,5 > WGS_tum.frac.txt;
+```
+
+```R
+pur_frac <- read.csv("WGS_tum.frac.txt", header=TRUE, sep="\t")
+
+# Creating ASCAT purity vector
+ascat_purity_vector <- pur_frac[,"ASCAT_TUM_FRAC"]
+names(ascat_purity_vector) <- pur_frac[,"PD_ID"]
+
+# Creating BATTENBERG purity vector
+battenberg_purity_vector <- pur_frac[,"BATTENBERG_TUM_FRAC"]
+names(battenberg_purity_vector) <- pur_frac[,"PD_ID"]
+
+#Saving files
+saveRDS(ascat_purity_vector, file="ascat_purity_vector.RData")
+saveRDS(battenberg_purity_vector, file="battenberg_purity_vector.RData")
+```
+
 
 2. Getting test and training data to run the analysis
 
@@ -722,6 +749,8 @@ cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/30000_cpgs;
 Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 ```
 
+5. Comparing results with actual purities
+
 #### Using LUAD data from TGCA for training and test
 
 1. Getting the data. Obtained from the group and reformatted.
@@ -746,7 +775,7 @@ cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE; 
 ```
 
-2. Calculating regressions. TO RUN!!!!!!!
+2. Calculating regressions.
 
 ```bash
 # Getting the regerssions for the complete dataset
@@ -755,7 +784,7 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../da
 
 #Getting the regressions for only with the splitted validation dataset
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training_test/betas.RData -p ../data/training_test/purity.RData -o splitted_reg_LUAD;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
 ```
 
 
@@ -766,21 +795,59 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/
 ``` bash
 # Getting complete dataset (without splitting in training and test)
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -S FALSE -f FALSE -N FALSE; 
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -S FALSE -f FALSE -N FALSE; 
 
 # Getting splitted dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE;
 ```
 
-2. Calculating regressions. TO RUN!!!!!
+2. Calculating regressions.
 
 ```bash
 # Getting the regerssions for the complete dataset
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/full_data;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/full_data/betas.RData -p ../data/full_data/purity.RData -o ref_reg_LUSC;
+nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUSC;
 
 #Getting the regressions for only with the splitted validation dataset
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training_test/betas.RData -p ../data/training_test/purity.RData -o splitted_reg_LUSC;
+nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUSC;
+```
+
+
+#### Getting plots for the methods section
+
+1. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-PL-A8LV-01A"
+
+
+```bash
+#Copying betas and purities
+cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-PL-A8LV-01P;
+cp ../../01_5000_CpG/original_data/purity_validation.RData .;
+cp ../../01_5000_CpG/original_data/betas_validation.RData .;
+cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
+```
+
+```R
+#Getting betas and purity of interest 
+pur <- readRDS("purity_validation.RData")
+bet <- readRDS("betas_validation.RData")
+
+pur <- pur["TCGA-PL-A8LV-01A"]
+bet <- bet[,"TCGA-PL-A8LV-01A"]
+
+#Saving the files
+saveRDS(pur, "pur_TCGA-PL-A8LV-01A.RData")
+saveRDS(bet, "bet_TCGA-PL-A8LV-01A.RData")
+```
+
+
+2. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-EW-A1P7-01A"
+
+```bash
+#Copying betas and purities
+cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-EW-A1P7-01A;
+cp ../../01_5000_CpG/original_data/purity_validation.RData .;
+cp ../../01_5000_CpG/original_data/betas_validation.RData .;
+cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
 ```
