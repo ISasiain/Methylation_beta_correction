@@ -740,7 +740,7 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/tra
 4. Estimating purity for GSE148748 based on the reference regressions
 
 ```bash
-# Using all the CpGs to estimate purity
+# Using all the CpGs to estimate purity RUN AGAIN!!!!!!
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/all_cpgs;
 Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 
@@ -750,6 +750,23 @@ Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../re
 ```
 
 5. Comparing results with actual purities
+
+
+```bash
+# Copying the data
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/purities;
+cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/ascat_purity_vector.RData .;
+cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/battenberg_purity_vector.RData .;
+
+
+# Comparing results with purities determined with ASCAT method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/test_30000/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg;
+
+# Comparing results with purities determined with BATTENBERG method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/test_30000/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
+```
 
 #### Using LUAD data from TGCA for training and test
 
