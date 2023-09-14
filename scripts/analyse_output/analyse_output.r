@@ -144,8 +144,10 @@ purity_validation <- readRDS(arguments$"path_to_actual_1-P")
 cpgs_ls <- readRDS(arguments$"path_to_cpgs_used_per_sample")
 original_betas <- readRDS(arguments$"path_to_original_betas")
 
+print(purity_validation)
+
 #Adding this to adapt the sample names
-names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
+#names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
 
 # ===========================================================
@@ -192,6 +194,8 @@ det_qual <- function(output_list, purity_vector) {
 }
 
 out_df <- det_qual(out_ls, purity_validation)
+
+print(out_df)
 
 # ============================================================
 #     PROCESS DATA TO ANALYSE CPG USAGE IN THE PREDICTION
@@ -308,7 +312,7 @@ estimate <- c()
 lower_lim <- c()
 
 #Actual 1-P value
-actual_1_minus_P <- 1-purity_validation
+actual_1_minus_P <- 1-purity_validation[names(out_ls)]
 index <- sort(actual_1_minus_P, index.return=TRUE)$ix
 
 #Getting the values of all the samples in vectors
@@ -326,6 +330,8 @@ plot_df <- data.frame(
   est=estimate[order(index)],
   lower=lower_lim[order(index)]
 )
+
+print(plot_df)
 
 ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
