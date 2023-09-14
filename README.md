@@ -761,11 +761,11 @@ cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/battenberg_purity_vector.RD
 
 # Comparing results with purities determined with ASCAT method;
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/test_30000/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg;
 
 # Comparing results with purities determined with BATTENBERG method;
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/test_30000/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
 ```
 
 #### Using LUAD data from TGCA for training and test
