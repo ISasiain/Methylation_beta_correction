@@ -858,6 +858,10 @@ saveRDS(pur, "pur_TCGA-PL-A8LV-01A.RData")
 saveRDS(bet, "bet_TCGA-PL-A8LV-01A.RData")
 ```
 
+```bash
+# Getting plots. The script is hardcoded
+Rscript ../plot_my_sample.r;
+```
 
 2. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-EW-A1P7-01A"
 
@@ -867,4 +871,22 @@ cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-EW-A1P7-01
 cp ../../01_5000_CpG/original_data/purity_validation.RData .;
 cp ../../01_5000_CpG/original_data/betas_validation.RData .;
 cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
+```
+
+```R
+#Getting betas and purity of interest 
+pur <- readRDS("purity_validation.RData")
+bet <- readRDS("betas_validation.RData")
+
+pur <- pur["TCGA-EW-A1P7-01A"]
+bet <- bet[,"TCGA-EW-A1P7-01A"]
+
+#Saving the files
+saveRDS(pur, "pur_TCGA-EW-A1P7-01A.RData")
+saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
+```
+
+```bash
+# Getting plots. The script is hardcoded
+Rscript ../plot_my_sample.r;
 ```
