@@ -804,6 +804,30 @@ cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
 ```
 
+3. Predicting purity using the most variant 30.000 CpGs identified for TNBC
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
+cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000/TNBC_CpG_vector.RData .;
+```
+
+```R
+## Using R to get only the betas of the selected CpGs
+
+#Loading the data
+betas <- readRDS("betas_validation.RData")
+cpgs_to_include <- readRDS("TNBC_CpG_vector.RData")
+
+#Filtering betas
+filtered_betas <- betas[cpgs_to_include,]
+
+#Saving the data
+saveRDS(filtered_betas, file="filtered_betas_validation.RData")
+```
+
+```bash
+
+```
 
 #### Using LUSC data from TCGA for training and test
 
