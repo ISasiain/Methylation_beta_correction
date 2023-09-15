@@ -742,7 +742,7 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/tra
 ```bash
 # Using all the CpGs to estimate purity RUN AGAIN!!!!!!
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/all_cpgs;
-Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
+Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../regressions/ -b ../../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
 
 #Using only the 30000 most variable reference of the reference dataset
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/30000_cpgs;
@@ -759,11 +759,11 @@ cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/ascat_purity_vector.RData .
 cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/battenberg_purity_vector.RData .;
 
 
-# Comparing results with purities determined with ASCAT method;
+# Comparing the 30000CpG results with purities determined with ASCAT method;
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
 Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg;
 
-# Comparing results with purities determined with BATTENBERG method;
+# Comparing the 30000 CpG results with purities determined with BATTENBERG method;
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
 Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
 ```
@@ -807,7 +807,7 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../da
 3. Predicting purity using the most variant 30.000 CpGs identified for TNBC
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
 cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000/TNBC_CpG_vector.RData .;
 ```
 
@@ -827,9 +827,19 @@ saveRDS(filtered_betas, file="filtered_betas_validation.RData")
 
 ```bash
 #Estimating purity
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_TNBC;
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity/using_cpgs_from_TNBC;
 
-Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUAD_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
+nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUAC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
+```
+
+4. Plotting results
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAD_pur.using_TNBC_cpgs.RData -a ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC;
 ```
 
 #### Using LUSC data from TCGA for training and test
@@ -858,6 +868,41 @@ cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
 nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUSC;
 ```
 
+3. Predicting purity using the most variant 30.000 CpGs identified for TNBC TO RUN!!!!!!!
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
+cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000/TNBC_CpG_vector.RData .;
+```
+
+```R
+## Using R to get only the betas of the selected CpGs
+
+#Loading the data
+betas <- readRDS("betas_validation.RData")
+cpgs_to_include <- readRDS("TNBC_CpG_vector.RData")
+
+#Filtering betas
+filtered_betas <- betas[cpgs_to_include,]
+
+#Saving the data
+saveRDS(filtered_betas, file="filtered_betas_validation.RData")
+```
+
+```bash
+#Estimating purity
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_TNBC;
+
+nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUSC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
+```
+
+4. Plotting results
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.RData -a ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.used_cpgs.RData -o LUSC_30000cpg_from_TNBC;
+```
 
 #### Getting plots for the methods section
 
