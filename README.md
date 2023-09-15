@@ -826,7 +826,10 @@ saveRDS(filtered_betas, file="filtered_betas_validation.RData")
 ```
 
 ```bash
+#Estimating purity
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_TNBC;
 
+Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUAD_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
 ```
 
 #### Using LUSC data from TCGA for training and test
