@@ -71,8 +71,10 @@
 #     *The function of the command line options are the following; 
 #
 #       -c: Number of cores to be used to run the program. Default: 1.
-#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
-#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
+#       -B: The path to the file with the beta values of the refernce cohort must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -P: The path to the file with the purity values of the refrence cohort must be entered here. The file must be an R object containing a dictionary vector.
+#       -b: Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -p: Path to the tsv file with the predicted sample purity values of the samples whose betas have to be corrected. The file must be the tsv text file generated as an output of run_all_validation.r.
 #       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
 #       -n: The prefix to be used to name the output files. Default: output.
 #
@@ -250,12 +252,18 @@ res <- parRapply(cl = cl, #ClusterS to run the process
 # CREATING RESULT LIST
 # ====================
 
-# Creating a list to add the results
+# Creating a list to add the results (Only of the samples to be corrected) ADAPT THIS!!!!
 result_list <- list(
 
   betas.original = do.call("rbind",lapply(res,function(x) x$y.orig)), #Original beta values
   betas.tumor = do.call("rbind",lapply(res,function(x) x$y.tum)), #Corrected tumor beta values
   betas.microenvironment = do.call("rbind",lapply(res,function(x) x$y.norm)), #Corrected microenvironment beta values
+
+)
+
+# Creating a list to add the parameters of the correction regressions
+reg_list <- list(
+
   cpg.populations =  do.call("rbind",lapply(res,function(x) x$groups)), #Methylation patterns (populations) of each CpG
   reg.slopes = do.call("rbind",lapply(res,function(x) x$res.slopes)), #Slopes of the populations
   reg.intercepts = do.call("rbind",lapply(res,function(x) x$res.int)), #Intercepts of the populations
@@ -273,8 +281,13 @@ df_to_RObj <- function(df, filename) {
   saveRDS(df, filename)
 }
 
-#Creating output files per each dataframe of the output_list list
+#Creating output files per each dataframe of the result_list list (getting only the results for the CpGs of the predicted samples)
 lapply(names(result_list), function(n) {
+  df_to_RObj(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.RData",sep=""))
+})
+
+#Creating output files per each dataframe of the reg_list list
+lapply(names(reg_list), function(n) {
   df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
 })
 
