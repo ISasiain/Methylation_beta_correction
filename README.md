@@ -789,7 +789,7 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /h
 
 # Getting splitted dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE; 
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE; 
 ```
 
 2. Calculating regressions.
@@ -799,7 +799,7 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUAD;
 
-#Getting the regressions for only with the splitted validation dataset
+#Getting the regressions for only with the splitted validation dataset INCORRECT RUN AGAIN!!!!!
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
 ```
@@ -838,8 +838,6 @@ nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ..
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
-
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAD_pur.using_TNBC_cpgs.RData -a ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC;
 ```
 
 #### Using LUSC data from TCGA for training and test
@@ -901,7 +899,7 @@ nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ..
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
 
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.RData -a ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.used_cpgs.RData -o LUSC_30000cpg_from_TNBC;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUSC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
 ```
 
 #### Getting plots for the methods section
