@@ -360,9 +360,9 @@ list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_l
 }
 
 
-# =====================
-# CREATING OUTPUT FILES
-# =====================
+# =========================
+# CREATING OUTPUT R OBJECTS
+# =========================
 
 # Stop the defined clusters
 stopCluster(cl)
@@ -376,7 +376,51 @@ saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, argum
 saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$output_filename, ".used_cpgs.RData", sep=""))
 
 
-#Print message to show the end of the execution
+# ==========================
+# CREATING OUTPUT TEXT FILES
+# ==========================
+
+# Create a vector with the column names of the output dataframe
+cols <- c("sample", "num_of_est", "estimate", "low_bound", "top_bound")
+
+# Creating a dataframe with the columns below
+output_tsv <- data.frame(matrix(nrow=0, ncol=length(cols)))
+colnames(output_tsv) <- cols
+
+# Appending the values of the list of predicted intervals
+for (sample in names(list_of_predicted_intervals)) {
+
+  # This counter will be used to take into account the cases (very unlikely) in which more than
+  # one estimates were detected.
+  num_of_estimates <- 1
+
+  # A different row will be appended per each detected estimate per sample
+  for (num in length(list_of_predicted_intervals[[sample]][["1-Pur_estimates"]])) {
+
+    # Creating vector with the data to append
+    row <- c(sample, 
+             length(list_of_predicted_intervals[[sample]][["1-Pur_estimates"]]), # This will indicate the number of estimates detected
+             list_of_predicted_intervals[[sample]][["1-Pur_estimates"]][num],
+             list_of_predicted_intervals[[sample]][["interval(s)"]][[num]][1],
+             list_of_predicted_intervals[[sample]][["interval(s)"]][[num]][2]
+             )
+    
+    # Appending row to dataframe
+    output_tsv <- rbind(output_tsv, row)
+          
+  }
+
+}
+
+
+# Saving text file
+write.table(output_tsv, 
+            file=paste(arguments$output_filename, ".tsv", sep=""),
+            col.names=TRUE,
+            sep="\t")
+
+
+# Print message to show the end of the execution
 cat("\n\n**********************\n")
 cat("   PROCESS FINISHED\n")
 cat("**********************\n")

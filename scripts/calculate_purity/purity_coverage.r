@@ -216,7 +216,7 @@ purity_value_per_sample <- function(pred_purity_confidence,
   # REMOVING THE INTERVALS WITHOUT A MAXIMUM VALUE
   # ==============================================
   
-# Checking if any of the maxs identified are inside the detected intervals. If they are the interval will be removed
+# Checking if any of the maxs identified are inside the detected intervals. If they are not, the interval will be removed
 interval_list <- Filter(function(interval) {
     length(intersect(seq(interval[1], interval[2], by = 0.001), format(output_list[["1-Pur_estimates"]], 3))) != 0
 }, interval_list)
