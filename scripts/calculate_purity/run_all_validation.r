@@ -391,7 +391,7 @@ saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$outpu
 # ==========================
 
 # Create a vector with the column names of the output dataframe
-cols <- c("sample", "num_of_est", "estimate", "low_bound", "top_bound")
+cols <- c("#sample", "num_of_est", "estimate", "low_bound", "top_bound")
 
 # Creating a dataframe with the columns below
 output_tsv <- data.frame(matrix(nrow=0, ncol=length(cols)))
