@@ -766,6 +766,15 @@ Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_pur
 # Comparing the 30000 CpG results with purities determined with BATTENBERG method;
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
 Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
+
+
+# Comparing the all the CpG results with purities determined with ASCAT method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/all_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/all_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test/GSE148748_betas.RData -o ascat_allcpg;
+
+# Comparing the all the CpG results with purities determined with BATTENBERG method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/all_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/all_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test/GSE148748_betas.RData -o battenberg_allcpg;
 ```
 
 #### Using LUAD data from TGCA for training and test
@@ -799,9 +808,9 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUAD;
 
-#Getting the regressions for only with the splitted validation dataset INCORRECT RUN AGAIN!!!!!
+#Getting the regressions for only the splitted training dataset INCORRECT RUN AGAIN!!!!!
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 20 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
 ```
 
 3. Predicting purity using the most variant 30.000 CpGs identified for TNBC
@@ -866,7 +875,7 @@ cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
 nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUSC;
 ```
 
-3. Predicting purity using the most variant 30.000 CpGs identified for TNBC TO RUN!!!!!!!
+3. Predicting purity using the most variant 30.000 CpGs identified for TNBC 
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
