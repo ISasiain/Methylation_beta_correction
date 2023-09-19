@@ -367,8 +367,6 @@ list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_l
 # Stop the defined clusters
 stopCluster(cl)
 
-print(class(list_of_used_cpgs))
-
 # Save the list of predicted values as an R object
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
 
@@ -389,10 +387,6 @@ colnames(output_tsv) <- cols
 
 # Appending the values of the list of predicted intervals
 for (sample in names(list_of_predicted_intervals)) {
-
-  # This counter will be used to take into account the cases (very unlikely) in which more than
-  # one estimates were detected.
-  num_of_estimates <- 1
 
   # A different row will be appended per each detected estimate per sample
   for (num in length(list_of_predicted_intervals[[sample]][["1-Pur_estimates"]])) {
