@@ -367,6 +367,8 @@ list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_l
 # Stop the defined clusters
 stopCluster(cl)
 
+cat("\nSaving output files...\n\n")
+
 # Save the list of predicted values as an R object
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
 
