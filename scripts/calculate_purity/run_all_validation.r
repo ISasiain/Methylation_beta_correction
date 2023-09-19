@@ -10,6 +10,18 @@
 ## - USED R PACKAGES:
 #
 #   *OPTPARSE. Parsing command line arguments
+#   *PARALLEL. Parallelization of the script#!/usr/bin/Rscript
+
+## -SCRIPT'S NAME: run_all_validation.r
+#
+## - DESCRIPTION: 
+#
+#   This script predicts the purity of the cancer samples based on the CpG's beta values and refernce
+# regressions that reflect the different methylation patterns of the different populations.
+# 
+## - USED R PACKAGES:
+#
+#   *OPTPARSE. Parsing command line arguments
 #   *PARALLEL. Parallelization of the script
 #   *DOSNOW. Parallelization of the script
 #   *FOREACH. Parallelization of the script
@@ -288,7 +300,6 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
 list_of_predicted_intervals <- setNames(lapply(out_list, function(x) x$value), sapply(out_list, function(x) x$name))
 list_of_used_cpgs <- setNames(sapply(out_list, function(x) x$cpgs), sapply(out_list, function(x) x$name))
 
-
 # ===================================================================
 # RECALCULATING PURITY ONLY WITH THE CPGS INCLUDED IN ALL THE SAMPLES
 # ===================================================================
@@ -359,7 +370,6 @@ list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_l
 
 }
 
-
 # =========================
 # CREATING OUTPUT R OBJECTS
 # =========================
@@ -367,7 +377,7 @@ list_of_used_cpgs <- setNames(lapply(out_list, function(x) x$cpgs), sapply(out_l
 # Stop the defined clusters
 stopCluster(cl)
 
-cat("\nSaving output files...\n\n")
+cat("\n\nSaving output files...\n")
 
 # Save the list of predicted values as an R object
 saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
@@ -385,7 +395,6 @@ cols <- c("sample", "num_of_est", "estimate", "low_bound", "top_bound")
 
 # Creating a dataframe with the columns below
 output_tsv <- data.frame(matrix(nrow=0, ncol=length(cols)))
-colnames(output_tsv) <- cols
 
 # Appending the values of the list of predicted intervals
 for (sample in names(list_of_predicted_intervals)) {
@@ -408,11 +417,15 @@ for (sample in names(list_of_predicted_intervals)) {
 
 }
 
+#Setting column names
+colnames(output_tsv) <- cols
 
-# Saving text file
+# Saving text file (tsv)
 write.table(output_tsv, 
             file=paste(arguments$output_filename, ".tsv", sep=""),
+            row.name=FALSE,
             col.names=TRUE,
+            quote=FALSE,
             sep="\t")
 
 
