@@ -877,6 +877,10 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /h
 # Getting splitted dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE;
+
+# Getting splitted + 30.000CpG dataset. 80% training 20% test.
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test_most_variable;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N TRUE -n 30000;
 ```
 
 2. Calculating regressions.
@@ -889,6 +893,10 @@ nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ..
 #Getting the regressions for only with the splitted validation dataset
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
 nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUSC;
+
+#Getting the regressions for only with the splitted validation dataset using only 30000 most variable cpgs
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/most_variable;
+nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test_most_variable/betas_training.RData -p ../../data/training_test_most_variable/purity_training.RData -o splitted+30000_reg_LUSC;
 ```
 
 3. Predicting purity using the most variant 30.000 CpGs identified for TNBC 
@@ -917,6 +925,11 @@ saveRDS(filtered_betas, file="filtered_betas_validation.RData")
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_TNBC;
 
 nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUSC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
+
+#EStimating purity using 30.000 most varian CpGs from LUSC
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_LUSC;
+
+nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/most_variable/ -b ../../data/training_test_most_variable/betas_validation.RData -o LUSC_pur.using_Cpgs_from_LUSC -a 0.75 -s 0.25 -p 5;
 ```
 
 4. Plotting results
