@@ -798,7 +798,11 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /h
 
 # Getting splitted dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE; 
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE;
+
+# Getting splitted + 30.000 most variant CpGs dataset. 80% training 20% test.
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test_most_variable;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N TRUE -n 30000; 
 ```
 
 2. Calculating regressions.
@@ -808,9 +812,13 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUAD;
 
-#Getting the regressions for only the splitted training dataset INCORRECT RUN AGAIN!!!!!
+#Getting the regressions for only the splitted training dataset
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 20 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
+
+#Getting the regressions for only the splitted training dataset. Only most variant 30.000 CpGs
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test_most_variable;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test_most_variable/betas_training.RData -p ../../data/training_test_most_variable/purity_training.RData -o splitted+30000_reg_LUAD;
 ```
 
 3. Predicting purity using the most variant 30.000 CpGs identified for TNBC
@@ -841,7 +849,15 @@ cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity/using_cpgs_from_T
 nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUAC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
 ```
 
-4. Plotting results
+4. Predicting purity using the most variant 30.000 CpGs identified from LUAC
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity/using_cpgs_from_LUAC;
+
+nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test_most_variable/ -b ../../data/training_test_most_variable/betas_validation.RData -o LUAC_pur.using_Cpgs_from_LUAC -a 0.75 -s 0.25 -p 5;
+```
+
+5. Plotting results
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
