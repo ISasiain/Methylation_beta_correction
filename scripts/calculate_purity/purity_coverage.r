@@ -97,6 +97,8 @@ purity_value_per_sample <- function(pred_purity_confidence,
   #
   #abline(h=0, col="red", lwd=4)
   #
+  #dev.off()
+  #
   ### COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Corrected coverage
 
   #Predict values per each section using the smoothed function
@@ -106,20 +108,25 @@ purity_value_per_sample <- function(pred_purity_confidence,
   #Getting the maximum corrected coverage value
   max_ccov <- max(smoothed_coverage_values)
   
-  dev.off()
+
 
   # CORRECTING THE CORRECTION
 
   # In some cases, when there is only one peak between 0.75 and 1 because
   # the noise peak and the actual peak are mixed, the correctionmethod may
   # generate the predicted 1-Purity to be 0. In order to deal with that, the
-  # intercept of the regerssion used to correct the data will be set to 0 when
+  # intercept of the regerssion used to correct the data will be set to the first coverage value when
   # the 1-P is predicted to be 0 and the 1-P recalculated based on that.
 
   if (sections[which(smoothed_coverage_values == max_ccov)] == 0) {
+  
+  # Determining the intercept. The first coverage value of the 0-1 1-Purity range.
+  inter <- unname(coverage_per_section["0"])
 
-  #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
-  corrected_coverage <- setNames(residuals(lm( unname(coverage_per_section) ~ 0 + as.numeric(names(coverage_per_section)))),names(coverage_per_section))
+  #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals and fixed intercept
+  # The intercept fixation is done this way to avoid R from interpreting inter as another variable of the linear model it is 
+  # building, so inter is substracted to the coverage, and then the intercept is set to 0.
+  corrected_coverage <- setNames(residuals(lm(I(unname(coverage_per_section) - inter) ~ as.numeric(names(coverage_per_section)) + 0)),names(coverage_per_section))
   
   #Smoothening the plot using spline
   smooth <- smooth.spline(x=as.numeric(names(corrected_coverage)), 
