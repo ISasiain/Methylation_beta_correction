@@ -863,6 +863,8 @@ nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ..
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.used_cpgs.RData -o LUAC_30000cpg_from_LUAC -b ../data/training_test_most_variable/betas_validation.RData;
 ```
 
 #### Using LUSC data from TCGA for training and test
@@ -938,6 +940,11 @@ nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ..
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUSC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
+
+
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.used_cpgs.RData -o LUSC_30000cpg_from_LUSC -b ../data/training_test_most_variable/betas_validation.RData;
 ```
 
 #### Getting plots for the methods section
@@ -997,4 +1004,38 @@ saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
 ```bash
 # Getting plots. The script is hardcoded
 Rscript ../plot_my_sample.r;
+```
+
+#### Using the purity estimation as QC for ASCAT processing
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/data;
+```
+
+```R
+#Transforming the data. Using cpg id as row name
+load("scanb_base.RData")
+
+rownames(scanb_base) <- scanb_base[,1]
+scanb_base <- scanb_base[,-1]
+
+saveRDS(file="scanb_base.RData", scanb_base)
+```
+
+```bash
+#Getting the refernce cohort
+cp ../../data/betas.RData ./cohort_betas.RData; # Complete betas dataset (450K CpG)
+
+#Transforming the data in a R object with only the 30.000 most variable CpPgs detected in the cohort
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r cohort_betas.RData -a scanb_base.RData -n 30000 -l TRUE -p scanb_base;
+
+
+# Getting reference regressions
+cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/regressions;
+cp ../../09_TNBC_final/regressions/* .;
+
+
+# Running purity estimation
+cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/estimating_purity;
+nohup Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/scanb_base_most_variable_CpGs.RData -o ScanB_purity_est_30.000CpG -a 0.75 -s 0.25 -p 5;
 ```
