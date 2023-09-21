@@ -727,7 +727,7 @@ cp ../../../data/GSE148748_data/GSE148748_betas.RData .; # Complete betas datase
 # Getting test dataset. Using only the 30.000 most variant CpGs of the refernce dataset
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000;
 
-Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -l TRUE -p TNBC;
+Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -C TRUE -p TNBC;
 ```
 
 3. Using the whole TNBC samples of TCGA-Breast cancer to determint the reference regressions
@@ -1006,6 +1006,37 @@ saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
 Rscript ../plot_my_sample.r;
 ```
 
+#### Comparing CpGs used for the prediction among cancer types
+
+```bash
+#Getting reference betas
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data/cohorts; 
+
+cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training/betas.RData breast_ref.RData;
+cp /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data/betas.RData LUAC_ref.RData;
+cp /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data/betas.RData LUSC_ref.RData;
+
+
+
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data;
+
+#Getting Cpg list for breast cancer
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/breast_ref.RData -a ./cohorts/breast_ref.RData -B FALSE -C TRUE -n 30000 -p breast_30000CpG;
+
+#Getting CpG list for LUAC
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -B FALSE -C TRUE -n 30000 -p LUAC_30000CpG;
+
+#Getting CpG list for LUSC
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -B FALSE -C TRUE -n 30000 -p LUSC_30000CpG;
+
+
+#Analysing the data
+cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
+
+Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
+```
+
+
 #### Using the purity estimation as QC for ASCAT processing
 
 ```bash
@@ -1027,15 +1058,15 @@ saveRDS(file="scanb_base.RData", scanb_base)
 cp ../../data/betas.RData ./cohort_betas.RData; # Complete betas dataset (450K CpG)
 
 #Transforming the data in a R object with only the 30.000 most variable CpPgs detected in the cohort
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r cohort_betas.RData -a scanb_base.RData -n 30000 -l TRUE -p scanb_base;
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r cohort_betas.RData -a scanb_base.RData -n 30000 -C TRUE -p scanb_base;
 
 
 # Getting reference regressions
-cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/regressions;
+cd /home/Illumina/Iñaki_Sasiain/extra_QC_for_ASCAT/regressions;
 cp ../../09_TNBC_final/regressions/* .;
 
 
 # Running purity estimation
-cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/estimating_purity;
+cd /home/Illumina/Iñaki_Sasiain/extra_QC_for_ASCAT/estimating_purity;
 nohup Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/scanb_base_most_variable_CpGs.RData -o ScanB_purity_est_30.000CpG -a 0.75 -s 0.25 -p 5;
 ```
