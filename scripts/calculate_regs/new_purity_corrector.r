@@ -129,7 +129,11 @@ argument_list <- list(
 
   make_option(c("-n", "--output_name"), type="character", default="output",
               help="The prefix to be used to name the output files. Default [%default]",
-              metavar = "[file path]")
+              metavar = "[file path]"),
+
+  make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
+              help="Onlt the CpGs whose betas' variance is over this threshold will be used to determine the refrence regressions. Default [%default]",
+              metavar = "[variance_threshold]")
 
 )
 
@@ -164,12 +168,23 @@ registerDoParallel(cl)
 invisible(clusterEvalQ(cl, {library("flexmix")}))
 
 
-# =============================================
-# LOADING, PREPROCESSING AND ANALYSING THE DATA
-# =============================================
+# ==================================
+# LOADING AND PREPROCESSING THE DATA
+# ==================================
 
+#Loading the data
 unadjusted_betas <- readRDS(arguments$input_beta)
 purities <- readRDS(arguments$input_purity)
+
+#Create a vector with the variance of each cpg (row)
+cpg_variance <- apply(unadjusted_betas, 1, var)
+
+#Filtering CpGs based on the variance
+unadjusted_betas <- unadjusted_betas[cpg_variance >= arguments$variance_threshold,]
+
+# ==================
+# ANALYSING THE DATA
+# ==================
 
 #Adding seed to each row of the beta value dataframe
 betaRun <- cbind(seed=1:nrow(unadjusted_betas),unadjusted_betas)
