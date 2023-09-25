@@ -777,6 +777,44 @@ cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
 Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/all_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/all_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test/GSE148748_betas.RData -o battenberg_allcpg;
 ```
 
+5. Analysing the effect of ploidy on the error
+
+```bash
+#Getting ploidy data
+cd /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
+cat n235_WGS_PD_ID_TumFrac_Ploidy.txt | cut -f 1,2,4 > WGS_ploidy.txt;
+```
+
+```R
+ploidy <- read.csv("WGS_ploidy.txt", header=TRUE, sep="\t")
+
+# Creating ASCAT purity vector
+ascat_ploidy <- ploidy[,"ASCAT_PLOIDY"]
+names(ascat_ploidy) <- ploidy[,"PD_ID"]
+
+# Creating BATTENBERG purity vector
+battenberg_ploidy <- ploidy[,"BATTENBERG_PLOIDY"]
+names(battenberg_ploidy) <- ploidy[,"PD_ID"]
+
+#Saving files
+saveRDS(ascat_ploidy, file="ascat_ploidy.RData")
+saveRDS(battenberg_ploidy, file="battenberg_ploidy.RData")
+```
+
+```bash
+#Compying ploidy data
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/ploidy;
+cp ../../../data/GSE148748_data/*_ploidy.RData .;
+
+# Comparing the 30000CpG results with purities determined with ASCAT method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg -P TRUE -p ../../data/ploidy/ascat_ploidy.RData;
+
+# Comparing the 30000 CpG results with purities determined with BATTENBERG method;
+cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
+Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg -P TRUE -p ../../data/ploidy/battenberg_ploidy.RData;
+```
+
 #### Using LUAD data from TGCA for training and test
 
 1. Getting the data. Obtained from the group and reformatted.
@@ -1031,9 +1069,11 @@ Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts
 
 
 #Analysing the data
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots
+
 cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
 
-Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
+Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
 ```
 
 
