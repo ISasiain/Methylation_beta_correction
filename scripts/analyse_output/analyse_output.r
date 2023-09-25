@@ -129,7 +129,15 @@ argument_list <- list(
 
   make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
               help="The user can especify a prefox for the output plots. Default [%default]",
-              metavar = "[prefix]")
+              metavar = "[prefix]"),
+
+  make_option(c("-P", "--plot_dis_vs_ploidy"), type="logical", default=FALSE,
+              help="This argument must be set to TRUE in order to plot the Distance to estimate VS ploidy. Default [%default]",
+              metavar = "[TRUE/FALSE]"),
+
+  make_option(c("-p", "--path_to_ploidy"), type="character",
+              help="The user must especify the path of the R object containing the actual ploidy values if the -P flag has been set to TRUE.",
+              metavar = "[path]")
 
 )
 
@@ -380,6 +388,26 @@ ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "Dis_vs_es1-P.scatterplot.png",sep="."))
 
+
+## DISTANCE TO INTERVAL VS PLOIDY
+if (arguments$plot_dis_vs_ploidy) {
+
+    ploidy <- readRDS(arguments$path_to_ploidy)
+
+    ggplot(out_df, aes(x=ploidy[row.names(out_df)], y=out_df$Dis_to_est[order(index)])) +
+    geom_point(color="red") +
+    ggtitle("Distance to interval vs ploidy") +
+    xlab("Ploidy") +
+    ylab("Disance to estimate") + 
+    theme_classic() +
+    theme(plot.title = element_text(size = 20),
+          axis.title = element_text(size = 16),
+          axis.text = element_text(size = 14),
+          panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+          panel.grid.minor = element_blank())
+  ggsave(paste(arguments$output_prefix, "Dis_vs_ploidy.scatterplot.png",sep="."))
+
+}
 
 ## ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
