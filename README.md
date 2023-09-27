@@ -516,6 +516,29 @@ for num in ${cpg_list[@]};
 done;
 '
 ```
+*2.1. Generating the regressions ffiltering CpGs based on variance
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
+
+nohup bash -c '
+var_list=(0.03 0.035 0.04 0.045 0.05 0.065 0.07) #Using only variances corresponding to 10000-100000 cpg nums
+
+for var in ${var_list};
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var};
+    cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
+       for dir in $(ls ../../data/cpgs_421368/*_BetasTraining.RData); 
+          do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
+          mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
+          cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
+          Rscript ../../../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_PurityTraining.RData -o ${fold} -v ${var};
+    done;
+done;
+'
+    
+
+```
+
 
 3. Estimating purity for cpg number and fold
 
@@ -840,7 +863,24 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 
 # Getting splitted + 30.000 most variant CpGs dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test_most_variable;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N TRUE -n 30000; 
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N TRUE -n 30000;
+
+
+# Getting ploidy data.
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/ploidy;
+cp cp ../../../data/LUAD_data/LUAD_ploidy.csv .;
+```
+
+```R
+#Transforming the data into a R vector
+purity_df <- read.csv("LUAD_ploidy.csv")
+
+#Creating named vector
+ploidy <- purity_df[,3]
+names(ploidy) <- purity_df[,1]
+
+#Saving as an R object
+saveRDS(ploidy, file="LUAD_ploidy.RData")
 ```
 
 2. Calculating regressions.
@@ -902,7 +942,7 @@ cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
 
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.used_cpgs.RData -o LUAC_30000cpg_from_LUAC -b ../data/training_test_most_variable/betas_validation.RData;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.used_cpgs.RData -o LUAC_30000cpg_from_LUAC -b ../data/training_test_most_variable/betas_validation.RData -P TRUE -p ../data/ploidy/LUAD_ploidy.RData;
 ```
 
 #### Using LUSC data from TCGA for training and test
@@ -921,6 +961,23 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TR
 # Getting splitted + 30.000CpG dataset. 80% training 20% test.
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test_most_variable;
 Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N TRUE -n 30000;
+
+
+# Getting ploidy data.
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/ploidy;
+cp ../../../data/LUSC_data/LUSC_ploidy.csv .;
+```
+
+```R
+#Transforming the data into a R vector
+purity_df <- read.csv("LUSC_ploidy.csv")
+
+#Creating named vector
+ploidy <- purity_df[,3]
+names(ploidy) <- purity_df[,1]
+
+#Saving as an R object
+saveRDS(ploidy, file="LUSC_ploidy.RData")
 ```
 
 2. Calculating regressions.
@@ -982,7 +1039,7 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/usin
 
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
 
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.used_cpgs.RData -o LUSC_30000cpg_from_LUSC -b ../data/training_test_most_variable/betas_validation.RData;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.used_cpgs.RData -o LUSC_30000cpg_from_LUSC -b ../data/training_test_most_variable/betas_validation.RData -P TRUE -p ../data/ploidy/LUSC_ploidy.RData;
 ```
 
 #### Getting plots for the methods section
