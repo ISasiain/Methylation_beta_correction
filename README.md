@@ -521,20 +521,20 @@ done;
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
 
-nohup bash -c '
-var_list=(0.03 0.035 0.04 0.045 0.05 0.065 0.07) #Using only variances corresponding to 10000-100000 cpg nums
+var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07) #Using only variances corresponding to 10000-100000 cpg nums
 
-for var in ${var_list};
+for var in ${var_list[@]};
     do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var};
     cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
        for dir in $(ls ../../data/cpgs_421368/*_BetasTraining.RData); 
           do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
           mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
           cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
-          Rscript ../../../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_PurityTraining.RData -o ${fold} -v ${var};
+          Rscript ../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_PurityTraining.RData -o ${fold} -v ${var};
     done;
 done;
-'
+
+
     
 
 ```
@@ -562,6 +562,31 @@ for num in ${cpg_list[@]};
     done;
 done;
 '
+```
+
+3.1. Estimating purity for cpg number and fold using most variant CpGs
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+
+#Running the scripts using nohup
+
+nohup bash -c '
+#Defining cpg number list 
+var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07);
+#Determining purity for each cpg number and fold
+for var in ${var_list[@]}; 
+    do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_${var};
+       for dir in $(ls ../data/cpgs_421368/*_BetasTraining.RData); 
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_${var}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_${var}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/var_filtered/var_${var}/${fold} -b ../../../data/cpgs_421368/${fold}_BetasTest.RData  -o PredPurity_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
+    done;
+done;
+'
+
 ```
 
 4. Estimating purity for alpha value and fold
