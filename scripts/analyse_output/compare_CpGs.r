@@ -56,6 +56,8 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 # LOADING DATA
 # ============
 
+cat("\n\nLoading the data...\n")
+
 # Loading CpG context csv
 cpg_context <- read.csv(arguments$context_annotation, row.names=1)
 
@@ -83,6 +85,8 @@ for(file in path_vec) {
 # CHECKING COMMON CPGS
 # ====================
 
+cat("\n\nGenerating Venn diagram...\n")
+
 #Creating and saving Venn plot
 venn.diagram(cpgs_ls,
              filename=paste(arguments$prefix, ".VennDiagram.png", sep=""))
@@ -95,11 +99,12 @@ venn.diagram(cpgs_ls,
 # ============================
 
 # Create dataframe to check the cpgs included
-context_df <- as.data.frame(matrix(NA, nrow=length(c(names(cpgs_ls)), "ALL"), ncol=length(colnames(cpg_context)[-1])))
+context_df <- as.data.frame(matrix(NA, nrow=length(c(names(cpgs_ls), "ALL")), ncol=length(c("promoter","proximal","distal","cgi","shore","ocean", "nonAtac", "atac"))))
 
 #The names of the contexts to eb analysed have bee hardcoded.
 colnames(context_df) <- c("promoter","proximal","distal","cgi","shore","ocean", "nonAtac", "atac")
 rownames(context_df) <- c(names(cpgs_ls), "ALL")
+
 
 cat("\n\nGenerating dataframe...\n")
 
@@ -116,7 +121,7 @@ for (type in rownames(context_df)) {
   } else {
 
     #Using sapply to get a single vector
-    cpgs <- cpgs_ls[[x]]
+    cpgs <- cpgs_ls[[type]]
 
   }
 
@@ -131,31 +136,37 @@ cat("\n\nPlotting...\n")
 
 for (type in rownames(context_df)) {
 
+  # Create a dataframe per each type to be plotted 
+  type_df <- cbind (as.vector(context_df[type,]), colnames(context_df))
+  colnames(type_df) <- c("context", "count")
+  rownames(type_df) <- colnames(context_df)
+  print(type_df)
+
   # Create pie chart for promoter, proximal, and distal
-  gg_prom_prox_dis <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("promoter","proximal","distal")]), fill=c("promoter","proximal","distal"))) +
+  gg_prom_prox_dis <- ggplot(data=as.data.frame(type_df[c("promoter","proximal","distal"),]), aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
 
-  ggsave(filename=paste(type, "prom_prox_dis.CpG_context_piechart.png", sep=""))
+  ggsave(filename=paste(type, "_prom_prox_dis.CpG_context_piechart.png", sep=""))
   
   # Create pie chart for cgi, shore, and ocean
-  gg_cgi_shore_ocean <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("cgi","shore","ocean")]), fill=c("cgi","shore","ocean"))) +
+  gg_cgi_shore_ocean <- ggplot(data=as.data.frame(type_df[c("cgi","shore","ocean"),]), aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
 
-  ggsave(filename=paste(type, "cgi_shore_ocean.CpG_context_piechart.png", sep=""))
+  ggsave(filename=paste(type, "_cgi_shore_ocean.CpG_context_piechart.png", sep=""))
 
   # Create pie chart for chromatin accessibility
-  gg_atac <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("atac","nonAtac")]), fill=c("atac","nonAtac"))) +
+  gg_atac <- ggplot(data=as.data.frame(type_df[c("atac","nonAtac"),]), aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": chromatin accessibility", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
 
-  ggsave(filename=paste(type, "atac.CpG_context_piechart.png", sep=""))
+  ggsave(filename=paste(type, "_atac.CpG_context_piechart.png", sep=""))
 
 }
