@@ -281,9 +281,19 @@ df_to_RObj <- function(df, filename) {
   saveRDS(df, filename)
 }
 
+#Defining a function to store the elements of the result list as tsv files
+df_to_tsv <- function(df,filename) {
+  # Saving text file (tsv)
+  write.table(df, 
+            file=filename,
+            col.names=NA, 
+            sep="\t")
+}
+
 #Creating output files per each dataframe of the result_list list (getting only the results for the CpGs of the predicted samples)
 lapply(names(result_list), function(n) {
   df_to_RObj(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.RData",sep=""))
+  df_to_tsv(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.tsv",sep=""))
 })
 
 #Creating output files per each dataframe of the reg_list list
