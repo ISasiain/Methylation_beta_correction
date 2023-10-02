@@ -94,68 +94,68 @@ venn.diagram(cpgs_ls,
 # CHECKING CONTEXT OF THE CpGs
 # ============================
 
-#Determining single classes and combinations to check.
-
-#Creating a list of all teh combinations to analyse
-combinations <- list()
-
-for (included_classes in 1:length(names(cpgs_ls))) {
-
-  for (combi in 1:ncol(combn(names(cpgs_ls), included_classes))) {
-
-    combinations <- append(combinations, list(combn(names(cpgs_ls), included_classes)[,combi]))
-
-  }
-
-}
-
-
-#Adding names to list
-names(combinations) <- sapply(1:length(combinations), function(i) {toString(combinations[[i]])})
-
-
 # Create dataframe to check the cpgs included
-context_df <- as.data.frame(matrix(NA, nrow=length(combinations), ncol=length(colnames(cpg_context)[-1])))
+context_df <- as.data.frame(matrix(NA, nrow=length(c(names(cpgs_ls)), "ALL"), ncol=length(colnames(cpg_context)[-1])))
 
-
-colnames(context_df) <- colnames(cpg_context)[-1]
-rownames(context_df) <- names(combinations)
+#The names of the contexts to eb analysed have bee hardcoded.
+colnames(context_df) <- c("promoter","proximal","distal","cgi","shore","ocean", "nonAtac", "atac")
+rownames(context_df) <- c(names(cpgs_ls), "ALL")
 
 cat("\n\nGenerating dataframe...\n")
+
 #Filling the dataframe with the number of CpGs in each context
 
-for (combi in names(combinations)) {
+for (type in rownames(context_df)) {
 
-  #Determine the cpgs whose context has ho be checked
-  if (length(combinations[[combi]]) == 1) {
+  #Determine the cpgs whose context has to be checked
+  if (type == "ALL") {
 
     #Using sapply to get a single vector
-    cpgs <- sapply(combinations[[combi]], function(x) {cpgs_ls[[x]]})
+    cpgs <- rownames(cpg_context)
 
   } else {
 
-    cpgs <- Reduce(intersect, lapply(combinations[[combi]], function(x) {cpgs_ls[[x]]}))
+    #Using sapply to get a single vector
+    cpgs <- cpgs_ls[[x]]
 
   }
 
   # Adding context counts to dataframe
-  for (context in colnames(cpg_context)[-1]) {
-    context_df[combi, context] <- sum(cpg_context[cpgs, context]==1, na.rm=TRUE)
+  for (context in colnames(context_df)) {
+    context_df[type, context] <- sum(cpg_context[cpgs, context]==1, na.rm=TRUE)
   }
 
 }
 
 cat("\n\nPlotting...\n")
 
-# Plotting results
-for (context in colnames(context_df)) {
+for (type in rownames(context_df)) {
 
-  gg <- ggplot(data=context_df, aes(y=context_df[,context], x=as.factor(rownames(context_df)))) +
-         geom_bar(stat="identity", fill="lightgreen") +
-         xlab("CpGs used in...") + 
-         ylab("Number of CpGs") +
+  # Create pie chart for promoter, proximal, and distal
+  gg_prom_prox_dis <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("promoter","proximal","distal")]), fill=c("promoter","proximal","distal"))) +
+         geom_bar(width=1, stat="identity") +
+         labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
          theme_classic() +
-         theme(axis.text.x = element_text(angle = 30, hjust = 1))
+         coord_polar("y", start=0)
 
-  ggsave(filename=paste(context, ".CpG_context_barplot.png", sep=""))
+  ggsave(filename=paste(type, "prom_prox_dis.CpG_context_piechart.png", sep=""))
+  
+  # Create pie chart for cgi, shore, and ocean
+  gg_cgi_shore_ocean <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("cgi","shore","ocean")]), fill=c("cgi","shore","ocean"))) +
+         geom_bar(width=1, stat="identity") +
+         labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
+         theme_classic() +
+         coord_polar("y", start=0)
+
+  ggsave(filename=paste(type, "cgi_shore_ocean.CpG_context_piechart.png", sep=""))
+
+  # Create pie chart for chromatin accessibility
+  gg_atac <- ggplot(data=context_df, aes(x="", y=as.vector(context_df[type, c("atac","nonAtac")]), fill=c("atac","nonAtac"))) +
+         geom_bar(width=1, stat="identity") +
+         labs(title=paste(type, ": chromatin accessibility", sep="")) +
+         theme_classic() +
+         coord_polar("y", start=0)
+
+  ggsave(filename=paste(type, "atac.CpG_context_piechart.png", sep=""))
+
 }
