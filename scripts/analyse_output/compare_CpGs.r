@@ -137,13 +137,15 @@ cat("\n\nPlotting...\n")
 for (type in rownames(context_df)) {
 
   # Create a dataframe per each type to be plotted 
-  type_df <- cbind (as.vector(context_df[type,]), colnames(context_df))
+  type_df <- as.data.frame(cbind(as.vector(context_df[type,]), colnames(context_df)))
   colnames(type_df) <- c("context", "count")
   rownames(type_df) <- colnames(context_df)
   print(type_df)
 
   # Create pie chart for promoter, proximal, and distal
-  gg_prom_prox_dis <- ggplot(data=as.data.frame(type_df[c("promoter","proximal","distal"),]), aes(x="", y=count, fill=context)) +
+  prom_prox_dis <- type_df[c("promoter","proximal","distal"),]
+
+  gg_prom_prox_dis <- ggplot(data=prom_prox_dis, aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
          theme_classic() +
@@ -152,7 +154,9 @@ for (type in rownames(context_df)) {
   ggsave(filename=paste(type, "_prom_prox_dis.CpG_context_piechart.png", sep=""))
   
   # Create pie chart for cgi, shore, and ocean
-  gg_cgi_shore_ocean <- ggplot(data=as.data.frame(type_df[c("cgi","shore","ocean"),]), aes(x="", y=count, fill=context)) +
+  cgi_shore_ocean <- type_df[c("cgi","shore","ocean"),]
+
+  gg_cgi_shore_ocean <- ggplot(data=cgi_shore_ocean, aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
          theme_classic() +
@@ -161,7 +165,9 @@ for (type in rownames(context_df)) {
   ggsave(filename=paste(type, "_cgi_shore_ocean.CpG_context_piechart.png", sep=""))
 
   # Create pie chart for chromatin accessibility
-  gg_atac <- ggplot(data=as.data.frame(type_df[c("atac","nonAtac"),]), aes(x="", y=count, fill=context)) +
+  atac <- type_df[c("atac","nonAtac"),]
+
+  gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
          geom_bar(width=1, stat="identity") +
          labs(title=paste(type, ": chromatin accessibility", sep="")) +
          theme_classic() +
