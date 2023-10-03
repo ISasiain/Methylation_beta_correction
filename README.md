@@ -521,7 +521,8 @@ done;
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
 
-var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07) #Using only variances corresponding to 10000-100000 cpg nums
+var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08) #Using only variances corresponding to 10000-100000 cpg nums
+
 
 for var in ${var_list[@]};
     do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var};
@@ -533,8 +534,6 @@ for var in ${var_list[@]};
           Rscript ../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_PurityTraining.RData -o ${fold} -v ${var};
     done;
 done;
-
-
     
 
 ```
@@ -573,7 +572,7 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 
 nohup bash -c '
 #Defining cpg number list 
-var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07);
+#var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
 #Determining purity for each cpg number and fold
 for var in ${var_list[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
@@ -666,8 +665,21 @@ list_of_cpgs=$(find ../estimate_purity/cpgs* -maxdepth 0 | cut -d \/ -f 3 | tr "
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
 #Potting the results
-Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_preds} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_cpgs} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_num_CrossVal; 
 
+
+ #                                               #
+ # COMPARE RESULTS: CPG NUMBER BASED IN VARIANCE #
+ #                                               #
+
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_var=$(find ../estimate_purity/var* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+#Potting the results
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_var} -d $path -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o cpg_var_CrossVal; 
 
  #                        #
  # COMPARE RESULTS: ALPHA #
@@ -1155,7 +1167,7 @@ cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots
 
 cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
 
-Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
+nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
 ```
 
 
