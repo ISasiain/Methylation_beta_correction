@@ -136,17 +136,24 @@ cat("\n\nPlotting...\n")
 
 for (type in rownames(context_df)) {
 
+  print(type)
   # Create a dataframe per each type to be plotted 
-  type_df <- as.data.frame(cbind(as.vector(context_df[type,]), colnames(context_df)))
-  colnames(type_df) <- c("context", "count")
+  type_df <- as.data.frame(cbind(as.numeric(context_df[type,]), as.character(colnames(context_df))))
+  colnames(type_df) <- c("count", "context")
   rownames(type_df) <- colnames(context_df)
+  
+  type_df$"count" <- as.numeric(type_df$"count")
+
   print(type_df)
+  print(class(type_df))
+  print(class(type_df$"count"))
+  print(class(type_df$"context"))
 
   # Create pie chart for promoter, proximal, and distal
   prom_prox_dis <- type_df[c("promoter","proximal","distal"),]
 
   gg_prom_prox_dis <- ggplot(data=prom_prox_dis, aes(x="", y=count, fill=context)) +
-         geom_bar(width=1, stat="identity") +
+         geom_bar(stat="identity") +
          labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
@@ -157,7 +164,7 @@ for (type in rownames(context_df)) {
   cgi_shore_ocean <- type_df[c("cgi","shore","ocean"),]
 
   gg_cgi_shore_ocean <- ggplot(data=cgi_shore_ocean, aes(x="", y=count, fill=context)) +
-         geom_bar(width=1, stat="identity") +
+         geom_bar(stat="identity") +
          labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
@@ -168,7 +175,7 @@ for (type in rownames(context_df)) {
   atac <- type_df[c("atac","nonAtac"),]
 
   gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
-         geom_bar(width=1, stat="identity") +
+         geom_bar(stat="identity") +
          labs(title=paste(type, ": chromatin accessibility", sep="")) +
          theme_classic() +
          coord_polar("y", start=0)
