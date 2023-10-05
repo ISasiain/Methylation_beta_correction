@@ -312,7 +312,7 @@ ggplot(out_df, aes(x=Interval.s.width)) +
 ggsave(paste(arguments$output_prefix, "int_width.barplot.png",sep="."))
 
 
-## SCATTERPLOT WITH INTERVAL
+## SCATTERPLOT WITH INTERVAL. Actual purity
 
 #Estimated values
 upper_lim <- c()
@@ -322,6 +322,40 @@ lower_lim <- c()
 #Actual 1-P value
 actual_1_minus_P <- 1-purity_validation[names(out_ls)]
 index <- sort(actual_1_minus_P, index.return=TRUE)$ix
+
+if (arguments$plot_dis_vs_ploidy) {
+
+ploidy <- readRDS(arguments$path_to_ploidy)
+
+#Actual NC 
+actual_1_minus_NC <- 1 - (2*(1-purity_validation[names(out_ls)]))/(purity_validation[names(out_ls)]*ploidy[names(out_ls)]-2(1-purity_validation[names(out_ls)]))
+
+#Creating a dataframe with the sorted vectors
+plot_df <- data.frame(
+  actual=actual_1_minus_NC[order(index)],
+  upper=upper_lim[order(index)],
+  est=estimate[order(index)],
+  lower=lower_lim[order(index)]
+)
+
+ggplot(data=plot_df, aes(x=actual, y=est)) +
+  xlim(0,1) + ylim(0,1) +
+  geom_point(size=1.5) +
+  geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
+  geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
+  ggtitle("Prediction of 1-Purity") +
+  xlab("Actual 1 - NC") + 
+  ylab("Estimated 1 - Value") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 14),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
+ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
+
+}
+
 
 #Getting the values of all the samples in vectors
 for (sample in names(out_ls)) {
@@ -356,6 +390,11 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
+
+
+## SCATTERPLOT WITH INTERVAL. 
+
+
 
 ## EVOLUTION OF DISTANCE TO INTERVAL IN FUNCTION OF ACTUAL AND ESTIMATED PURITY
 
