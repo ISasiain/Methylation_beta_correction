@@ -516,27 +516,7 @@ for num in ${cpg_list[@]};
 done;
 '
 ```
-*2.1. Generating the regressions ffiltering CpGs based on variance
 
-```bash
-cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
-
-var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08) #Using only variances corresponding to 10000-100000 cpg nums
-
-
-for var in ${var_list[@]};
-    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var};
-    cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
-       for dir in $(ls ../../data/cpgs_421368/*_BetasTraining.RData); 
-          do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
-          mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
-          cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/var_${var}/${fold};
-          Rscript ../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/cpgs_421368/${fold}_PurityTraining.RData -o ${fold} -v ${var};
-    done;
-done;
-    
-
-```
 
 
 3. Estimating purity for cpg number and fold
@@ -642,6 +622,69 @@ for num in ${slopes[@]};
     done;
 done;
 '
+```
+
+6. Estimating purity for variance threshold and fold
+
+
+6.1. Getting data for BRCA, LUAD and LUSC
+
+```bash
+mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
+
+
+# BRCA
+mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+
+
+# LUAD (lines 125 and 126 have been commennted)
+mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUAD;
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUAD;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUAD -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+
+
+# LUSC (lines 125 and 126 have been commennted)
+mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUSC -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+
+```
+
+6.2. Generating regressions 
+
+```bash
+nohup bash -c '
+
+type_ls=(LUAD LUSC)
+
+for cancer_type in ${type_ls[@]};
+
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+    cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+
+    #Defining var thresholds to analyse
+    var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
+
+    # Calculating regression for each cancer type, variuance and fold
+    for var in ${var_list[@]};
+        do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}; 
+        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+        for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);                           
+            do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
+            mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
+            cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
+            Rscript ../../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_PurityTraining.RData -o ${cancer_type}_${var}_${fold} -v ${var};
+        done;
+    done;
+done;
+'  
+
 ```
 
 4. Comparing results. 
@@ -862,7 +905,7 @@ saveRDS(battenberg_ploidy, file="battenberg_ploidy.RData")
 ```
 
 ```bash
-#Compying ploidy data
+#Copying ploidy data
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/ploidy;
 cp ../../../data/GSE148748_data/*_ploidy.RData .;
 
@@ -978,6 +1021,8 @@ nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ..
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
+
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.used_cpgs.RData -o LUAC_30000cpg_from_LUAC -b ../data/training_test_most_variable/betas_validation.RData -P TRUE -p ../data/ploidy/LUAD_ploidy.RData;
 ```
@@ -1203,4 +1248,38 @@ cp ../../09_TNBC_final/regressions/* .;
 # Running purity estimation
 cd /home/Illumina/Iñaki_Sasiain/extra_QC_for_ASCAT/estimating_purity;
 nohup Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/scanb_base_most_variable_CpGs.RData -o ScanB_purity_est_30.000CpG -a 0.75 -s 0.25 -p 5;
+```
+
+
+#### Running the whole pipeline with an example: BRCA1 !!! THIS HAS TO BE REPEATED WHEN GETTING THE OPTIMAL VAR THRESHOLD
+
+
+1. Getting reference data
+
+```bash
+#Getting precomputed regressions
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/reference_data/ref_regressions;
+cp ../../../09_TNBC_final/regressions/* .;
+
+#Getting reference betas and purities
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/reference_data/ref_betas_and_purities;
+cp ../../../09_TNBC_final/data/training/* .;
+```
+
+2. Getting data to analyse
+
+```R
+#Producing and saving a R vector with the CpGs to correct
+BRCA_cpgs <- read.table("promoterData_BRCA1.txt")[-1,7];
+saveRDS(BRCA_cpgs, file="BRCA_cpgs.RData");
+```
+
+3. Running beta correction 
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
+
+#Running beta correction
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n BRCA_example;
+
 ```
