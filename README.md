@@ -661,7 +661,7 @@ Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALS
 ```bash
 nohup bash -c '
 
-type_ls=(LUAD LUSC)
+type_ls=(BRCA LUAD LUSC)
 
 for cancer_type in ${type_ls[@]};
 
@@ -684,6 +684,42 @@ for cancer_type in ${type_ls[@]};
     done;
 done;
 '  
+
+```
+
+6.3. Estimating purity
+
+```bash
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
+
+#Running the scripts using nohup
+
+nohup bash -c '
+#Defining cancer type list
+type_ls=(BRCA LUAD LUSC)
+
+for cancer_type in ${type_ls[@]};
+   do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+
+      #Defining var cpg number list 
+      var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
+
+      #Determining purity for each cpg number and fold
+      for var in ${var_list[@]}; 
+        do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+           mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var};
+           for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData); 
+               do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
+                  echo ${fold};
+                  mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
+        done;
+    done;
+done;
+'
 
 ```
 
