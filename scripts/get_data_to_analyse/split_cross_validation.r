@@ -95,7 +95,7 @@ argument_list <- list(
 
 # Parsing command line arguments
 arguments <- parse_args(OptionParser(option_list=argument_list, 
-                                    description="This programm gets purity and original beta Robjects from a R object containing those or more elements. It also allow the user to cerate training anjd test dataset"))
+                                    description="This program gets purity and original beta Robjects from a R object containing those or more elements. It also allow the user to cerate training anjd test dataset"))
 
 
 # ===========
@@ -124,7 +124,6 @@ purities <- get(arguments$purity)
 #Adapting the names of the colnames of the beta value dataframe
 colnames(betas) <- lapply(colnames(betas), 
                          function (name) {strsplit(name, "-01")[[1]][1]})
-
 
 # ======================================
 # FILTERING CpGs FROM SEXUAL CHROMOSOMES
