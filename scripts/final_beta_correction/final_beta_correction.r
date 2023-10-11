@@ -226,6 +226,10 @@ purities <- c(cohort_purities, predicted_purities_vec)
 # Creating a single betas dataframe
 betas <- merge(cohort_betas, to_correct_betas, by="row.name")
 
+#Removing sample purities not contained into the beta dataset. It generates errors
+purities <- purities[colnames(betas)]
+
+
 # ====================================
 # PREPROCESSING AND ANALYSING THE DATA
 # ====================================
