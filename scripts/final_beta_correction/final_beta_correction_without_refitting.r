@@ -130,16 +130,15 @@ identify_regression <- function(beta, estimated_1mPurity, vec_slopes, vec_interc
                                     #Ignoring NA values that appear when less than 3 populations are detected
                                     #in the refernce rrgressions
                                     if (!is.na(vec_slopes[pop])) {
-
-                                        beta - vec_slopes[pop] * estimated_1mPurity + vec_intercepts[pop]
+                                        beta - (vec_slopes[pop] * estimated_1mPurity + vec_intercepts[pop])
 
                                     } else {
-
                                         NA
 
                                     }
                                 }
                             ))
+
 
     #Determining the population (vector index) with the lowest absolute distance. If the distances are equal the first
     #population with be chosen by default
