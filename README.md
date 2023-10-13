@@ -721,6 +721,37 @@ for cancer_type in ${type_ls[@]};
 done;
 '
 
+
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
+
+#Running the scripts using nohup
+
+nohup bash -c '
+#Defining cancer type list
+type_ls=(BRCA)
+
+for cancer_type in ${type_ls[@]};
+   do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+
+      #Defining var cpg number list 
+      var_list=(0.06 0.065 0.07 0.075 0.08);
+
+      #Determining purity for each cpg number and fold
+      for var in ${var_list[@]}; 
+        do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+           mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var};
+           fold_ls=(Fold1 Fold2 Fold3 Fold4 Fold5 Fold6)
+           for fold in ${fold_ls[@]}; 
+               do echo ${fold};
+                  mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
+        done;
+    done;
+done;
+'
+
+
 ```
 
 4. Comparing results. 
@@ -866,10 +897,10 @@ cp ../../../data/GSE148748_data/GSE148748_betas.RData .; # Complete betas datase
 # Getting test dataset. Using only the 30.000 most variant CpGs of the refernce dataset
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000;
 
-Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -C TRUE -p TNBC;
+Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -C TRUE -p TCGA;
 ```
 
-3. Using the whole TNBC samples of TCGA-Breast cancer to determint the reference regressions
+3. Using the whole BRCA samples of TCGA-Breast cancer to determint the reference regressions
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/regressions;
@@ -1315,7 +1346,103 @@ saveRDS(BRCA_cpgs, file="BRCA_cpgs.RData");
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
 
-#Running beta correction
+#Running beta correction refitting the regressions
 Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n BRCA_example;
 
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
+
+#Running beta correction without refittig refernce regressions
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../reference_data/ref_regressions/all_the_cpgs -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n BRCA_example_without_refitting;
+
+```
+
+4. Analysisng results
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/plots;
+
+
+#Plotting results when the regressions are refitted
+Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/BRCA_example_betas.original.samples_to_correct.RData -c ../corrected_betas/BRCA_example_betas.tumor.samples_to_correct.RData -m ../corrected_betas/BRCA_example_betas.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p refitting_heatmap;
+
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/plots;
+#Plotting results when the regressions are NOT refitted
+Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/BRCA_example_without_refitting.original.samples_to_correct.RData -c ../corrected_betas/BRCA_example_without_refitting.tumor.samples_to_correct.RData -m ../corrected_betas/BRCA_example_without_refitting.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p without_refitting_heatmap;
+```
+
+
+#### Running the whole pipeline with an example: BRCA1 USING ONLY TNBC DATA FROM TCGA TO CORRECT
+
+
+1. Copying data used in the last approach. Everything is kept equal except for the refernce data used for the correction
+```bash
+cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC;
+cp -r ../14_example_BRCA1/purity_estimation .;
+cp -r ../14_example_BRCA1/data_to_correct/ref_betas_and_purities .;
+cp ../data/TNBC_from_TCGA_annotation.RData ./ref_betas_and_purities/;
+```
+
+2. Filtering refernce data to correct. Keep only samples from TNBC
+
+```bash
+#Getting reference dataset
+cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/ref_betas_and_purities;
+cp ../../09_TNBC_final/data/training/* .;
+```
+
+```R
+#Getting the data
+betas <- readRDS("betas.RData")
+purities <- readRDS("purity.RData")
+load("TNBC_from_TCGA_annotation.RData")
+
+#Generating purity vector
+sample_id <- sapply(rownames(annotations), 
+                         function (name) {strsplit(name, "-01")[[1]][1]})
+purities <- purities[sample_id]
+
+
+#Generating beta dataframe
+betas <- betas[,rownames(annotations)]
+colnames(betas) <- sapply(colnames(betas), 
+                         function (name) {strsplit(name, "-01")[[1]][1]})
+
+saveRDS(betas, file="betas.RData")
+saveRDS(purities, file="purity.RData")
+```
+
+3. Generating reference regressions only from the TNBC-TCGA data
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/ref_regressions;
+Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 1 -b ../ref_betas_and_purities/betas.RData -p ../ref_betas_and_purities/purity.RData -o betas_from_TNBC-TCGA;
+
+```
+
+4. Running beta correction 
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/corrected_betas;
+
+
+#Refitting the regressions
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../ref_betas_and_purities/purity.RData -B ../ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_from_TCGA_example;
+
+
+#Without refitting the regressions
+cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/corrected_betas;
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../ref_regressions -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_from_TCGA_example_without_refitting;
+```
+
+4. Plotting results
+
+```bash
+cd ../plots;
+
+#Plotting results when the regressions are refitted
+Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/TNBC_from_TCGA_example_betas.original.samples_to_correct.RData -c ../corrected_betas/TNBC_from_TCGA_example_betas.tumor.samples_to_correct.RData -m ../corrected_betas/TNBC_from_TCGA_example_betas.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p refitting_heatmap;
+
+#Plotting results when the regressions are NOT refitted
+cd ../plots;
+Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/TNBC_from_TCGA_example_without_refitting.original.samples_to_correct.RData -c ../corrected_betas/TNBC_from_TCGA_example_without_refitting.tumor.samples_to_correct.RData -m ../corrected_betas/TNBC_from_TCGA_example_without_refitting.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p without_refitting_heatmap;
 ```
