@@ -56,6 +56,8 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 # LOADING DATA
 # ============
 
+cat("\nLoading the data...\n\n")
+
 #Reading the R objects containing the regression data as dataframes
 my_slopes <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.slopes.RData", full.names=TRUE))
 my_intercepts <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.intercepts.RData", full.names=TRUE))
@@ -114,6 +116,8 @@ my_intercepts <- my_intercepts[rownames(my_intercepts) %in% rownames(to_correct_
 # ==============================================
 # CORRECTING BETAS BASED ON REFERNCE REGRESSIONS
 # ==============================================
+
+cat("\nCorrecting betas...\n\n")
 
 #Generating function to identify the refernce regression to which each CpG of each sample belongs
 identify_regression <- function(beta, estimated_1mPurity, vec_slopes, vec_intercepts) {
@@ -243,9 +247,13 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
 # GENERATING OUTPUT FILES
 # =======================
 
+cat("\nGenerating output files...\n\n")
+
 # Generating RObject files
 saveRDS(corrected_tumor, file=paste(arguments$output, arguments$output_name, ".tumor.samples_to_correct.RData", sep=""))
 saveRDS(corrected_microenvironment, file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.RData", sep=""))
+saveRDS(to_correct_betas, file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.RData", sep=""))
+
 
 # Generating tsv files
 write.table(corrected_tumor, 
@@ -256,7 +264,11 @@ write.table(corrected_microenvironment,
             file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.tsv", sep=""),
             col.names=NA, 
             sep="\t")
+write.table(to_correct_betas, 
+            file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.tsv", sep=""),
+            col.names=NA, 
+            sep="\t")
 
-#cat("\n=================\n")
-#cat ("PROCESS FINISHED")
-#cat("\n=================\n")
+cat("\n=================\n")
+cat ("PROCESS FINISHED")
+cat("\n=================\n")
