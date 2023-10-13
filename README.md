@@ -721,37 +721,6 @@ for cancer_type in ${type_ls[@]};
 done;
 '
 
-
-cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
-
-#Running the scripts using nohup
-
-nohup bash -c '
-#Defining cancer type list
-type_ls=(BRCA)
-
-for cancer_type in ${type_ls[@]};
-   do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
-
-      #Defining var cpg number list 
-      var_list=(0.06 0.065 0.07 0.075 0.08);
-
-      #Determining purity for each cpg number and fold
-      for var in ${var_list[@]}; 
-        do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
-           mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var};
-           fold_ls=(Fold1 Fold2 Fold3 Fold4 Fold5 Fold6)
-           for fold in ${fold_ls[@]}; 
-               do echo ${fold};
-                  mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
-                  cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
-                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
-        done;
-    done;
-done;
-'
-
-
 ```
 
 4. Comparing results. 
@@ -1272,9 +1241,19 @@ Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts
 
 #Getting CpG list for LUSC
 Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -B FALSE -C TRUE -n 30000 -p LUSC_30000CpG;
+```
+
+```R
+#Integrating annotation of BRCA LUAC and LUSC in a single file
+load("BRCA_CpG_annotation.RData")
+anno_BRCA <- annoObj
+
 
 
 #Analysing the data
+```
+
+```bash
 cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots
 
 cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
