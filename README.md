@@ -6,7 +6,13 @@
 #### Master's Programme in Bioinformatics, Lund University
 #### BINP52 (30 ECTS)
 
-### SCRIPTS
+## WORKFLOW
+
+## SCRIPTS
+
+## USAGE
+
+## EXPERIMENTAL PROCEDURE
 
 ### EXAMPLE 5000 CpGs
 
