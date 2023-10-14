@@ -1,7 +1,10 @@
 
-# METHYLATION DATA CORRECTION
+# Developing a tumor DNA methylation β value correction model through in silico sample purity estimation
 
 #### Author: Iñaki Sasiain
+#### Supervisor: Johan Staaf
+#### Master's Programme in Bioinformatics, Lund University
+#### BINP52 (30 ECTS)
 
 ### SCRIPTS
 
@@ -698,7 +701,7 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtere
 
 nohup bash -c '
 #Defining cancer type list
-type_ls=(BRCA LUAD LUSC)
+type_ls=(LUAD LUSC)
 
 for cancer_type in ${type_ls[@]};
    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
@@ -715,7 +718,7 @@ for cancer_type in ${type_ls[@]};
                   echo ${fold};
                   mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
                   cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
-                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
+                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
         done;
     done;
 done;
