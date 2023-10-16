@@ -1,7 +1,7 @@
 
 # Developing a tumor DNA methylation β value correction model through in silico sample purity estimation
 
- Author: Iñaki Sasiain
+* Author: Iñaki Sasiain
 * Supervisor: Johan Staaf
 * Master's Programme in Bioinformatics, Lund University
 * BINP52 (30 ECTS)
