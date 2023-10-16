@@ -14,7 +14,7 @@
 
 ## EXPERIMENTAL PROCEDURE
 
-### EXAMPLE 5000 CpGs
+### General performance analyis: 5000 most variant CpGs from TGCA-BRCA
 
 1. Splitting the data in training and validation and generating RData file with teh output
 
@@ -1254,20 +1254,38 @@ Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts
 
 ```R
 #Integrating annotation of BRCA LUAC and LUSC in a single file
+
+
+#Storing data as variables
 load("BRCA_CpG_annotation.RData")
 anno_BRCA <- annoObj
 
+anno_LUAD <- read.csv("EPIC_760405CpGs_contexts.csv", row.names=1)
 
+anno_LUSC <- read.csv("LUSC_CpGs_per_context.csv", row.names=1)
+
+
+#Merging data into a single dataframe
+merged_annotation <- anno_LUAD[,c("promoter","proximal","distal","cgi","shore","ocean","atacLUAD")]
+merged_annotation[,"atacLUSC"] <- anno_LUSC[rownames(merged_annotation),"atacLUSC"]
+merged_annotation[,"atacBRCA"] <- anno_BRCA[rownames(merged_annotation), "hasAtacOverlap"]
+
+merged_annotation[,"nonAtacLUAD"] <- abs(1-merged_annotation[,"atacLUAD"])
+merged_annotation[,"nonAtacLUSC"] <- abs(1-merged_annotation[,"atacLUSC"])
+merged_annotation[,"nonAtacBRCA"] <- abs(1-merged_annotation[,"atacBRCA"])
+
+#Saving merged df
+saveRDS(merged_annotation, file="annotation_file.RData")
 
 #Analysing the data
 ```
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots;
 
 cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
 
-nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/EPIC_760405CpGs_contexts.csv -p breast_LUAC_LUSC;
+nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
 ```
 
 
