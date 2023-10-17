@@ -37,7 +37,7 @@ argument_list <- list(
               metavar = "[COMMA_SEPARATED_PATHS]"),
 
   make_option(c("-a", "--context_annotation"), type="character",  
-              help="The path to the file containing the annotated CpG context must be entered here.",
+              help="The path to the RObject file containing the annotated CpG context must be entered here.",
               metavar = "[PATH]"),
 
   make_option(c("-p", "--prefix"), type="character",  
@@ -59,7 +59,7 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 cat("\n\nLoading the data...\n")
 
 # Loading CpG context csv
-cpg_context <- read.csv(arguments$context_annotation, row.names=1)
+cpg_context <- readRDS(arguments$context_annotation)
 
 # Loading cpg vectors
 
@@ -99,11 +99,9 @@ venn.diagram(cpgs_ls,
 # ============================
 
 # Create dataframe to check the cpgs included
-context_df <- as.data.frame(matrix(NA, nrow=length(c(names(cpgs_ls), "ALL")), ncol=length(c("promoter","proximal","distal","cgi","shore","ocean", "nonAtac", "atac"))))
-
-#The names of the contexts to eb analysed have bee hardcoded.
-colnames(context_df) <- c("promoter","proximal","distal","cgi","shore","ocean", "nonAtac", "atac")
+context_df <- as.data.frame(matrix(NA, nrow=length(c(names(cpgs_ls), "ALL")), ncol=length(colnames(cpg_context))))
 rownames(context_df) <- c(names(cpgs_ls), "ALL")
+colnames(context_df) <- colnames(cpg_context)
 
 
 cat("\n\nGenerating dataframe...\n")
@@ -132,11 +130,12 @@ for (type in rownames(context_df)) {
 
 }
 
+
+
 cat("\n\nPlotting...\n")
 
 for (type in rownames(context_df)) {
 
-  print(type)
   # Create a dataframe per each type to be plotted 
   type_df <- as.data.frame(cbind(as.numeric(context_df[type,]), as.character(colnames(context_df))))
   colnames(type_df) <- c("count", "context")
@@ -144,10 +143,7 @@ for (type in rownames(context_df)) {
   
   type_df$"count" <- as.numeric(type_df$"count")
 
-  print(type_df)
-  print(class(type_df))
-  print(class(type_df$"count"))
-  print(class(type_df$"context"))
+
 
   # Create pie chart for promoter, proximal, and distal
   prom_prox_dis <- type_df[c("promoter","proximal","distal"),]
@@ -155,8 +151,9 @@ for (type in rownames(context_df)) {
   gg_prom_prox_dis <- ggplot(data=prom_prox_dis, aes(x="", y=count, fill=context)) +
          geom_bar(stat="identity") +
          labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
-         theme_classic() +
-         coord_polar("y", start=0)
+         theme_void() +
+         coord_polar("y", start=0) +
+         geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
 
   ggsave(filename=paste(type, "_prom_prox_dis.CpG_context_piechart.png", sep=""))
   
@@ -166,20 +163,70 @@ for (type in rownames(context_df)) {
   gg_cgi_shore_ocean <- ggplot(data=cgi_shore_ocean, aes(x="", y=count, fill=context)) +
          geom_bar(stat="identity") +
          labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
-         theme_classic() +
-         coord_polar("y", start=0)
+         theme_void() +
+         coord_polar("y", start=0) +
+         geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
 
   ggsave(filename=paste(type, "_cgi_shore_ocean.CpG_context_piechart.png", sep=""))
 
-  # Create pie chart for chromatin accessibility
-  atac <- type_df[c("atac","nonAtac"),]
 
-  gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
-         geom_bar(stat="identity") +
-         labs(title=paste(type, ": chromatin accessibility", sep="")) +
-         theme_classic() +
-         coord_polar("y", start=0)
+  if (type!="ALL") {
+    # Create pie chart for chromatin accessibility
+    atac <- type_df[c(paste("atac", type, sep=""),paste("nonAtac", type, sep="")),]
 
-  ggsave(filename=paste(type, "_atac.CpG_context_piechart.png", sep=""))
+    gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
+          geom_bar(stat="identity") +
+          labs(title=paste(type, ": chromatin accessibility", sep="")) +
+          theme_void() +
+          coord_polar("y", start=0) +
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
 
+    ggsave(filename=paste(type, "_atac.CpG_context_piechart.png", sep=""))
+
+  } else {
+
+    #All BRCA
+    atac <- type_df(c("atacBRCA","nonAtacBRCA"),)
+
+    gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
+          geom_bar(stat="identity") +
+          labs(title=paste(type, ": chromatin accessibility", sep="")) +
+          theme_void() +
+          coord_polar("y", start=0) +
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+
+    ggsave(filename=paste("ALL_BRCA_atac.CpG_context_piechart.png", sep=""))
+
+
+    #All LUSC
+    atac <- type_df(c("atacLUSC","nonAtacLUSC"),)
+
+    gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
+          geom_bar(stat="identity") +
+          labs(title=paste(type, ": chromatin accessibility", sep="")) +
+          theme_void() +
+          coord_polar("y", start=0) +
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+
+    ggsave(filename=paste("ALL_LUSC_atac.CpG_context_piechart.png", sep=""))
+
+
+
+    #All LUAC
+    atac <- type_df(c("atacLUAC","nonAtacLUAC"),)
+
+    gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
+          geom_bar(stat="identity") +
+          labs(title=paste(type, ": chromatin accessibility", sep="")) +
+          theme_void() +
+          coord_polar("y", start=0) +
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+
+    ggsave(filename=paste("ALL_LUAC_atac.CpG_context_piechart.png", sep=""))
+
+  }
 }
+
+cat("\n=================\n")
+cat ("PROCESS FINISHED")
+cat("\n=================\n")
