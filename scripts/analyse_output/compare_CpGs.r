@@ -186,7 +186,7 @@ for (type in rownames(context_df)) {
   } else {
 
     #All BRCA
-    atac <- type_df(c("atacBRCA","nonAtacBRCA"),)
+    atac <- type_df[c("atacBRCA","nonAtacBRCA"),]
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
@@ -199,7 +199,7 @@ for (type in rownames(context_df)) {
 
 
     #All LUSC
-    atac <- type_df(c("atacLUSC","nonAtacLUSC"),)
+    atac <- type_df[c("atacLUSC","nonAtacLUSC"),]
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
@@ -213,7 +213,7 @@ for (type in rownames(context_df)) {
 
 
     #All LUAC
-    atac <- type_df(c("atacLUAC","nonAtacLUAC"),)
+    atac <- type_df[c("atacLUAC","nonAtacLUAC"),]
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
