@@ -34,11 +34,11 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/output;
 
-#Calculating the results with the correction method
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5;
+#Calculating the results with the correction method. The used parameters were randomly chosen.
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG -a 0.75 -s 0.25 -p 5;
 
-#Calulating the results without the correction method (The line that corrects the coverage was commented; line 45 of purity_coverage.r)
-Rscript ../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG -a 0.75 -r 0.6 -s 0.25 -p 5;
+#Calulating the results without the correction method (The lines that correct the coverage were commented, 82 and 121-161 from purity_coverage.r). The used parameters were randomly chosen.
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG -a 0.75 -s 0.25 -p 5;
 ```
 
 4. Analyse output data to produce plots. 
