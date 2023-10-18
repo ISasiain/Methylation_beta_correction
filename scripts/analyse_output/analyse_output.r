@@ -26,7 +26,6 @@
 #
 #   3. Processing the data to unravell the usage of each CpG in the samples' purity estimation
 #
-#   3. Calculating summary statistics from the quality parameters dataframe and printing the into the terminal.
 #
 #   4. Plotting the results and saving the created plots. The following plots are produced;
 #
@@ -152,8 +151,6 @@ purity_validation <- readRDS(arguments$"path_to_actual_1-P")
 cpgs_ls <- readRDS(arguments$"path_to_cpgs_used_per_sample")
 original_betas <- readRDS(arguments$"path_to_original_betas")
 
-print(purity_validation)
-
 #Adding this to adapt the sample names
 #names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
@@ -202,8 +199,6 @@ det_qual <- function(output_list, purity_vector) {
 }
 
 out_df <- det_qual(out_ls, purity_validation)
-
-print(out_df)
 
 # ============================================================
 #     PROCESS DATA TO ANALYSE CPG USAGE IN THE PREDICTION
@@ -255,12 +250,6 @@ matrix_to_heatmap <- matrix_to_heatmap[names(num_cpgs),rownames(cpg_counts_df)]
 
 # Transforming the format of the matrix to be plotted using ggplot
 df_to_heatmap <- melt(matrix_to_heatmap)
-
-# =======================================
-#      CALCULATING SUMMARY STATISTICS
-# =======================================
-
-print(summary(out_df)) 
 
 # ==============================
 #      PLOTTING THE RESULTS
@@ -372,8 +361,6 @@ plot_df <- data.frame(
   est=estimate[order(index)],
   lower=lower_lim[order(index)]
 )
-
-print(plot_df)
 
 ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
