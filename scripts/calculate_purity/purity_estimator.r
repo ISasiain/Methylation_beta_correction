@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-## -SCRIPT'S NAME: run_all_validation.r
+## -SCRIPT'S NAME: purity_estimator.r
 #
 ## - DESCRIPTION: 
 #
@@ -12,7 +12,7 @@
 #   *OPTPARSE. Parsing command line arguments
 #   *PARALLEL. Parallelization of the script#!/usr/bin/Rscript
 
-## -SCRIPT'S NAME: run_all_validation.r
+## -SCRIPT'S NAME: purity_estimator.r
 #
 ## - DESCRIPTION: 
 #
@@ -84,7 +84,7 @@
 #     must be stored in the same directory of the main script.
 #
 #     """
-#     Rscript path_to_script/run_all_validation.r -c [cores] -a [alpha] -r [threshold_rse] -s [threshold_slope] -p [percentage_to_interval] 
+#     Rscript path_to_script/purity_estimator.r -c [cores] -a [alpha] -r [threshold_rse] -s [threshold_slope] -p [percentage_to_interval] 
 #     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location] -i [TRUE/FALSE]
 #     """
 #     
