@@ -398,7 +398,7 @@ ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_int
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
-ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png",sep="."))
+ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png", sep="."))
 
 # Plot of Distance to interval vs Estimated 1-Purity
 ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
