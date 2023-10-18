@@ -47,10 +47,10 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regress
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
 
 #The corrected data
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -c ../output/corr_estimated_purity_5000CpG.used_cpgs.RData  -b ../original_data/betas_validation.RData  -o 5k_corr;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -c ../output/corr_estimated_purity_5000CpG.used_cpgs.RData  -b ../original_data/betas_validation.RData -c ../output/corr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_corr;
 
 #The uncorrected data
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -o 5k_uncorr;
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -c ../output/uncorr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_uncorr;
 ```
 
 5. Analyse the signal overestimation in the low purity region (this was done with the smootehned data);
