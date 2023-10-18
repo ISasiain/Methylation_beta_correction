@@ -421,7 +421,7 @@ for (sample in names(list_of_predicted_intervals)) {
 colnames(output_tsv) <- cols
 
 # Saving text file (tsv)
-write.csv(output_tsv, 
+write.table(output_tsv, 
             file=paste(arguments$output_filename, ".tsv", sep=""),
             row.name=FALSE,
             col.names=TRUE,
