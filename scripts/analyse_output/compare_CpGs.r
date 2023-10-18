@@ -213,7 +213,7 @@ for (type in rownames(context_df)) {
 
 
     #All LUAC
-    atac <- type_df[c("atacLUAC","nonAtacLUAC"),]
+    atac <- type_df[c("atacLUAD","nonAtacLUAD"),]
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
