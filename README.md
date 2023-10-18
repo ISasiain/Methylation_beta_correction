@@ -53,69 +53,33 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimate
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -b ../original_data/betas_validation.RData -c ../output/uncorr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_uncorr;
 ```
 
-5. Analyse the signal overestimation in the low purity region (this was done with the smootehned data);
- - Splitting the original validation dataset regarding their actual purity values
-```bash
-cd ~/Methylation/adjustBetas/01_5000_CpG/original_data;
-mkdir purity_splitted;
-cd purity_splitted;
-R;
-```
--Split the dataset using R
-```R
-#Loading the data
-betas <- readRDS("../betas_validation.RData");
-purities <- readRDS("../purity_validation.RData");
-
-#Creating a list with the 8 purity intrevals to split the data into (The names are 1-Purity, not purities)
-list_to_split <- list(
-    from_1_to_0.7 = c(0, 0.3),
-    from_0.7_to_0.6 = c(0.3, 0.4),
-    from_0.6_to_0.5 = c(0.4, 0.5),
-    from_0.5_to_0.4 = c(0.5, 0.6),
-    from_0.4_to_0.35 = c(0.6, 0.65),
-    from_0.35_to_0.3 = c(0.65, 0.7),
-    from_0.3_to_0.2 = c(0.7, 0.8),
-    from_0.2_to_0 = c(0.8, 1)
-)
-
-#Iterate through the list to create a vector with the sample names included in each interval
-for (interval in names(list_to_split)) {
-    
-    assign(paste("pur_",interval,sep=""),purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])
-    assign(paste("betas_",interval,sep=""), betas[,names(purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])])
-
-    saveRDS(get(paste("betas_",interval,sep="")), file=paste("betas_",interval,".RData",sep=""))
-    saveRDS(get(paste("pur_",interval,sep="")), file=paste("pur_",interval,".RData",sep=""))
-}
-```
-
-- Predicting purity per for each purity group. Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot. Line 129 must be uncommented in order to get the required data.
+5. Analyse the signal overestimation in the low purity region;
 
 ```bash
-cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
-mkdir analyse_overestimation/data_to_plot;
-cd analyse_overestimation/data_to_plot;
+# Splitting the original validation dataset regarding their actual purity values
+cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/purity_splitted;
+Rscript ../../../scripts/get_data_to_analyse/split_based_on_purity.r;
 
 
-#Getting the data tlo be plotted through a bash loop;
+#Predicting purity per for each purity group; getting the data to be plotted through a bash loop. Line 235 was uncommented to get the desired coverage data
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot;
+
 for int in $(ls ../../../original_data/purity_splitted/betas_*.RData); 
     do filename=$(echo ${int} | cut -d \/ -f 6 | sed 's/.RData//');
        echo ${filename};
-       Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 7 -d ../../../pop_regressions -b ${int} -o ${filename}; 
+       Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../../../pop_regressions -b ${int} -o ${filename}; 
     done;
 
-#Plotting the data using a bash loop and a R script
-cd ../;
+#Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot. Line 129 must be uncommented in order to get the required data.
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation;
 
-for my_file in $(ls ./data_to_plot/*);
+for my_file in $(ls ./data_to_plot/betas_from_*_to_*[0-9].RData);
     do plotname=$(echo ${my_file} | cut -d \/ -f 3 | sed 's/.RData//' | sed 's/betas_//' );
-       Rscript plot_coverage.R -i ${my_file} -t ${plotname} -o ${plotname}
+       echo ${plotname};
+       Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o ${plotname}
     done;
 
 ```
-
-!!!! CHANGE THE LOCATION OF THE SCRIPTS !!!!!!
 
 
 ### Checking performance and CpG numbers to use through 6-fold-cross-validation (Run in corsaire)
