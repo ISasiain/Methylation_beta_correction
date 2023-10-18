@@ -201,8 +201,8 @@ dir <- commandArgs()[4]
 dir <- gsub("--file=", "", dir)
 
 #Getting the complete path of the functions to be called
-fun1 <- gsub("run_all_validation.r", "predicting_purity.r", dir)
-fun2 <- gsub("run_all_validation.r", "purity_coverage.r", dir)
+fun1 <- gsub("purity_estimator.r", "predicting_purity.r", dir)
+fun2 <- gsub("purity_estimator.r", "purity_coverage.r", dir)
 
 #Sourcing the functions
 source(fun1)
