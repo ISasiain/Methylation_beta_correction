@@ -49,9 +49,12 @@ for (sample in names(file_to_plot)) {
 
   my_col <- my_col + 1
 
+  sample_to_plot <- data.frame(as.numeric(names(file_to_plot[[sample]][["Coverage_plot"]])), unname(file_to_plot[[sample]][["Coverage_plot"]]))
+  colnames(sample_to_plot) <- c("x", "y")
+
   if (!plot_created)  {
     
-    my_plot <- ggplot(data=data.frame(file_to_plot[[sample]][["Coverage_plot"]]),
+    my_plot <- ggplot(data=sample_to_plot,
                       aes(x=x, y=y, color = all_cols[my_col])) +
                       geom_line(color = all_cols[my_col],linewidth=0.5, alpha=0.5) +
                       ggtitle(arguments$title) +
@@ -70,7 +73,7 @@ for (sample in names(file_to_plot)) {
     
   } else {
     
-    my_plot <- my_plot + geom_line(data=data.frame(file_to_plot[[sample]][["Coverage_plot"]]),
+    my_plot <- my_plot + geom_line(data=sample_to_plot,
                                    aes(x=x, y=y), 
                                    color = all_cols[my_col],
                                    linewidth=0.5, alpha=0.5)
