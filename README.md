@@ -100,8 +100,123 @@ for my_file in $(ls ./data_to_plot/uncorrected/betas_from_*_to_*[0-9].RData);
 ### II. Parameter optimization: 6-Fold cross-validation
 
 * **VARIANCE THRESHOLD OPTIMIZATION**
+
+1. Splitting BRCA, LUAC and LUSC data
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
+
+# Splitting BRCA data
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+
+
+# Splitting LUAD data (lines 125 and 126 have been commennted)
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUAD;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUAD -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+
+
+# Splitting LUSC data (lines 125 and 126 have been commennted)
+mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
+       
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUSC -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+```
+
+2. Determining regressions per variance threshold and fold
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
+
+type_ls=(BRCA LUAD LUSC);
+
+for cancer_type in ${type_ls[@]};
+
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+    cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+
+    #Defining var thresholds to analyse
+    var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
+
+    # Calculating regression for each cancer type, variuance and fold
+    for var in ${var_list[@]};
+        do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}; 
+        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
+        for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);                           
+            do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
+            mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
+            cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
+            Rscript ../../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_PurityTraining.RData -o ${cancer_type}_${var}_${fold} -v ${var};
+        done;
+    done;
+done;
+```
+
+3. Estimating purity
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
+
+#Defining cancer type list
+type_ls=(BRCA LUAD LUSC);
+
+for cancer_type in ${type_ls[@]};
+   do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+
+      #Defining var cpg number list 
+    var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
+
+      #Determining purity for each cpg number and fold
+      for var in ${var_list[@]}; 
+        do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+           mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var};
+           for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);                           
+                  do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
+                  mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
+        done;
+    done;
+done;
+```
+
+4. Comparing results
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+
+#Defining variables to run the script
+list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_var=$(find ../estimate_purity/var_filtered/BRCA/var* -maxdepth 0 | cut -d \/ -f 5 | tr "\n
+" "," | sed 's/,$//');
+estimated_purities="../estimate_purity/var_filtered/LUAC,../estimate_purity/var_filtered/LUSC,../estimate_purity/var_filtered/BRCA";
+actual_purities="../../10_LUAC_final/data/full_data/purity.RData,../../11_LUSC_final/data/full_data/purity.RData,../../data/BRCA_purities.RData";
+
+#Plotting the results
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_var} -m TRUE -d ${estimated_purities} -p ${actual_purities} -o cpg_var_BRCA_LUAC_LUSC; 
+```
+
 * **SLOPE THRESHOLD OPTIMIZATION**
+
+1. Getting BRCA data
+
+2. Determining regressions per each fold
+
+3. Calculating regressions per slope threshold
+
+4. Comparing results
+
 * **ALPHA VALUE OPTIMIZATION**
+
+1. Getting BRCA data
+
+2. Determining regressions per each fold
+
+3. Calculating regressions per alpha value
+
+4. Comparing results
 
 1. Generating test and training datasets for each CpG number using cross validation;
 
@@ -316,7 +431,6 @@ done;
 
 6.3. Estimating purity
 
-```bash
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
