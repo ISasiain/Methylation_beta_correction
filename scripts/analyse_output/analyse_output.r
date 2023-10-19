@@ -259,12 +259,10 @@ df_to_heatmap <- melt(matrix_to_heatmap)
 ggplot(out_df, aes(x=Dis_to_int)) +
   geom_histogram(binwidth=0.01, color="black", fill="lightblue") +
   xlim(0,0.8) +
-  ggtitle("DISTANCE TO INTERVAL") +
   xlab("Distance to interval") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -274,12 +272,10 @@ ggsave(paste(arguments$output_prefix, "dis_to_int.barplot.png", sep="."))
 ggplot(out_df, aes(x=Dis_to_est)) +
   geom_histogram(binwidth=0.01, color="black", fill="lightblue") +
   xlim(0,0.8) +
-  ggtitle("DISTANCE TO ESTIMATE") +
   xlab("Distance to estimate") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -289,12 +285,10 @@ ggsave(paste(arguments$output_prefix, "dis_to_int.barplot.png", sep="."))
 ggplot(out_df, aes(x=Interval.s.width)) +
   geom_histogram(binwidth=0.0025, color="black", fill="lightgreen") +
   xlim(0,0.16) +
-  ggtitle("INTERVALS' WIDTH") +
   xlab("Interval's width") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -332,12 +326,10 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
   geom_point(size=1.5) +
   geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
-  ggtitle("Prediction of 1-Purity") +
   xlab("Actual 1 - NC") + 
   ylab("Estimated 1 - Value") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -367,12 +359,10 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
   geom_point(size=1.5) +
   geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
-  ggtitle("Prediction of 1-Purity") +
   xlab("Actual 1-Purity") + 
   ylab("Estimated 1-Purity") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -390,7 +380,6 @@ ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_int
   geom_point(color="blue") +
   xlab("Actual 1-Purity") +
   ylab("Dis_to_interval") + 
-  ggtitle("Distance to interval vs Actual 1-Purity") +
   theme_classic() +
   theme(plot.title = element_text(size = 20),
         axis.title = element_text(size = 16),
@@ -403,12 +392,10 @@ ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png", sep="."))
 # Plot of Distance to interval vs Estimated 1-Purity
 ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
   geom_point(color="red") +
-  ggtitle("Distance to interval vs Estimated 1-Purity") +
   xlab("Estimated 1-Purity") +
   ylab("Disance to interval") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -422,12 +409,10 @@ if (arguments$plot_dis_vs_ploidy) {
 
     ggplot(out_df, aes(x=ploidy[row.names(out_df)], y=out_df$Dis_to_est[order(index)])) +
     geom_point(color="red") +
-    ggtitle("Distance to interval vs ploidy") +
     xlab("Ploidy") +
     ylab("Disance to estimate") + 
     theme_classic() +
-    theme(plot.title = element_text(size = 20),
-          axis.title = element_text(size = 16),
+    theme(axis.title = element_text(size = 16),
           axis.text = element_text(size = 14),
           panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
           panel.grid.minor = element_blank())
@@ -439,13 +424,11 @@ if (arguments$plot_dis_vs_ploidy) {
 
 ggplot(out_df, aes(x=Dis_to_est*100)) +
   geom_density(alpha=0.5, fill="red") +
-  ggtitle("Distribution of the deviation") +
   xlab("% Deviation") +
   xlim(0,20) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -456,13 +439,11 @@ ggsave(paste(arguments$output_prefix, "error.densityplot.png",sep="."))
 
 ggplot(out_df, aes(x=Dis_to_est*100)) +
   stat_ecdf(color="red", size=2) +
-  ggtitle("Cumulative distribution of the deviation") +
   xlab("% Deviation") +
   xlim(0,20) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -473,12 +454,10 @@ ggsave(paste(arguments$output_prefix, "error.cum_densityplot.png",sep="."))
 
 ggplot(cpg_counts_df, aes(x=per_TRUES)) +
   geom_histogram(binwidth=0.0025, color="black", fill="red") +
-  ggtitle("Usage of CpGs for the prediction") +
   xlab("% of samples in which each CpGs are included") +
   ylab("CpGs") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -490,12 +469,10 @@ ggsave(paste(arguments$output_prefix, "prop_cpgs_included.png",sep="."))
 
 ggplot(data.frame(cpgs_per_sample_df), aes(x=num_cpgs)) +
   geom_histogram(color="black", fill="red") +
-  ggtitle("CpGs used to each sample's purity") +
   xlab("Number of CpGs used to estimate purity") +
   ylab("Number of samples") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -526,10 +503,8 @@ ggplot(data=data.frame(cpgs_per_sample_df), aes(x= actual_1_minus_P, y= num_of_c
   geom_point() +
   ggtitle("CpGs used VS actul 1-Purity") +
   xlab("Actual 1-P") +
-  ylab("Number of CpGs used to estimate purity") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
