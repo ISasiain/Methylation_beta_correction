@@ -41,7 +41,7 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regress
 Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG -a 0.75 -s 0.25 -p 5;
 ```
 
-4. Analyse output data to produce plots. 
+4. Analyse output data to produce plots.
 
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
@@ -53,13 +53,12 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimate
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -b ../original_data/betas_validation.RData -c ../output/uncorr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_uncorr;
 ```
 
-5. Analyse the signal overestimation in the low purity region;
+5. Analyse the signal overestimation when sample purity is low;
 
 ```bash
 # Splitting the original validation dataset regarding their actual purity values
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/purity_splitted;
 Rscript ../../../scripts/get_data_to_analyse/split_based_on_purity.r;
-
 
 #Predicting purity per for each purity group; getting the data to be plotted through a bash loop. Line 235 was uncommented to get the desired coverage data
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot;
@@ -70,7 +69,7 @@ for int in $(ls ../../../original_data/purity_splitted/betas_*.RData);
        Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../../../pop_regressions -b ${int} -o ${filename}; 
     done;
 
-#Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot. Line 129 must be uncommented in order to get the required data.
+#Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot.
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation;
 
 for my_file in $(ls ./data_to_plot/betas_from_*_to_*[0-9].RData);
@@ -78,11 +77,14 @@ for my_file in $(ls ./data_to_plot/betas_from_*_to_*[0-9].RData);
        echo ${plotname};
        Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o ${plotname}
     done;
-
 ```
 
 
-### Checking performance and CpG numbers to use through 6-fold-cross-validation (Run in corsaire)
+### Parameter optimization: 6-Fold cross-validation
+
+* VARIANCE THRESHOLD
+* SLOPE THRESHOLD
+* ALPHA VALUE
 
 1. Generating test and training datasets for each CpG number using cross validation;
 
