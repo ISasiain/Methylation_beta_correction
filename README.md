@@ -1,6 +1,6 @@
-# Developing a tumor DNA methylation β value correction model through in silico sample purity estimation
+# Developing a tumor DNA methylation β value correction model through *in silico* sample purity estimation
 
-* Author: Iñaki Sasiain
+* Author: Iñaki Sasiain Casado
 * Supervisor: Johan Staaf
 * Master's Programme in Bioinformatics, Lund University
 * BINP39 (30 ECTS)
@@ -13,7 +13,7 @@
 
 ## EXPERIMENTAL PROCEDURE
 
-### General performance analysis: Analysing the effect of the coverage correction in the 5000 most variable CpGs in BRCA
+### I. General performance analysis: Analysing the effect of the coverage correction in the 5000 most variable CpGs in BRCA
 
 1. Splitting the data in training and validation and generating RData file with the output
 
@@ -80,11 +80,11 @@ for my_file in $(ls ./data_to_plot/betas_from_*_to_*[0-9].RData);
 ```
 
 
-### Parameter optimization: 6-Fold cross-validation
+### II. Parameter optimization: 6-Fold cross-validation
 
-* VARIANCE THRESHOLD
-* SLOPE THRESHOLD
-* ALPHA VALUE
+* **VARIANCE THRESHOLD OPTIMIZATION**
+* **SLOPE THRESHOLD OPTIMIZATION**
+* **ALPHA VALUE OPTIMIZATION**
 
 1. Generating test and training datasets for each CpG number using cross validation;
 
