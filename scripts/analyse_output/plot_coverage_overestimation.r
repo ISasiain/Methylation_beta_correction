@@ -57,12 +57,10 @@ for (sample in names(file_to_plot)) {
     my_plot <- ggplot(data=sample_to_plot,
                       aes(x=x, y=y, color = all_cols[my_col])) +
                       geom_line(color = all_cols[my_col],linewidth=0.5, alpha=0.5) +
-                      ggtitle(arguments$title) +
                       xlab("1-Purity") +
                       ylab("Coverage") +
                       theme_classic() +
-                      theme(plot.title = element_text(size = 20),
-                        axis.title = element_text(size = 16),
+                      theme(plot.title = element_text(size = 16),
                         axis.text = element_text(size = 14),
                         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
                         panel.grid.minor = element_blank())
