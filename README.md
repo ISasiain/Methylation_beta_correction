@@ -34,11 +34,11 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/output;
 
-#Calculating the results with the correction method. The used parameters were randomly chosen.
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG -a 0.75 -s 0.25 -p 5;
+#Calculating the results with the correction method. The defult parameters were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4).
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG;
 
-#Calulating the results without the correction method (The lines that correct the coverage were commented, 82 and 121-161 from purity_coverage.r). The used parameters were randomly chosen.
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG -a 0.75 -s 0.25 -p 5;
+#Calulating the results without the correction method (The lines that correct the coverage were commented, 82 and 121-161 from purity_coverage.r). The default parameterss were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4).
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG;
 ```
 
 4. Analyse output data to produce plots.
@@ -60,22 +60,39 @@ Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estima
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/purity_splitted;
 Rscript ../../../scripts/get_data_to_analyse/split_based_on_purity.r;
 
-#Predicting purity per for each purity group; getting the data to be plotted through a bash loop. Line 235 was uncommented to get the desired coverage data
-cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot;
+#Predicting purity per for each purity group with correction; getting the data to be plotted through a bash loop. Line 235 was uncommented to get the desired coverage data. The default parameters were used.
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot/corrected;
 
-for int in $(ls ../../../original_data/purity_splitted/betas_*.RData); 
-    do filename=$(echo ${int} | cut -d \/ -f 6 | sed 's/.RData//');
+for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData); 
+    do filename=$(echo ${int} | cut -d \/ -f 7 | sed 's/.RData//');
        echo ${filename};
-       Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../../../pop_regressions -b ${int} -o ${filename}; 
+       Rscript ../../../../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../../../../pop_regressions -b ${int} -o ${filename}; 
+    done;
+
+#Predicting purity per for each purity group without correction; getting the data to be plotted through a bash loop. Line 235 was uncommented to get the desired coverage data. The default parameters were used.
+cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot/uncorrected;
+
+for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData); 
+    do filename=$(echo ${int} | cut -d \/ -f 7 | sed 's/.RData//');
+       echo ${filename};
+       Rscript ../../../../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../../../../pop_regressions -b ${int} -o ${filename}; 
     done;
 
 #Creating a plot with all the coverage plots of the samples included into that actual purity interval. The purity_coverage function has to eb adapted to get the data to plot.
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation;
 
-for my_file in $(ls ./data_to_plot/betas_from_*_to_*[0-9].RData);
-    do plotname=$(echo ${my_file} | cut -d \/ -f 3 | sed 's/.RData//' | sed 's/betas_//' );
+#Plotting corrected coverages
+for my_file in $(ls ./data_to_plot/corrected/betas_from_*_to_*[0-9].RData);
+    do plotname=$(echo ${my_file} | cut -d \/ -f 4 | sed 's/.RData//' | sed 's/betas_//' );
        echo ${plotname};
-       Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o ${plotname}
+       Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o corrected_${plotname}
+    done;
+
+#Plotting uncorrected coverage
+for my_file in $(ls ./data_to_plot/uncorrected/betas_from_*_to_*[0-9].RData);
+    do plotname=$(echo ${my_file} | cut -d \/ -f 4 | sed 's/.RData//' | sed 's/betas_//' );
+       echo ${plotname};
+       Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o uncorrected_${plotname}
     done;
 ```
 
