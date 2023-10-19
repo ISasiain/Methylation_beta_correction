@@ -393,7 +393,7 @@ ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png", sep="."))
 ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
   geom_point(color="red") +
   xlab("Estimated 1-Purity") +
-  ylab("Disance to interval") + 
+  ylab("Distance to interval") + 
   theme_classic() +
   theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
@@ -410,7 +410,7 @@ if (arguments$plot_dis_vs_ploidy) {
     ggplot(out_df, aes(x=ploidy[row.names(out_df)], y=out_df$Dis_to_est[order(index)])) +
     geom_point(color="red") +
     xlab("Ploidy") +
-    ylab("Disance to estimate") + 
+    ylab("Distance to estimate") + 
     theme_classic() +
     theme(axis.title = element_text(size = 16),
           axis.text = element_text(size = 14),
