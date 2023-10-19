@@ -200,11 +200,37 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 
 * **SLOPE THRESHOLD OPTIMIZATION**
 
-1. Getting BRCA data
+1. Splitting BRCA data in folds, and generating training and test sets
+
+```bash
+
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+```
 
 2. Determining regressions per each fold
 
+```bash
+```
+
 3. Calculating regressions per slope threshold
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+
+#Defining alpha list 
+alphas=(0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95);
+#Determining purity for each alpha and fold
+for num in ${alphas[@]}; 
+    do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num};
+       for dir in $(ls ../data/cpgs_30000/*_BetasTraining.RData); #Using 30000 cpgs in the prediction
+          do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
+    done;
+done;
+```
 
 4. Comparing results
 
