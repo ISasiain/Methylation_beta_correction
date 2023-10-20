@@ -203,36 +203,63 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 1. Splitting BRCA data in folds, and generating training and test sets
 
 ```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered;
 
-Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+#Lines 124 and 125 of split_cross_validation.r were commented to adapt sample name. 
+Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
 ```
 
 2. Determining regressions per each fold
 
 ```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered;
+
+#Determining reference regressions per each
+for dir in $(ls ../../data/slope_filtered/*_BetasTraining.RData);                           
+    do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
+        echo ${fold};
+        mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered/${fold};
+        cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered/${fold};
+        Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered/${fold}_PurityTraining.RData -o ${fold} -v 0
+    done;
 ```
 
-3. Calculating regressions per slope threshold
+3. Estimating purity
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 
-#Defining alpha list 
-alphas=(0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95);
-#Determining purity for each alpha and fold
-for num in ${alphas[@]}; 
+#Running the scripts using nohup
+#Defining slope threshold list 
+slopes=(0.01 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8)
+#Determining purity for each slope threshold and fold
+for num in ${slopes[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
-       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num};
-       for dir in $(ls ../data/cpgs_30000/*_BetasTraining.RData); #Using 30000 cpgs in the prediction
+       mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num};
+       for dir in $(ls ../data/slope_filtered/*_BetasTraining.RData);
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
-             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
-             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
-             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
+             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
+             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
+             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/slope_filtered/${fold} -b ../../../data/slope_filtered/${fold}_BetasTest.RData -o PredPurity_${fold}_slope${num} -a 0.75 -s ${num} -p 5;
     done;
 done;
 ```
 
 4. Comparing results
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/analyse_output;
+
+#Defining lists of folds and slope thresholds to plot the results
+list_of_folds=$(find ../estimate_purity/slope_0.01 -mindepth 1 -maxdepth 1 -type d | cut -d \/ -f 4 | tr "\n" "," | sed 's/,$//');
+list_of_slopes=$(find ../estimate_purity/slope* -maxdepth 0 | cut -d \/ -f 3 | tr "\n" "," | sed 's/,$//');
+
+#Defining the directory path were the estimated purities are storted
+path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
+
+#Plotting the results
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o slope_CrossVal; 
+```
 
 * **ALPHA VALUE OPTIMIZATION**
 
@@ -243,6 +270,11 @@ done;
 3. Calculating regressions per alpha value
 
 4. Comparing results
+
+
+### III. Checking pan-cancer applicability; BRCA, LUAC and LUSC
+
+### IV. Running the whole pipeline: BRCA1 CpGs in TNBC
 
 1. Generating test and training datasets for each CpG number using cross validation;
 
@@ -1048,40 +1080,6 @@ cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
 nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
 ```
 
-
-#### Using the purity estimation as QC for ASCAT processing
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/13_QC_for_ASCAT/data;
-```
-
-```R
-#Transforming the data. Using cpg id as row name
-load("scanb_base.RData")
-
-rownames(scanb_base) <- scanb_base[,1]
-scanb_base <- scanb_base[,-1]
-
-saveRDS(file="scanb_base.RData", scanb_base)
-```
-
-```bash
-#Getting the refernce cohort
-cp ../../data/betas.RData ./cohort_betas.RData; # Complete betas dataset (450K CpG)
-
-#Transforming the data in a R object with only the 30.000 most variable CpPgs detected in the cohort
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r cohort_betas.RData -a scanb_base.RData -n 30000 -C TRUE -p scanb_base;
-
-
-# Getting reference regressions
-cd /home/Illumina/Iñaki_Sasiain/extra_QC_for_ASCAT/regressions;
-cp ../../09_TNBC_final/regressions/* .;
-
-
-# Running purity estimation
-cd /home/Illumina/Iñaki_Sasiain/extra_QC_for_ASCAT/estimating_purity;
-nohup Rscript ../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../regressions/ -b ../data/scanb_base_most_variable_CpGs.RData -o ScanB_purity_est_30.000CpG -a 0.75 -s 0.25 -p 5;
-```
 
 
 #### Running the whole pipeline with an example: BRCA1 !!! THIS HAS TO BE REPEATED WHEN GETTING THE OPTIMAL VAR THRESHOLD
