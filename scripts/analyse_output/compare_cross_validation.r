@@ -193,9 +193,10 @@ print(dti_df)
 # Plotting the results 
 ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
   geom_boxplot(fill="olivedrab4", ) +
-  geom_smooth(aes(group=1), linewidth=2, se=FALSE) +
-  labs(x = "Prediction", y = "Mean distance to estimate") +
+  labs(x = "Prediction", y = "Mean distance to estimate", color="Splits' mean") +
   theme_classic() + 
+  scale_fill_manual(values = c("palegreen1")) +
+  scale_color_manual(values = c("palegreen4")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 # Saving the plot
@@ -344,7 +345,7 @@ print(to_plot_df)
 ggplot(to_plot_df, aes(x = factor(Prediction, levels = vec_of_preds), y = as.numeric(Distance_to_estimate) , fill = Type)) +
   geom_boxplot() +
   geom_smooth(aes(group=Type, color=Type), linewidth=2, se=FALSE) +
-  labs(x = "Prediction", y = "Mean distance to estimate", fill = "Cancer Type", color="Mean dis. to est.") +
+  labs(x = "Prediction", y = "Mean distance to estimate", fill = "Cancer Type", color="Splits' mean") +
   scale_fill_manual(values = c("palegreen1", "tomato", "steelblue1")) +
   scale_color_manual(values = c("palegreen4", "tomato4", "steelblue4")) +
   theme_classic() +
