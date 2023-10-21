@@ -122,7 +122,7 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
 # Splitting BRCA data
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
        
-Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
 
 
 # Splitting LUAD data (lines 125 and 126 have been commented)
@@ -218,8 +218,8 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered;
 
-#Lines 124 and 125 of split_cross_validation.r were commented to adapt sample name. 
-Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
+#Lines 124 and 125 of split_cross_validation.r were uncommented to adapt sample name. 
+Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
 ```
 
 2. Determining regressions per each fold
@@ -271,7 +271,7 @@ list_of_slopes=$(find ../estimate_purity/slope* -maxdepth 0 | cut -d \/ -f 3 | t
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
 #Plotting the results
-Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o slope_CrossVal; 
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/BRCA_purities.RData -o slope_CrossVal; 
 ```
 
 * **ALPHA VALUE OPTIMIZATION**
@@ -282,7 +282,7 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha;
 
 #Lines 124 and 125 of split_cross_validation.r were commented to adapt sample name. 
-Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
+Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
 ```
 
 2. Determining regressions per each fold
@@ -296,7 +296,7 @@ for dir in $(ls ../../data/alpha/*_BetasTraining.RData);
         echo ${fold};
         mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/alpha/${fold};
         cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/alpha/${fold};
-        Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_PurityTraining.RData -o ${fold} -v 0
+        Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_PurityTraining.RData -o ${fold} -v 0
     done;
 ```
 
@@ -316,10 +316,9 @@ for num in ${alphas[@]};
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
              mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
              cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
-             Rscript ../../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../../calculate_regressions/cpgs_30000/${fold} -b ../../../data/cpgs_30000/${fold}_BetasTest.RData -o PredPurity_${fold}_alpha${num} -a ${num} -s 0.25 -p 5;
+            Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../../../calculate_regressions/alpha/${fold} -b ../../../data/alpha/${fold}_BetasTest.RData -o PredPurity_${fold}_slope${num} -a ${num} -s 0.25 -p 5;
     done;
 done;
-'
 ```
 
 4. Comparing results
@@ -337,7 +336,128 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 ```
 
 
-### III. Checking pan-cancer applicability; BRCA, LUAC and LUSC
+### III. Checking pan-cancer applicability; BRCA, LUAC and LUSC -> REGERNERATE USING THE VARIANCE THRESHOLD
+
+1. Generating Training (80%) and test (20%) subsets
+
+```bash
+# Genereating training (80%) and test (20%) subsets for BRCA data
+cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/data/training_test;
+
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -p purityVector -f FALSE -N FALSE -S TRUE -v 20;
+
+# Genereating training (80%) and test (20%) subsets for LUAC data
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
+
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE -S TRUE -v 20;
+
+# Genereating training (80%) and test (20%) subsets for LUSC data
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
+
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE -S TRUE -v 20;
+```
+
+2. Determining reference regressions from trainig subsets
+
+```bash
+# Generating regressions for BRCA. Using 0.05 as the variance threshold
+cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/regressions/training_test;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUAC_regs_Training. -v 0.05;
+
+# Generating regressions for LUAC. Using 0.05 as the variance threshold
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUAC_regs_Training. -v 0.05;
+
+# Generating regressions for LUSC. Using 0.05 as the variance threshold
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUSC_regs_Training. -v 0.05;
+```
+3. Calculating purity
+
+```bash
+# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/;
+
+# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+
+
+# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+
+
+```
+
+4. Analysing output
+
+* ANALYSING PREDICTION OUTPUT
+
+
+
+* ANALYSING BIOLOGICAL MEANING OF ESTIMATES: PROPORTION OF CANCER DNA
+
+
+
+* ANALYSING REPRESENTATIVITY OF CPGS USED
+
+```bash
+#Getting reference betas
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data/cohorts; 
+
+cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training/betas.RData breast_ref.RData;
+cp /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data/betas.RData LUAC_ref.RData;
+cp /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data/betas.RData LUSC_ref.RData;
+
+
+
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data;
+
+#Getting Cpg list for breast cancer
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/breast_ref.RData -a ./cohorts/breast_ref.RData -B FALSE -C TRUE -n 30000 -p breast_30000CpG;
+
+#Getting CpG list for LUAC
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -B FALSE -C TRUE -n 30000 -p LUAC_30000CpG;
+
+#Getting CpG list for LUSC
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -B FALSE -C TRUE -n 30000 -p LUSC_30000CpG;
+```
+
+```R
+#Integrating annotation of BRCA LUAC and LUSC in a single file
+
+
+#Storing data as variables
+load("BRCA_CpG_annotation.RData")
+anno_BRCA <- annoObj
+
+anno_LUAD <- read.csv("EPIC_760405CpGs_contexts.csv", row.names=1)
+
+anno_LUSC <- read.csv("LUSC_CpGs_per_context.csv", row.names=1)
+
+
+#Merging data into a single dataframe
+merged_annotation <- anno_LUAD[,c("promoter","proximal","distal","cgi","shore","ocean","atacLUAD")]
+merged_annotation[,"atacLUSC"] <- anno_LUSC[rownames(merged_annotation),"atacLUSC"]
+merged_annotation[,"atacBRCA"] <- anno_BRCA[rownames(merged_annotation), "hasAtacOverlap"]
+
+merged_annotation[,"nonAtacLUAD"] <- abs(1-merged_annotation[,"atacLUAD"])
+merged_annotation[,"nonAtacLUSC"] <- abs(1-merged_annotation[,"atacLUSC"])
+merged_annotation[,"nonAtacBRCA"] <- abs(1-merged_annotation[,"atacBRCA"])
+
+#Saving merged df
+saveRDS(merged_annotation, file="annotation_file.RData")
+
+#Analysing the data
+```
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots;
+
+cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
+
+nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
+```
 
 ### IV. Running the whole pipeline: BRCA1 CpGs in TNBC
 
@@ -772,63 +892,7 @@ Rscript ../plot_my_sample.r;
 
 #### Comparing CpGs used for the prediction among cancer types
 
-```bash
-#Getting reference betas
-cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data/cohorts; 
 
-cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training/betas.RData breast_ref.RData;
-cp /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data/betas.RData LUAC_ref.RData;
-cp /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data/betas.RData LUSC_ref.RData;
-
-
-
-cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data;
-
-#Getting Cpg list for breast cancer
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/breast_ref.RData -a ./cohorts/breast_ref.RData -B FALSE -C TRUE -n 30000 -p breast_30000CpG;
-
-#Getting CpG list for LUAC
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -B FALSE -C TRUE -n 30000 -p LUAC_30000CpG;
-
-#Getting CpG list for LUSC
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -B FALSE -C TRUE -n 30000 -p LUSC_30000CpG;
-```
-
-```R
-#Integrating annotation of BRCA LUAC and LUSC in a single file
-
-
-#Storing data as variables
-load("BRCA_CpG_annotation.RData")
-anno_BRCA <- annoObj
-
-anno_LUAD <- read.csv("EPIC_760405CpGs_contexts.csv", row.names=1)
-
-anno_LUSC <- read.csv("LUSC_CpGs_per_context.csv", row.names=1)
-
-
-#Merging data into a single dataframe
-merged_annotation <- anno_LUAD[,c("promoter","proximal","distal","cgi","shore","ocean","atacLUAD")]
-merged_annotation[,"atacLUSC"] <- anno_LUSC[rownames(merged_annotation),"atacLUSC"]
-merged_annotation[,"atacBRCA"] <- anno_BRCA[rownames(merged_annotation), "hasAtacOverlap"]
-
-merged_annotation[,"nonAtacLUAD"] <- abs(1-merged_annotation[,"atacLUAD"])
-merged_annotation[,"nonAtacLUSC"] <- abs(1-merged_annotation[,"atacLUSC"])
-merged_annotation[,"nonAtacBRCA"] <- abs(1-merged_annotation[,"atacBRCA"])
-
-#Saving merged df
-saveRDS(merged_annotation, file="annotation_file.RData")
-
-#Analysing the data
-```
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots;
-
-cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
-
-nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
-```
 
 
 
