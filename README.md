@@ -375,21 +375,36 @@ cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
 
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUSC_regs_Training. -v 0.05;
 ```
+
 3. Calculating purity
 
 ```bash
 # Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
-cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/;
+cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/estimate_purity;
 
-# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o BRCA_training_test -a 0.75 -s 0.25 -p 5;
 
+# Estimating purities for LUAC using alpha=0.7 and slope_threshold=0.2
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity;
 
-# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUAC_training_test -a 0.75 -s 0.25 -p 5;
 
+# Estimating purities for LUSC using alpha=0.7 and slope_threshold=0.2
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity;
 
+Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.75 -s 0.25 -p 5;
 ```
 
 4. Analysing output
+
+```bash
+# Generating plots for BRCA
+
+# Generating plots for LUAC
+
+# Generating plots for LUSC
+
+```
 
 * ANALYSING PREDICTION OUTPUT
 
