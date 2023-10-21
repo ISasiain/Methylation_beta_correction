@@ -52,12 +52,16 @@ argument_list <- list(
     help="The names that identify the different predictions must be entered here separated by a comma",
     metavar="[comma_separated_list_of_prediction_names]"),
 
-    make_option(c("-d", "--directory"), type="character",
-    help="The name of the directory containing the different predictions made and different folds for each must be entered here",
+    make_option(c("-m","--plot_multiple_cancer_types"), type="logical", default=FALSE,
+    help="The user can specify if more than one cancer types have to be included in the plot",
+    metavar="[TRUE/FALSE]"),
+
+    make_option(c("-d", "--directory/es"), type="character",
+    help="The name of the directory, or directories separacted by a comma if the user has selected to plot different cancer types, containing the different predictions made and different folds for each must be entered here",
     metavar="[path_to_dorectory]"),
 
-    make_option(c("-p", "--reference_purity"), type="character", 
-    help="The path of the R object containing the refernce purity values to compare the predictions with must be entered here",
+    make_option(c("-p", "--reference_purity/es"), type="character", 
+    help="The path of the R object, or R objects separated by a comma is the user has selected to plot different cancer types, containing the refernce purity values to compare the predictions with must be entered here",
     metavar="[path_to_purities]"),
 
     make_option(c("-o", "--output_prefix"), type="character", default="result_analysis",
@@ -69,6 +73,8 @@ argument_list <- list(
 arguments <- parse_args(OptionParser(option_list=argument_list, 
                                     description="This script compares the output of different sample purity prtedictions made based on beta values"))
 
+#Code to use if a single cancer type will be plotted
+if (arguments$plot_multiple_cancer_types==FALSE) {
 
 # ===================================================
 #         PROCESSING COMMAND LINE ARGUMENTS
@@ -111,9 +117,6 @@ for (prediction in names(prediction_list)) {
 # Loading the actual 1-Purity vector into a variable
 actual_1_minus_P <- readRDS(arguments$reference_purity)
 
-# Create an empty list to store predictions
-prediction_list <- vector("list", length(vec_of_preds))
-
 # Iterate through predictions and folds and append the predictions
 for (pred in vec_of_preds) {
   for (fold in vec_of_folds) {
@@ -126,9 +129,11 @@ for (pred in vec_of_preds) {
     # List files in the directory that match the pattern
     matching_files <- list.files(path_to_prediction, pattern = pattern, full.names = TRUE)
 
+
     # Raise an error if more than one paths are identified
     if (length(matching_files) != 1) {
-      stop("More than one file containing the estimated purity per prediction and fold has been detected. Execution halted.")
+
+      stop("More than one or 0 files containing the estimated purity per prediction and fold has been detected. Execution halted.")
     }
 
     #Append to list
@@ -168,6 +173,8 @@ for (pred in vec_of_preds) {
   }
 }
 
+print(dti_df)
+
 # ================================================
 #                PLOTTING RESULTS
 # ================================================
@@ -181,13 +188,173 @@ dti_df <- dti_df %>% pivot_longer(cols=all_of(vec_of_folds),
                                   names_to="Fold", 
                                   values_to="Distance_to_estimate")
 
+print(dti_df)
+
 # Plotting the results 
-ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate * 100)) +
+ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
   geom_boxplot(fill="olivedrab4", ) +
   geom_smooth(aes(group=1), linewidth=2, se=FALSE) +
-  labs(x = "Prediction", y = "Mean distance to estimate (% points)") +
+  labs(x = "Prediction", y = "Mean distance to estimate") +
   theme_classic() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 # Saving the plot
 ggsave(paste(arguments$output_prefix, "cross_validation.boxplot.png", sep="."))
+
+
+#Code to use if multiple cancer types will be plotted
+} else {
+
+
+# ===================================================
+#         PROCESSING COMMAND LINE ARGUMENTS
+# ===================================================
+
+# Splitting the provided argument in a vector of folds
+vec_of_folds <- strsplit(arguments$names_of_the_folds, split=",")[[1]]
+
+# Splitting the provided argument in a vector of predictions to analyse
+vec_of_preds <- strsplit(arguments$names_of_the_predictions_to_compare, split=",")[[1]]
+
+# Apply strsplit to each element of the Prediction column
+to_order <- as.numeric(sapply(vec_of_preds, function(x) strsplit(x, split = "_")[[1]][2]))
+
+# Sorting the vector
+vec_of_preds <- vec_of_preds[order(to_order)]
+
+
+# Defining vector directories with predictions
+directories_preds <- strsplit(arguments$"directory/es", ",")[[1]]
+
+#Defining vector with path to actual purities
+pur_paths <- strsplit(arguments$"reference_purity/es", ",")[[1]]
+
+
+#Creating vector with cancer type names
+types <- lapply(directories_preds, function(x) tail(strsplit(x,"/")[[1]], n=1))
+
+# Creating a list containing each prediction made as an element
+prediction_list <- vector("list", length(types))
+names(prediction_list) <- types
+
+# Creating an empty list for type, prediction and fold
+for (type in types) {
+
+  prediction_list[[type]] <- vector("list", length(vec_of_preds))
+  names(prediction_list[[type]]) <- vec_of_preds
+
+  for (prediction in vec_of_preds)
+
+    prediction_list[[type]][[prediction]] <- vector("list", length(vec_of_folds))
+    names(prediction_list[[type]][[prediction]]) <- vec_of_folds
+  }
+
+
+# Creating an empty to store actual purities
+actual_p_list <- vector("list", length(types))
+names(actual_p_list) <- types
+
+
+# ===============================================
+#            GETTING VALUES TO COMPARE
+# ===============================================
+
+
+# FILLING LISTS; actual and predicted
+
+for (type in types) {
+
+  dir <- grep(type, directories_preds, value = TRUE)
+  path_actual_p <- grep(type, pur_paths, value = TRUE)
+
+
+  # Getting the actual purities for the current cancer type
+  actual_p_list[[type]] <- readRDS(path_actual_p)
+
+  for (pred in vec_of_preds) {
+    for (fold in vec_of_folds) {
+
+        # Getting the path to each prediction
+    path_to_prediction <- paste(dir, "/", pred, "/", fold, sep="")
+    pattern <- paste("*_", gsub("_", "", pred), ".RData", sep="")
+
+    # List files in the directory that match the pattern
+    matching_files <- list.files(path_to_prediction, pattern = pattern, full.names = TRUE)
+
+    print(matching_files)
+
+
+    # Raise an error if more than one paths are identified
+    if (length(matching_files) != 1) {
+
+      stop("More than one or 0 files containing the estimated purity per prediction and fold has been detected. Execution halted.")
+    }
+
+    #Append to list
+    prediction_list[[type]][[pred]][[fold]] <- readRDS(matching_files[1])
+
+    }
+  }
+}
+
+
+# ===============================================
+#            GETTING QUALITY METRICS
+# ===============================================
+
+# Results dataframe
+to_plot_df <- data.frame(matrix(ncol=4, nrow=0))
+
+
+#Iterate through cancer types
+for (type in types){
+
+  # Iterate through the predictions and folds to determine the dist_to_est (quality metric) per each
+  for (pred in vec_of_preds) {
+
+    for (fold in vec_of_folds) {
+
+      to_plot_df <- rbind(to_plot_df, c(type, pred, fold, 
+        mean(sapply(
+          names(prediction_list[[type]][[pred]][[fold]]),
+          FUN = function (sample) {
+          
+
+          # Determining the distance to the estimate (the mean is calculated in case there were more than one maximums. THis can be removed after softening the coverage plot)
+          mean(abs(1 - actual_p_list[[type]][sample] - prediction_list[[type]][[pred]][[fold]][[sample]][["1-Pur_estimates"]]),4)
+            }
+          )
+        ) 
+      )
+      )
+    }
+  }
+}
+
+#Adding colnames to the new plot
+colnames(to_plot_df) <- c("Type", "Prediction", "Fold", "Distance_to_estimate")
+
+print(to_plot_df)
+
+# ===============================================
+#              PLOTTING THE RESULTS
+# ===============================================
+
+# Create a boxplot
+ggplot(to_plot_df, aes(x = factor(Prediction, levels = vec_of_preds), y = as.numeric(Distance_to_estimate) , fill = Type)) +
+  geom_boxplot() +
+  geom_smooth(aes(group=Type, color=Type), linewidth=2, se=FALSE) +
+  labs(x = "Prediction", y = "Mean distance to estimate", fill = "Cancer Type", color="Mean dis. to est.") +
+  scale_fill_manual(values = c("palegreen1", "tomato", "steelblue1")) +
+  scale_color_manual(values = c("palegreen4", "tomato4", "steelblue4")) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# Saving the plot
+ggsave(paste(arguments$output_prefix, ".cancer_types_combined.cross_validation.boxplot.png", sep="."))
+
+}
+
+cat("\n=================\n")
+cat ("PROCESS FINISHED")
+cat("\n=================\n")
