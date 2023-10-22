@@ -354,7 +354,7 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ..
 # Genereating training (80%) and test (20%) subsets for LUSC data
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
 
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE -S TRUE -v 20;
+Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE -S TRUE -v 20;
 ```
 
 2. Determining reference regressions from trainig subsets
@@ -400,7 +400,10 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regression
 4. Analysing output
 
 ```bash
-# Generating plots for BRCA
+# Generating plots for BRCA (UNCOMMENT LINE 158 TO ADAPT SAMPLE NAMES)
+cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/BRCA_training_test.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/BRCA_training_test.used_cpgs.RData -o BRCA_training_test_plots -b ../data/training_test/betas_validation.RData -P TRUE -p ../data/ploidy/BRCA_ploidy.RData;
 
 # Generating plots for LUAC
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
@@ -412,14 +415,6 @@ cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
 
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/LUSC_training_test.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/LUSC_training_test.used_cpgs.RData -o LUSC_training_test_plots -b ../data/training_test/betas_validation.RData -P TRUE -p ../data/ploidy/LUSC_ploidy.RData;
 ```
-
-* ANALYSING PREDICTION OUTPUT
-
-
-
-* ANALYSING BIOLOGICAL MEANING OF ESTIMATES: PROPORTION OF CANCER DNA
-
-
 
 * ANALYSING REPRESENTATIVITY OF CPGS USED
 
