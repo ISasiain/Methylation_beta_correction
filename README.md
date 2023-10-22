@@ -205,7 +205,7 @@ list_of_folds=$(find ../estimate_purity/cpgs_100 -mindepth 1 -maxdepth 1 -type d
 list_of_var=$(find ../estimate_purity/var_filtered/BRCA/var* -maxdepth 0 | cut -d \/ -f 5 | tr "\n
 " "," | sed 's/,$//');
 estimated_purities="../estimate_purity/var_filtered/LUAC,../estimate_purity/var_filtered/LUSC,../estimate_purity/var_filtered/BRCA";
-actual_purities="../../10_LUAC_final/data/full_data/purity.RData,../../11_LUSC_final/data/full_data/purity.RData,../../data/BRCA_purities.RData";
+actual_purities="../../10_LUAC_final/data/full_data/purity.RData,../../11_LUSC_final/data/full_data/purity.RData,../../data/BRCA_data/BRCA_purities.RData";
 
 #Plotting the results
 Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_var} -m TRUE -d ${estimated_purities} -p ${actual_purities} -o cpg_var_BRCA_LUAC_LUSC; 
@@ -271,7 +271,7 @@ list_of_slopes=$(find ../estimate_purity/slope* -maxdepth 0 | cut -d \/ -f 3 | t
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
 #Plotting the results
-Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/BRCA_purities.RData -o slope_CrossVal; 
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_slopes} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/BRCA_data/BRCA_purities.RData -o slope_CrossVal; 
 ```
 
 * **ALPHA VALUE OPTIMIZATION**
@@ -331,8 +331,8 @@ list_of_alphas=$(find ../estimate_purity/alpha* -maxdepth 0 | cut -d \/ -f 3 | t
 
 path="/home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity";
 
-#Potting the results
-Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_alphas} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/purity.RData -o alpha_CrossVal;
+#Plotting the results
+Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_validation.r -f ${list_of_folds} -c ${list_of_alphas} -d ${path} -p /home/Illumina/Iñaki_Sasiain/data/BRCA_data/BRCA_purities.RData -o alpha_CrossVal;
 ```
 
 
@@ -363,17 +363,17 @@ Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /h
 # Generating regressions for BRCA. Using 0.05 as the variance threshold
 cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/regressions/training_test;
 
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUAC_regs_Training. -v 0.05;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o LUAC_regs_Training. -v 0.05;
 
 # Generating regressions for LUAC. Using 0.05 as the variance threshold
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
 
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUAC_regs_Training. -v 0.05;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o LUAC_regs_Training. -v 0.05;
 
 # Generating regressions for LUSC. Using 0.05 as the variance threshold
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
 
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RDat -o LUSC_regs_Training. -v 0.05;
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o LUSC_regs_Training. -v 0.05;
 ```
 
 3. Calculating purity
@@ -382,17 +382,19 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../da
 # Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
 cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/estimate_purity;
 
-Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o BRCA_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o BRCA_training_test -a 0.75 -s 0.25 -p 5;
+
 
 # Estimating purities for LUAC using alpha=0.7 and slope_threshold=0.2
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity;
 
-Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUAC_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o LUAC_training_test -a 0.75 -s 0.25 -p 5;
+
 
 # Estimating purities for LUSC using alpha=0.7 and slope_threshold=0.2
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity;
 
-Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.75 -s 0.25 -p 5;
 ```
 
 4. Analysing output
@@ -401,9 +403,14 @@ Rscript ../../../scripts/calculate_purity/purity_estimator.r -c 35 -d ../regress
 # Generating plots for BRCA
 
 # Generating plots for LUAC
+cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/LUAC_training_test.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/LUAC_training_test.used_cpgs.RData -o LUAC_training_test_plots -b ../data/training_test/betas_validation.RData -P TRUE -p ../data/ploidy/LUAD_ploidy.RData;
 
 # Generating plots for LUSC
+cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
 
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/LUSC_training_test.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/LUSC_training_test.used_cpgs.RData -o LUSC_training_test_plots -b ../data/training_test/betas_validation.RData -P TRUE -p ../data/ploidy/LUSC_ploidy.RData;
 ```
 
 * ANALYSING PREDICTION OUTPUT
@@ -474,7 +481,31 @@ cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
 nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
 ```
 
+
 ### IV. Running the whole pipeline: BRCA1 CpGs in TNBC
+
+1. Generating data to correct. CpGs affectting BRCA1 from GEO
+
+```bash
+```
+
+2. Generating regressions
+
+```bash
+#Using all the CpGs
+
+#Using all the CpGs filtering based on variance (0.05)
+
+#Using only TNBC samples
+
+```
+
+3. Estimating purity
+
+
+4. Correcting β values
+
+5. Plotting results
 
 
 ### Testing the tool with new data (Run in Corsaire)
