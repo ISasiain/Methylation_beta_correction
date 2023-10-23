@@ -336,7 +336,7 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 ```
 
 
-### III. Checking pan-cancer applicability; BRCA, LUAC and LUSC -> REGERNERATE USING THE VARIANCE THRESHOLD
+### III. Checking pan-cancer applicability; BRCA, LUAC and LUSC 
 
 1. Generating Training (80%) and test (20%) subsets
 
