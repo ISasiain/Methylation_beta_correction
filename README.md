@@ -475,8 +475,75 @@ cpg_list=$(find "${PWD%/*}" -name '*_var0.05_CpG_vector.RData' | tr "\n" ",");
 nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p BRCA_LUAC_LUSC;
 ```
 
+### IV. Computing refernce regressions
 
-### IV. Running the whole pipeline: BRCA1 CpGs in TNBC
+1. Getting refernce raw data
+
+```bash
+# Getting refernce raw data: BRCA
+cd /home/Illumina/Iñaki_Sasiain/reference/BRCA_raw;
+
+Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -p purityVector -f FALSE -N FALSE -S FALSE;
+
+# Getting refernce raw data: LUAD
+cd /home/Illumina/Iñaki_Sasiain/reference/LUAD_raw;
+
+Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE -S FALSE;
+
+# Getting refernce raw data: LUSC
+cd /home/Illumina/Iñaki_Sasiain/reference/LUSC_raw;
+
+Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B ../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE -S FALSE;
+```
+
+2. Determining refrence regressions
+
+```bash
+# DETERMINING REFERNENCE REGRESSIONS: BRCA
+cd /home/Illumina/Iñaki_Sasiain/reference/BRCA_regs;
+
+# Getting regressions when var threshold = 0.05
+cd /home/Illumina/Iñaki_Sasiain/reference/BRCA_regs/var_0.05;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../BRCA_raw/betas.RData -p ../../BRCA_raw/purity.RData -o BRCA_var0.05. -v 0.05;
+
+# Getting regressions when var threshold = 0
+cd /home/Illumina/Iñaki_Sasiain/reference/BRCA_regs/var_0;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../BRCA_raw/betas.RData -p ../../BRCA_raw/purity.RData -o BRCA_var0. -v 0;
+
+
+
+# DETERMINING REFERNENCE REGRESSIONS: LUAD
+cd /home/Illumina/Iñaki_Sasiain/reference/LUAD_regs;
+
+# Getting regressions when var threshold = 0.05
+cd /home/Illumina/Iñaki_Sasiain/reference/LUAD_regs/var_0.05;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUAD_raw/betas.RData -p ../../LUAD_raw/purity.RData -o LUAD_var0.05. -v 0.05;
+
+# Getting regressions when var threshold = 0
+cd /home/Illumina/Iñaki_Sasiain/reference/LUAD_regs/var_0;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUAD_raw/betas.RData -p ../../LUAD_raw/purity.RData -o LUAD_var0. -v 0;
+
+
+
+# DETERMINING REFERNENCE REGRESSIONS: LUSC
+cd /home/Illumina/Iñaki_Sasiain/reference/LUAD_regs;
+
+# Getting regressions when var threshold = 0.05
+cd /home/Illumina/Iñaki_Sasiain/reference/LUSC_regs/var_0.05;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUSC_raw/betas.RData -p ../../LUSC_raw/purity.RData -o LUSC_var0.05. -v 0.05;
+
+# Getting regressions when var threshold = 0
+cd /home/Illumina/Iñaki_Sasiain/reference/LUSC_regs/var_0;
+
+Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUSC_raw/betas.RData -p ../../LUSC_raw/purity.RData -o LUSC_var0. -v 0;
+```
+
+### V. Running the whole pipeline: BRCA1 CpGs in TNBC
 
 * USING THE WHOLE BRCA-TCGA TO CREATE REGRESSIONS USED TO CORRECT BETAS
 
