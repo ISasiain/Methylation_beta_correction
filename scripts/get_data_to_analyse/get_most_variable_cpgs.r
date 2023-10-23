@@ -27,9 +27,21 @@ argument_list <- list(
               help="The path to the RObject containing the data to analyse (betas of each CpG) must be entered here.",
               metavar = "[PATH_TO_DATA_TO_ANALYSE]"),
 
+  make_option(c("-N", "--filter_by_number"), type="numeric", default=FALSE,
+              help="This argument must be set to TRUE if the user wants to get a certain number of the most variant CpG",
+              metavar="[TRUE/FALSE]"),
+
   make_option(c("-n", "--number_of_CpGs"), type="numeric",  
-              help="The nomber of the most variable CpGs to keep must be entered here.",
+              help="The number of the most variable CpGs to keep must be entered here.",
               metavar = "[CpG_NUM]"),
+
+  make_option(c("-V", "--filter_by_variance"), type="numeric", default=FALSE,
+              help="This argument must be set to TRUE if the user wants to get teh CpGs over a specific variance threshold",
+              metavar="[TRUE/FALSE]"),
+
+  make_option(c("-v", "--variance"), type="numeric",  
+              help="The variance threshold to filter the CpGs must be entered here CpGs to keep must be entered here.",
+              metavar = "[Var]"),
 
   make_option(c("-l", "--include_CpG_list"), type="logical",  
               help="This argument must be set to TRUE to generate a file containing the included CpG names as an output. The default argument is [%default]",
@@ -62,6 +74,8 @@ to_analyse <- readRDS(arguments$data_to_analyse)
 #    GETTING MOST VARIABLE CPGs
 # =================================
 
+if (arguments$filter_by_number) {
+
 # Detemine the variance of all the rows (CpGs)
  cpgs_variance <- apply(
                         reference,
@@ -74,6 +88,20 @@ sorting_vec <- order(cpgs_variance, decreasing=TRUE)[1:arguments$number_of_CpGs]
 
 # Sorting the betas dataframe and getting only the CpGs to include
 cpgs <- rownames(reference[sorting_vec,])
+
+} else if (arguments$filter_by_variance) {
+
+# Detemine the variance of all the rows (CpGs)
+cpgs_variance <- apply(
+                        reference,
+                        MARGIN=1,
+                        FUN=var
+                   )
+
+# Get the CpGs over the variance threshold
+
+cpgs <- rownames(refernce)[cpgs_variance >= arguments$variance]
+}
 
 # ===========================
 #     GENERATING OUTPUT
