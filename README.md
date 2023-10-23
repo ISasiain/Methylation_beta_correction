@@ -427,17 +427,16 @@ cp /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data/betas.RData LUAC_r
 cp /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data/betas.RData LUSC_ref.RData;
 
 
-
 cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data;
 
 #Getting Cpg list for breast cancer
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/breast_ref.RData -a ./cohorts/breast_ref.RData -B FALSE -C TRUE -n 30000 -p breast_30000CpG;
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/BRCA_ref.RData -a ./cohorts/BRCA_ref.RData -l TRUE -V TRUE -v 0.05 -p BRCA_var0.05;
 
 #Getting CpG list for LUAC
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -B FALSE -C TRUE -n 30000 -p LUAC_30000CpG;
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -l TRUE -V TRUE -v 0.05 -p LUAD_var0.05;
 
 #Getting CpG list for LUSC
-Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -B FALSE -C TRUE -n 30000 -p LUSC_30000CpG;
+Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -l TRUE -V TRUE -v 0.05 -p LUSC_var0.05;
 ```
 
 ```R
@@ -471,474 +470,15 @@ saveRDS(merged_annotation, file="annotation_file.RData")
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots;
 
-cpg_list=$(find "${PWD%/*}" -name '*_30000CpG_CpG_vector.RData' | tr "\n" ",");
+cpg_list=$(find "${PWD%/*}" -name '*_var0.05_CpG_vector.RData' | tr "\n" ",");
 
-nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p breast_LUAC_LUSC;
+nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p BRCA_LUAC_LUSC;
 ```
 
 
 ### IV. Running the whole pipeline: BRCA1 CpGs in TNBC
 
-1. Generating data to correct. CpGs affectting BRCA1 from GEO
-
-```bash
-```
-
-2. Generating regressions
-
-```bash
-#Using all the CpGs
-
-#Using all the CpGs filtering based on variance (0.05)
-
-#Using only TNBC samples
-
-```
-
-3. Estimating purity
-
-
-4. Correcting β values
-
-5. Plotting results
-
-
-### Testing the tool with new data (Run in Corsaire)
-
-#### Using GSE148748 as new test data
-
-1. Getting and preprocessing GSE148748 data
-
-```bash
-# Creating new directory to store the new data
-mkdir /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
-cd /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
-
-# Getting and unzipping the data
-wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE148nnn/GSE148748/matrix/GSE148748_series_matrix.txt.gz;
-gunzip GSE148748/matrix/GSE148748_series_matrix.txt.gz;
-
-
-# Getting only rows of interest
-cat GSE148748_series_matrix.txt | sed -n '27p; 58,$p' | sed 's/Breast cancer //g' > GSE148748_filtered_betas.txt;
-
-# Preprocessing the downloaded file in R
-```R
-# Converting the tsv in a R object and removing headers.
-GSE148748 <- read.csv("GSE148748_filtered_betas.txt", sep="\t", na.strings=c("", NA), head=1)
-
-# Setting the sample and cpg ids as colnames and rownames
-rownames(GSE148748) <- GSE148748$"X.Sample_title"
-GSE148748 <- GSE148748[,-which(names(GSE148748)=="X.Sample_title")]
-
-# Removing cpgs without beta values
-GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),]
-
-#Saving the dataframe as an R object
-saveRDS(GSE148748, file="GSE148748_betas.RData")
-```
-
-# Getting and formatting purity data
-
-```bash
-cat n235_WGS_PD_ID_TumFrac_Ploidy.txt | cut -f 1,3,5 > WGS_tum.frac.txt;
-```
-
-```R
-pur_frac <- read.csv("WGS_tum.frac.txt", header=TRUE, sep="\t")
-
-# Creating ASCAT purity vector
-ascat_purity_vector <- pur_frac[,"ASCAT_TUM_FRAC"]
-names(ascat_purity_vector) <- pur_frac[,"PD_ID"]
-
-# Creating BATTENBERG purity vector
-battenberg_purity_vector <- pur_frac[,"BATTENBERG_TUM_FRAC"]
-names(battenberg_purity_vector) <- pur_frac[,"PD_ID"]
-
-#Saving files
-saveRDS(ascat_purity_vector, file="ascat_purity_vector.RData")
-saveRDS(battenberg_purity_vector, file="battenberg_purity_vector.RData")
-```
-
-
-2. Getting test and training data to run the analysis
-
-```bash
-#Using all the cpgs
-
-# Getting training dataset (TNBC TCGA data)
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/training;
-cp ../../../data/betas.RData .; # Complete betas dataset (450K CpG)
-cp ../../../data/purity.RData .; # Complete purity dataset
-
-# Getting test dataset (GSE148748)
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test;
-cp ../../../data/GSE148748_data/GSE148748_betas.RData .; # Complete betas dataset
-
-# Getting test dataset. Using only the 30.000 most variant CpGs of the refernce dataset
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000;
-
-Rscript ../../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ../training/betas.RData -a ../test/GSE148748_betas.RData -n 30000 -C TRUE -p TCGA;
-```
-
-3. Using the whole BRCA samples of TCGA-Breast cancer to determint the reference regressions
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/regressions;
-Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../data/training/betas.RData -p ../data/training/purity.RData -o ref_reg_TNBC;
-```
-
-4. Estimating purity for GSE148748 based on the reference regressions
-
-```bash
-# Using all the CpGs to estimate purity RUN AGAIN!!!!!!
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/all_cpgs;
-Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../regressions/ -b ../../data/test/GSE148748_betas.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
-
-#Using only the 30000 most variable reference of the reference dataset
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/estimating_purity/30000_cpgs;
-Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/ -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o GSE148748_est_pur -a 0.75 -s 0.25 -p 5;
-```
-
-5. Comparing results with actual purities
-
-
-```bash
-# Copying the data
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/purities;
-cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/ascat_purity_vector.RData .;
-cp /home/Illumina/Iñaki_Sasiain/data/GSE148748_data/battenberg_purity_vector.RData .;
-
-
-# Comparing the 30000CpG results with purities determined with ASCAT method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg;
-
-# Comparing the 30000 CpG results with purities determined with BATTENBERG method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg;
-
-
-# Comparing the all the CpG results with purities determined with ASCAT method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/all_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/all_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test/GSE148748_betas.RData -o ascat_allcpg;
-
-# Comparing the all the CpG results with purities determined with BATTENBERG method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/all_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/all_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test/GSE148748_betas.RData -o battenberg_allcpg;
-```
-
-5. Analysing the effect of ploidy on the error
-
-```bash
-#Getting ploidy data
-cd /home/Illumina/Iñaki_Sasiain/data/GSE148748_data;
-cat n235_WGS_PD_ID_TumFrac_Ploidy.txt | cut -f 1,2,4 > WGS_ploidy.txt;
-```
-
-```R
-ploidy <- read.csv("WGS_ploidy.txt", header=TRUE, sep="\t")
-
-# Creating ASCAT purity vector
-ascat_ploidy <- ploidy[,"ASCAT_PLOIDY"]
-names(ascat_ploidy) <- ploidy[,"PD_ID"]
-
-# Creating BATTENBERG purity vector
-battenberg_ploidy <- ploidy[,"BATTENBERG_PLOIDY"]
-names(battenberg_ploidy) <- ploidy[,"PD_ID"]
-
-#Saving files
-saveRDS(ascat_ploidy, file="ascat_ploidy.RData")
-saveRDS(battenberg_ploidy, file="battenberg_ploidy.RData")
-```
-
-```bash
-#Copying ploidy data
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/ploidy;
-cp ../../../data/GSE148748_data/*_ploidy.RData .;
-
-# Comparing the 30000CpG results with purities determined with ASCAT method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/ascat;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/ascat_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o ascat_30000cpg -P TRUE -p ../../data/ploidy/ascat_ploidy.RData;
-
-# Comparing the 30000 CpG results with purities determined with BATTENBERG method;
-cd /home/Illumina/Iñaki_Sasiain/09_TNBC_final/plots/battenberg;
-Rscript ../../../scripts/analyse_output/analyse_output.r -e ../../estimating_purity/30000_cpgs/GSE148748_est_pur.RData -a ../../data/purities/battenberg_purity_vector.RData -c ../../estimating_purity/30000_cpgs/GSE148748_est_pur.used_cpgs.RData -b ../../data/test_30000/TNBC_most_variable_CpGs.RData -o battenberg_30000cpg -P TRUE -p ../../data/ploidy/battenberg_ploidy.RData;
-```
-
-#### Using LUAD data from TGCA for training and test
-
-1. Getting the data. Obtained from the group and reformatted.
- 
-```R
-#The LUAD_LUSC_purity.RData file was first reformatted to meet the required format
-load("LUAD_LUSC_purity.RData")
-
-purity_LUAD <- setNames(object=as.vector(purity_LUAD[,3]), as.vector(purity_LUAD[,1]))
-purity_LUSC <- setNames(object=as.vector(purity_LUSC[,3]), as.vector(purity_LUSC[,1]))
-
-save(purity_LUAD, purity_LUSC, file="LUAD_LUSC_purity.RData")
-```
-
-``` bash
-# Getting complete dataset (without splitting in training and test)
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/full_data;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -S FALSE -f FALSE -N FALSE; 
-
-# Getting splitted dataset. 80% training 20% test.
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N FALSE;
-
-# Getting splitted + 30.000 most variant CpGs dataset. 80% training 20% test.
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test_most_variable;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUAD -f FALSE -N TRUE -n 30000;
-
-
-# Getting ploidy data.
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/ploidy;
-cp cp ../../../data/LUAD_data/LUAD_ploidy.csv .;
-```
-
-```R
-#Transforming the data into a R vector
-purity_df <- read.csv("LUAD_ploidy.csv")
-
-#Creating named vector
-ploidy <- purity_df[,3]
-names(ploidy) <- purity_df[,1]
-
-#Saving as an R object
-saveRDS(ploidy, file="LUAD_ploidy.RData")
-```
-
-2. Calculating regressions.
-
-```bash
-# Getting the regerssions for the complete dataset
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/full_data;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUAD;
-
-#Getting the regressions for only the splitted training dataset
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 20 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUAD;
-
-#Getting the regressions for only the splitted training dataset. Only most variant 30.000 CpGs
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/regressions/training_test_most_variable;
-Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test_most_variable/betas_training.RData -p ../../data/training_test_most_variable/purity_training.RData -o splitted+30000_reg_LUAD;
-```
-
-3. Predicting purity using the most variant 30.000 CpGs identified for TNBC
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/data/training_test;
-cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000/TNBC_CpG_vector.RData .;
-```
-
-```R
-## Using R to get only the betas of the selected CpGs
-
-#Loading the data
-betas <- readRDS("betas_validation.RData")
-cpgs_to_include <- readRDS("TNBC_CpG_vector.RData")
-
-#Filtering betas
-filtered_betas <- betas[cpgs_to_include,]
-
-#Saving the data
-saveRDS(filtered_betas, file="filtered_betas_validation.RData")
-```
-
-```bash
-#Estimating purity
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity/using_cpgs_from_TNBC;
-
-nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUAC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
-```
-
-4. Predicting purity using the most variant 30.000 CpGs identified from LUAC
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity/using_cpgs_from_LUAC;
-
-nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test_most_variable/ -b ../../data/training_test_most_variable/betas_validation.RData -o LUAC_pur.using_Cpgs_from_LUAC -a 0.75 -s 0.25 -p 5;
-```
-
-5. Plotting results
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
-
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUAC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUAC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
-
-cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/plots;
-
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUAC/LUAC_pur.using_Cpgs_from_LUAC.used_cpgs.RData -o LUAC_30000cpg_from_LUAC -b ../data/training_test_most_variable/betas_validation.RData -P TRUE -p ../data/ploidy/LUAD_ploidy.RData;
-```
-
-#### Using LUSC data from TCGA for training and test
-
-1. Getting the data. Obtained from the group and reformatted.
-
-``` bash
-# Getting complete dataset (without splitting in training and test)
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -S FALSE -f FALSE -N FALSE; 
-
-# Getting splitted dataset. 80% training 20% test.
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N FALSE;
-
-# Getting splitted + 30.000CpG dataset. 80% training 20% test.
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test_most_variable;
-Rscript ../../../scripts/get_data_to_analyse/preprocessing_data.r -s FALSE -S TRUE -v 20 -B /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P /home/Illumina/Iñaki_Sasiain/data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -p purity_LUSC -f FALSE -N TRUE -n 30000;
-
-
-# Getting ploidy data.
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/ploidy;
-cp ../../../data/LUSC_data/LUSC_ploidy.csv .;
-```
-
-```R
-#Transforming the data into a R vector
-purity_df <- read.csv("LUSC_ploidy.csv")
-
-#Creating named vector
-ploidy <- purity_df[,3]
-names(ploidy) <- purity_df[,1]
-
-#Saving as an R object
-saveRDS(ploidy, file="LUSC_ploidy.RData")
-```
-
-2. Calculating regressions.
-
-```bash
-# Getting the regerssions for the complete dataset
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/full_data;
-nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/full_data/betas.RData -p ../../data/full_data/purity.RData -o ref_reg_LUSC;
-
-#Getting the regressions for only with the splitted validation dataset
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/training_test;
-nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test/betas_training.RData -p ../../data/training_test/purity_training.RData -o splitted_reg_LUSC;
-
-#Getting the regressions for only with the splitted validation dataset using only 30000 most variable cpgs
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/regressions/most_variable;
-nohup Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 35 -b ../../data/training_test_most_variable/betas_training.RData -p ../../data/training_test_most_variable/purity_training.RData -o splitted+30000_reg_LUSC;
-```
-
-3. Predicting purity using the most variant 30.000 CpGs identified for TNBC 
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/training_test;
-cp /home/Illumina/Iñaki_Sasiain/09_TNBC_final/data/test_30000/TNBC_CpG_vector.RData .;
-```
-
-```R
-## Using R to get only the betas of the selected CpGs
-
-#Loading the data
-betas <- readRDS("betas_validation.RData")
-cpgs_to_include <- readRDS("TNBC_CpG_vector.RData")
-
-#Filtering betas
-filtered_betas <- betas[cpgs_to_include,]
-
-#Saving the data
-saveRDS(filtered_betas, file="filtered_betas_validation.RData")
-```
-
-```bash
-#Estimating purity
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_TNBC;
-
-nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/training_test/ -b ../../data/training_test/filtered_betas_validation.RData -o LUSC_pur.using_TNBC_cpgs -a 0.75 -s 0.25 -p 5;
-
-#EStimating purity using 30.000 most varian CpGs from LUSC
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity/using_cpgs_from_LUSC;
-
-nohup Rscript ../../../scripts/calculate_purity/run_all_validation.r -c 35 -d ../../regressions/most_variable/ -b ../../data/training_test_most_variable/betas_validation.RData -o LUSC_pur.using_Cpgs_from_LUSC -a 0.75 -s 0.25 -p 5;
-```
-
-4. Plotting results
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
-
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.RData -a ../data/training_test/purity_validation.RData -c ../estimate_purity/using_cpgs_from_TNBC/LUSC_pur.using_TNBC_cpgs.used_cpgs.RData -o LUSC_30000cpg_from_TNBC -b ../data/training_test/filtered_betas_validation.RData;
-
-
-cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/plots;
-
-Rscript ../../scripts/analyse_output/analyse_output.r -e ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.RData -a ../data/training_test_most_variable/purity_validation.RData -c ../estimate_purity/using_cpgs_from_LUSC/LUSC_pur.using_Cpgs_from_LUSC.used_cpgs.RData -o LUSC_30000cpg_from_LUSC -b ../data/training_test_most_variable/betas_validation.RData -P TRUE -p ../data/ploidy/LUSC_ploidy.RData;
-```
-
-#### Getting plots for the methods section
-
-1. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-PL-A8LV-01A"
-
-
-```bash
-#Copying betas and purities
-cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-PL-A8LV-01P;
-cp ../../01_5000_CpG/original_data/purity_validation.RData .;
-cp ../../01_5000_CpG/original_data/betas_validation.RData .;
-cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
-```
-
-```R
-#Getting betas and purity of interest 
-pur <- readRDS("purity_validation.RData")
-bet <- readRDS("betas_validation.RData")
-
-pur <- pur["TCGA-PL-A8LV-01A"]
-bet <- bet[,"TCGA-PL-A8LV-01A"]
-
-#Saving the files
-saveRDS(pur, "pur_TCGA-PL-A8LV-01A.RData")
-saveRDS(bet, "bet_TCGA-PL-A8LV-01A.RData")
-```
-
-```bash
-# Getting plots. The script is hardcoded
-Rscript ../plot_my_sample.r;
-```
-
-2. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-EW-A1P7-01A"
-
-```bash
-#Copying betas and purities
-cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-EW-A1P7-01A;
-cp ../../01_5000_CpG/original_data/purity_validation.RData .;
-cp ../../01_5000_CpG/original_data/betas_validation.RData .;
-cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
-```
-
-```R
-#Getting betas and purity of interest 
-pur <- readRDS("purity_validation.RData")
-bet <- readRDS("betas_validation.RData")
-
-pur <- pur["TCGA-EW-A1P7-01A"]
-bet <- bet[,"TCGA-EW-A1P7-01A"]
-
-#Saving the files
-saveRDS(pur, "pur_TCGA-EW-A1P7-01A.RData")
-saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
-```
-
-```bash
-# Getting plots. The script is hardcoded
-Rscript ../plot_my_sample.r;
-```
-
-#### Comparing CpGs used for the prediction among cancer types
-
-
-
-
-
-#### Running the whole pipeline with an example: BRCA1 !!! THIS HAS TO BE REPEATED WHEN GETTING THE OPTIMAL VAR THRESHOLD
-
+* USING THE WHOLE BRCA-TCGA TO CREATE REGRESSIONS USED TO CORRECT BETAS
 
 1. Getting reference data
 
@@ -989,9 +529,7 @@ cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/plots;
 Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/BRCA_example_without_refitting.original.samples_to_correct.RData -c ../corrected_betas/BRCA_example_without_refitting.tumor.samples_to_correct.RData -m ../corrected_betas/BRCA_example_without_refitting.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p without_refitting_heatmap;
 ```
 
-
-#### Running the whole pipeline with an example: BRCA1 USING ONLY TNBC DATA FROM TCGA TO CORRECT
-
+* USING ONLY THE TNBC BRCA-TCGA DATA TO CREATE REGRESSIONS USED TO CORRECT BETAS
 
 1. Copying data used in the last approach. Everything is kept equal except for the refernce data used for the correction
 ```bash
@@ -1064,4 +602,99 @@ Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corre
 #Plotting results when the regressions are NOT refitted
 cd ../plots;
 Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/TNBC_from_TCGA_example_without_refitting.original.samples_to_correct.RData -c ../corrected_betas/TNBC_from_TCGA_example_without_refitting.tumor.samples_to_correct.RData -m ../corrected_betas/TNBC_from_TCGA_example_without_refitting.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p without_refitting_heatmap;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Getting plots for the methods section
+
+1. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-PL-A8LV-01A"
+
+
+```bash
+#Copying betas and purities
+cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-PL-A8LV-01P;
+cp ../../01_5000_CpG/original_data/purity_validation.RData .;
+cp ../../01_5000_CpG/original_data/betas_validation.RData .;
+cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
+```
+
+```R
+#Getting betas and purity of interest 
+pur <- readRDS("purity_validation.RData")
+bet <- readRDS("betas_validation.RData")
+
+pur <- pur["TCGA-PL-A8LV-01A"]
+bet <- bet[,"TCGA-PL-A8LV-01A"]
+
+#Saving the files
+saveRDS(pur, "pur_TCGA-PL-A8LV-01A.RData")
+saveRDS(bet, "bet_TCGA-PL-A8LV-01A.RData")
+```
+
+```bash
+# Getting plots. The script is hardcoded
+Rscript ../plot_my_sample.r;
+```
+
+2. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-EW-A1P7-01A"
+
+```bash
+#Copying betas and purities
+cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-EW-A1P7-01A;
+cp ../../01_5000_CpG/original_data/purity_validation.RData .;
+cp ../../01_5000_CpG/original_data/betas_validation.RData .;
+cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
+```
+
+```R
+#Getting betas and purity of interest 
+pur <- readRDS("purity_validation.RData")
+bet <- readRDS("betas_validation.RData")
+
+pur <- pur["TCGA-EW-A1P7-01A"]
+bet <- bet[,"TCGA-EW-A1P7-01A"]
+
+#Saving the files
+saveRDS(pur, "pur_TCGA-EW-A1P7-01A.RData")
+saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
+```
+
+```bash
+# Getting plots. The script is hardcoded
+Rscript ../plot_my_sample.r;
 ```
