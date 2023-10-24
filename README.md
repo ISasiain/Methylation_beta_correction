@@ -16,6 +16,7 @@ This repository contains the code to correct β values of samples with unknown s
 3. Correct β values of the samples whose purty has been estimated using the Staaf-Aine approach. This last step can be carried out refitting the reference regressions to icnlude the new data-points whose purtity has been estimated, or using only the original reference regressions.
 
 ![Schedule of the project's workflow](./images_in_readme/workflow.png)
+
 ## SCRIPTS
 
 * MAIN SCRIPTS
@@ -51,7 +52,25 @@ This repository contains the code to correct β values of samples with unknown s
     * **heatmap_script.r**. This script produces a heatmap from the final beta corrected values (original value, corrected tumor and corrected microenvironment) to analyse the final output of the complete pipeline. 
 
 
-## USAGE OF THE SCRIPTS
+## USAGE OF THE MAIN SCRIPTS
+
+* new_purity_corrector.r
+```bash
+Rscript path_to_script/new_purity_corrector.r -c [NUM_OF_CORES] -b [INPUT_BETAS.RData] -p [INPUT_PURITIES.RData] -o [OUTPUT_PATH] -n [OUTPUT_NAME] -v [VARIANCE_THRESHOLD]
+```
+
+* purity_estimator.r
+```bash
+Rscript path_to_script/purity_estimator.r -c [NUM_OF_CORES] -a [ALPHA_VALUE] -s [SLOPE_THRESHOLD] -p [PERCENTAGE_TO_INTERVAL] -d [REGRESSIONS_DIRECTORY] -b [BETAS_TO_ANALYSE] -o [OUTPUT_NAME] -l [OUTPUT_LOCATION]
+```
+
+* final_beta_correction.r
+```bash
+```
+
+* final_beta_correction_without_refitting.r
+```bash
+```
 
 ## EXPERIMENTAL PROCEDURE
 
@@ -719,7 +738,7 @@ saveRDS(purities, file="purity.RData")
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/ref_regressions;
-Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../ref_betas_and_purities/betas.RData -p ../ref_betas_and_purities/purity.RData -o betas_from_TNBC-TCGA;
+Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../ref_betas_and_purities/betas.RData -p ../ref_betas_and_purities/purity.RData -o betas_from_TNBC;
 
 ```
 
