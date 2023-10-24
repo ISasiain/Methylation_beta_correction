@@ -550,16 +550,48 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LU
 1. Getting reference data
 
 ```bash
-#Getting precomputed regressions
+#Getting precomputed variance filtered regressions for the purity estimation
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/reference_data/ref_regressions;
-cp ../../../09_TNBC_final/regressions/* .;
+cp ../../../reference/BRCA_regs/var_0.05/* .;
+
+#Getting precomputed non-variance filtered regressions for the beta correction
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/reference_data/ref_regressions/all_the_cpgs;
+cp ../../../../reference/BRCA_regs/var_0/* .;
 
 #Getting reference betas and purities
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/reference_data/ref_betas_and_purities;
-cp ../../../09_TNBC_final/data/training/* .;
+cp ../../../reference/BRCA_raw/* .;
 ```
 
 2. Getting data to analyse
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/data_to_correct;
+#Getting and reformatting betas from GEO:
+
+# Getting and unzipping the data
+wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE148nnn/GSE148748/matrix/GSE148748_series_matrix.txt.gz;
+gunzip GSE148748/matrix/GSE148748_series_matrix.txt.gz;
+
+
+# Getting only rows of interest
+cat GSE148748_series_matrix.txt | sed -n '27p; 58,$p' | sed 's/Breast cancer //g' > GSE148748_filtered_betas.txt;
+
+# Preprocessing the downloaded file in R
+```R
+# Converting the tsv in a R object and removing headers.
+GSE148748 <- read.csv("GSE148748_filtered_betas.txt", sep="\t", na.strings=c("", NA), head=1)
+
+# Setting the sample and cpg ids as colnames and rownames
+rownames(GSE148748) <- GSE148748$"X.Sample_title"
+GSE148748 <- GSE148748[,-which(names(GSE148748)=="X.Sample_title")]
+
+# Removing cpgs without beta values
+GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),]
+
+#Saving the dataframe as an R object
+saveRDS(GSE148748, file="GSE148748_betas.RData")
+```
 
 ```R
 #Producing and saving a R vector with the CpGs to correct
@@ -567,19 +599,26 @@ BRCA_cpgs <- read.table("promoterData_BRCA1.txt")[-1,7];
 saveRDS(BRCA_cpgs, file="BRCA_cpgs.RData");
 ```
 
-3. Running beta correction 
+3. Estimate purity for the GSE data
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/purity_estimation;
+
+# Estimating purity
+Rscript ../../scripts/calculate_purity/purity_estimator.r -d ../reference_data/ref_regressions -b ../data_to_correct/GSE148748_betas.RData -c 40 -a 0.7 -s 0.25 -p 5;
+```
+
+4. Running beta correction 
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
 
 #Running beta correction refitting the regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n BRCA_example;
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_refitting;
 
-cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
 
 #Running beta correction without refittig refernce regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../reference_data/ref_regressions/all_the_cpgs -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n BRCA_example_without_refitting;
-
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../reference_data/ref_regressions/all_the_cpgs -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_without_refitting;
 ```
 
 4. Analysisng results
