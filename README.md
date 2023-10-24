@@ -15,6 +15,8 @@ This repository contains the code to correct β values of samples with unknown s
 
 3. Correct β values of the samples whose purty has been estimated using the Staaf-Aine approach. This last step can be carried out refitting the reference regressions to icnlude the new data-points whose purtity has been estimated, or using only the original reference regressions.
 
+![Schedule of the project's workflow](<Presentación sin título(4).png>)
+
 ## SCRIPTS
 
 * MAIN SCRIPTS
@@ -50,7 +52,7 @@ This repository contains the code to correct β values of samples with unknown s
     * **heatmap_script.r**. This script produces a heatmap from the final beta corrected values (original value, corrected tumor and corrected microenvironment) to analyse the final output of the complete pipeline. 
 
 
-## USAGE
+## USAGE OF THE SCRIPTS
 
 ## EXPERIMENTAL PROCEDURE
 
