@@ -179,11 +179,8 @@ argument_list <- list(
 
   make_option(c("-l", "--output_location"), type="character", default="./",
               help="The name of the location output R object containing the predicted values must be entered here. Default [%default]",
-              metavar="[path_to_directory]"),
-
-  make_option(c("-i", "--include_cpgs_all_samples"), type="logical", default=FALSE, 
-              help="This argument should be set to TRUE if only the cpgs used for all the samples want to be included in the final 1-P estiamtion.")
-
+              metavar="[path_to_directory]")
+              
 )
 
 #Parsing arguments
