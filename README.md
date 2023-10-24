@@ -7,6 +7,14 @@
 
 ## WORKFLOW
 
+This repository contains the code to correct β values of samples with unknown sample purities. The procedure presented here consist on three main steps; 
+
+1. Generate reference regressions that reflect the different methylation states of ecah CpG based on the Staaf-Aine β correction estrategy.
+
+2. Etimating purity of the samples from the β values using the refrence regressions generated on the previous step. 
+
+3. Correct β values of the samples whose purty has been estimated using the Staaf-Aine approach. This last step can be carried out refitting the reference regressions to icnlude the new data-points whose purtity has been estimated, or using only the original reference regressions.
+
 ## SCRIPTS
 
 * MAIN SCRIPTS
