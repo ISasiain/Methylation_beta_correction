@@ -5,3 +5,4 @@
 *.tsv
 *.Rhistory
 !/refernce/*
+!/images_in_readme/*
