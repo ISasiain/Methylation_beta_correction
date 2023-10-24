@@ -33,11 +33,13 @@
 
     * **compare_cross_validation.r**. This script compares the results of the different folds and checked parameters of the cross validation. It generates a plot showing the evolution of the estimation's performance.
     
-    * plot_ind_cpg.r
-    * compare_CpGs.r    
-    * compare_predictions.r       
-    * plot_coverage_overestimation.r
-    * heatmap_script.r
+    * **plot_ind_cpg.r**. This script plots the different populations identified per each CpG in the reference data. This plot was used to generate plots for the report's methods section.
+
+    * **compare_CpGs.r**. This script compares the CpG context of the CpGs used for the purity prediction and the total CpGs to analyse their representativity.
+ 
+    * **plot_coverage_overestimation.r**. This script generates coverage plots to analyse the overestimation of low purity values.
+
+    * **heatmap_script.r**. This script produces a heatmap from the final beta corrected values (original value, corrected tumor and corrected microenvironment) to analyse the final output of the complete pipeline. 
 
 
 ## USAGE
