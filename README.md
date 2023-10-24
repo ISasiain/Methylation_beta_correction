@@ -15,7 +15,7 @@ This repository contains the code to correct β values of samples with unknown s
 
 3. Correct β values of the samples whose purty has been estimated using the Staaf-Aine approach. This last step can be carried out refitting the reference regressions to icnlude the new data-points whose purtity has been estimated, or using only the original reference regressions.
 
-![Schedule of the project's workflow](workflow.png)
+![Schedule of the project's workflow](./images_in_readme/workflow.png)
 ## SCRIPTS
 
 * MAIN SCRIPTS
