@@ -9,6 +9,32 @@
 
 ## SCRIPTS
 
+* MAIN SCRIPTS
+
+    * new_purity_corrector.r
+    * purity_estimator.r
+    * final_beta_correction.r
+
+* DATA PROCESSING AND PLOTTING SCRIPTS
+
+    * get_most_variable_cpgs.r  
+    * preprocessing_data.r  
+    * split_based_on_purity.r  
+    * split_cross_validation.r
+    * get_most_variable_cpgs.r  
+    * preprocessing_data.r  
+    * split_based_on_purity.r  
+    * split_cross_validation.r
+    * analyse_output.r  
+    * compare_cross_validation.r  
+    * evolution_pops_detected.r       
+    * plot_ind_cpg.r
+    * compare_CpGs.r    
+    * compare_predictions.r       
+    * plot_coverage_overestimation.r
+    * heatmap_script.r
+
+
 ## USAGE
 
 ## EXPERIMENTAL PROCEDURE
