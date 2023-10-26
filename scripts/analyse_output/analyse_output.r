@@ -373,13 +373,13 @@ ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
 
 
 
-## EVOLUTION OF DISTANCE TO INTERVAL IN FUNCTION OF ACTUAL AND ESTIMATED PURITY
+## EVOLUTION OF DISTANCE TO ESTIMATE IN FUNCTION OF ACTUAL AND ESTIMATED PURITY
 
 # Plot of Distance to interval vs Actual 1-Purity
-ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_int)) +
+ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_est)) +
   geom_point(color="blue") +
   xlab("Actual 1-Purity") +
-  ylab("Dis_to_interval") + 
+  ylab("Dis_to_estimate") + 
   theme_classic() +
   theme(plot.title = element_text(size = 20),
         axis.title = element_text(size = 16),
@@ -390,10 +390,10 @@ ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_int
 ggsave(paste(arguments$output_prefix, "Dis_vs_ac1-P.scatterplot.png", sep="."))
 
 # Plot of Distance to interval vs Estimated 1-Purity
-ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_int[order(index)])) +
+ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_est[order(index)])) +
   geom_point(color="red") +
   xlab("Estimated 1-Purity") +
-  ylab("Distance to interval") + 
+  ylab("Distance to estimate") + 
   theme_classic() +
   theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
