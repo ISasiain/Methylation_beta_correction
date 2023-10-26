@@ -4,5 +4,5 @@
 *.csv
 *.tsv
 *.Rhistory
-!/refernce/*
+!/reference/*
 !/images_in_readme/*
