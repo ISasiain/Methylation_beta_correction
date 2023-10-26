@@ -26,6 +26,7 @@
 #
 #   3. Processing the data to unravell the usage of each CpG in the samples' purity estimation
 #
+#   3. Calculating summary statistics from the quality parameters dataframe and printing the into the terminal.
 #
 #   4. Plotting the results and saving the created plots. The following plots are produced;
 #
@@ -151,8 +152,10 @@ purity_validation <- readRDS(arguments$"path_to_actual_1-P")
 cpgs_ls <- readRDS(arguments$"path_to_cpgs_used_per_sample")
 original_betas <- readRDS(arguments$"path_to_original_betas")
 
+print(purity_validation)
+
 #Adding this to adapt the sample names
-#names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
+names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
 
 # ===========================================================
@@ -251,6 +254,12 @@ matrix_to_heatmap <- matrix_to_heatmap[names(num_cpgs),rownames(cpg_counts_df)]
 # Transforming the format of the matrix to be plotted using ggplot
 df_to_heatmap <- melt(matrix_to_heatmap)
 
+# =======================================
+#      CALCULATING SUMMARY STATISTICS
+# =======================================
+
+print(summary(out_df)) 
+
 # ==============================
 #      PLOTTING THE RESULTS
 # ==============================
@@ -262,7 +271,8 @@ ggplot(out_df, aes(x=Dis_to_int)) +
   xlab("Distance to interval") +
   ylab("Frequency") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -275,7 +285,8 @@ ggplot(out_df, aes(x=Dis_to_est)) +
   xlab("Distance to estimate") +
   ylab("Frequency") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -288,7 +299,8 @@ ggplot(out_df, aes(x=Interval.s.width)) +
   xlab("Interval's width") +
   ylab("Frequency") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -310,30 +322,42 @@ if (arguments$plot_dis_vs_ploidy) {
 
 ploidy <- readRDS(arguments$path_to_ploidy)
 
+
 #Actual NC 
-actual_1_minus_NC <- 1 - (2*(1-purity_validation[names(out_ls)]))/(purity_validation[names(out_ls)]*ploidy[names(out_ls)]-2(1-purity_validation[names(out_ls)]))
+actual_NC <- ((2 * (1-purity_validation[names(out_ls)])))/(purity_validation[names(out_ls)] * ploidy[names(out_ls)] + 2 * (1-purity_validation[names(out_ls)]))
+
+#Getting the values of all the samples in vectors
+for (sample in names(out_ls)) {
+  
+  lower_lim <- c(lower_lim, out_ls[[sample]][["interval(s)"]][[1]][1])
+  estimate <- c(estimate ,mean(out_ls[[sample]][["1-Pur_estimates"]]))
+  upper_lim <- c(upper_lim, out_ls[[sample]][["interval(s)"]][[1]][2])
+}
 
 #Creating a dataframe with the sorted vectors
 plot_df <- data.frame(
-  actual=actual_1_minus_NC[order(index)],
+  actual=actual_NC[order(index)],
   upper=upper_lim[order(index)],
-  est=estimate[order(index)],
+  est= estimate[order(index)], 
   lower=lower_lim[order(index)]
 )
+
+print(plot_df)
 
 ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
   geom_point(size=1.5) +
   geom_errorbar(aes(ymin=lower,ymax=upper), col="#336633", size=0.8) +
   geom_abline(slope = 1, intercept = 0, size=1.5, col="grey") + 
-  xlab("Actual 1 - NC") + 
-  ylab("Estimated 1 - Value") +
+  xlab("Actual proportion of non-cancer DNA") + 
+  ylab("Estimated proportion of non-cancer DNA") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
-ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
+ggsave(paste(arguments$output_prefix, "NC_Act_vs_Est.scatterplot.png",sep="."))
 
 }
 
@@ -354,6 +378,7 @@ plot_df <- data.frame(
   lower=lower_lim[order(index)]
 )
 
+
 ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
   geom_point(size=1.5) +
@@ -362,7 +387,8 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlab("Actual 1-Purity") + 
   ylab("Estimated 1-Purity") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -410,9 +436,10 @@ if (arguments$plot_dis_vs_ploidy) {
     ggplot(out_df, aes(x=ploidy[row.names(out_df)], y=out_df$Dis_to_est[order(index)])) +
     geom_point(color="red") +
     xlab("Ploidy") +
-    ylab("Distance to estimate") + 
+    ylab("Disance to estimate") + 
     theme_classic() +
-    theme(axis.title = element_text(size = 16),
+    theme(plot.title = element_text(size = 20),
+          axis.title = element_text(size = 16),
           axis.text = element_text(size = 14),
           panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
           panel.grid.minor = element_blank())
@@ -422,13 +449,14 @@ if (arguments$plot_dis_vs_ploidy) {
 
 ## ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
-ggplot(out_df, aes(x=Dis_to_est*100)) +
+ggplot(out_df, aes(x=Dis_to_est)) +
   geom_density(alpha=0.5, fill="red") +
-  xlab("% Deviation") +
-  xlim(0,20) +
+  xlab("Deviation") +
+  xlim(0,0.2) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -437,13 +465,14 @@ ggsave(paste(arguments$output_prefix, "error.densityplot.png",sep="."))
 
 ## CUMULAIVE ERROR PERCENTAGE (DISTANCE TO ESTIMATE) DISTRIBUTION
 
-ggplot(out_df, aes(x=Dis_to_est*100)) +
+ggplot(out_df, aes(x=Dis_to_est)) +
   stat_ecdf(color="red", size=2) +
-  xlab("% Deviation") +
-  xlim(0,20) +
+  xlab("Deviation") +
+  xlim(0,0.2) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -457,7 +486,8 @@ ggplot(cpg_counts_df, aes(x=per_TRUES)) +
   xlab("% of samples in which each CpGs are included") +
   ylab("CpGs") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -472,7 +502,8 @@ ggplot(data.frame(cpgs_per_sample_df), aes(x=num_cpgs)) +
   xlab("Number of CpGs used to estimate purity") +
   ylab("Number of samples") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -501,10 +532,11 @@ ggsave(paste(arguments$output_prefix, "heatmap_cpg_per_sample.png",sep="."), wid
 
 ggplot(data=data.frame(cpgs_per_sample_df), aes(x= actual_1_minus_P, y= num_of_cpgs )) +
   geom_point() +
-  ggtitle("CpGs used VS actul 1-Purity") +
   xlab("Actual 1-P") +
+  ylab("Number of CpGs used to estimate purity") +
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 16),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
