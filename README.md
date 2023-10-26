@@ -440,19 +440,19 @@ Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../da
 3. Calculating purity
 
 ```bash
-# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.2
+# Estimating purities for BRCA using alpha=0.7 and slope_threshold=0.25
 cd /home/Illumina/Iñaki_Sasiain/09_BRCA_final/estimate_purity;
 
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o BRCA_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o BRCA_training_test -a 0.70 -s 0.25 -p 5;
 
 
-# Estimating purities for LUAC using alpha=0.7 and slope_threshold=0.2
+# Estimating purities for LUAC using alpha=0.7 and slope_threshold=0.25
 cd /home/Illumina/Iñaki_Sasiain/10_LUAC_final/estimate_purity;
 
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o LUAC_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test/ -b ../data/training_test/betas_validation.RData -o LUAC_training_test -a 0.7 -s 0.25 -p 5;
 
 
-# Estimating purities for LUSC using alpha=0.7 and slope_threshold=0.2
+# Estimating purities for LUSC using alpha=0.7 and slope_threshold=0.25
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity;
 
 Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.75 -s 0.25 -p 5;
@@ -747,14 +747,12 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../ref_beta
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/corrected_betas;
 
-
 #Refitting the regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../ref_betas_and_purities/purity.RData -B ../ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_from_TCGA_example;
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../ref_betas_and_purities/purity.RData -B ../ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_refitting;
 
 
 #Without refitting the regressions
-cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/corrected_betas;
-Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../ref_regressions -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_from_TCGA_example_without_refitting;
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../ref_regressions -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_without_refitting;
 ```
 
 4. Plotting results
@@ -766,101 +764,5 @@ cd ../plots;
 Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/TNBC_from_TCGA_example_betas.original.samples_to_correct.RData -c ../corrected_betas/TNBC_from_TCGA_example_betas.tumor.samples_to_correct.RData -m ../corrected_betas/TNBC_from_TCGA_example_betas.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p refitting_heatmap;
 
 #Plotting results when the regressions are NOT refitted
-cd ../plots;
 Rscript ../../scripts/analyse_final_beta_correction/heatmap_script.r -o ../corrected_betas/TNBC_from_TCGA_example_without_refitting.original.samples_to_correct.RData -c ../corrected_betas/TNBC_from_TCGA_example_without_refitting.tumor.samples_to_correct.RData -m ../corrected_betas/TNBC_from_TCGA_example_without_refitting.microenvironment.samples_to_correct.RData -a ../data_to_correct/brcaStatus_BRCA1.txt -p without_refitting_heatmap;
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#### Getting plots for the methods section
-
-1. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-PL-A8LV-01A"
-
-
-```bash
-#Copying betas and purities
-cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-PL-A8LV-01P;
-cp ../../01_5000_CpG/original_data/purity_validation.RData .;
-cp ../../01_5000_CpG/original_data/betas_validation.RData .;
-cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
-```
-
-```R
-#Getting betas and purity of interest 
-pur <- readRDS("purity_validation.RData")
-bet <- readRDS("betas_validation.RData")
-
-pur <- pur["TCGA-PL-A8LV-01A"]
-bet <- bet[,"TCGA-PL-A8LV-01A"]
-
-#Saving the files
-saveRDS(pur, "pur_TCGA-PL-A8LV-01A.RData")
-saveRDS(bet, "bet_TCGA-PL-A8LV-01A.RData")
-```
-
-```bash
-# Getting plots. The script is hardcoded
-Rscript ../plot_my_sample.r;
-```
-
-2. Get a cpgs from a specific sample from the validation 5000CpG dataset. "TCGA-EW-A1P7-01A"
-
-```bash
-#Copying betas and purities
-cd /home/isc/Methylation/adjustBetas/12_plots_for_methods/sample_TCGA-EW-A1P7-01A;
-cp ../../01_5000_CpG/original_data/purity_validation.RData .;
-cp ../../01_5000_CpG/original_data/betas_validation.RData .;
-cp ../../01_5000_CpG/pop_regressions/* ./regressions/;
-```
-
-```R
-#Getting betas and purity of interest 
-pur <- readRDS("purity_validation.RData")
-bet <- readRDS("betas_validation.RData")
-
-pur <- pur["TCGA-EW-A1P7-01A"]
-bet <- bet[,"TCGA-EW-A1P7-01A"]
-
-#Saving the files
-saveRDS(pur, "pur_TCGA-EW-A1P7-01A.RData")
-saveRDS(bet, "bet_TCGA-EW-A1P7-01A.RData")
-```
-
-```bash
-# Getting plots. The script is hardcoded
-Rscript ../plot_my_sample.r;
 ```
