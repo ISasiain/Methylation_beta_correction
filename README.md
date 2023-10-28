@@ -79,6 +79,13 @@ RScript path_to_script/final_beta_corerction_without_refitting.r -R [PATH_TO_REF
 
 ## EXPERIMENTAL PROCEDURE
 
+The complete experimental procedure was carried out in the following conda environment;
+
+```bash
+conda create --name meth_corr --spec meth_corr.spec.txt;
+conda activate meth_corr;
+```
+
 ### I. General performance analysis: Analysing the effect of the coverage correction in the 5000 most variable CpGs in BRCA
 
 1. Splitting the data in training and test and generating RData file with the output
