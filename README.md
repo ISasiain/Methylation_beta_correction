@@ -73,6 +73,8 @@ Rscript path_to_script/purity_estimator.r -c [NUM_OF_CORES] -a [ALPHA_VALUE] -s 
 ```bash
 ```
 
+> A detailed explanation of the usage of all the scripts, also the ones not included in this section, is available in the code documentation.
+
 ## EXPERIMENTAL PROCEDURE
 
 ### I. General performance analysis: Analysing the effect of the coverage correction in the 5000 most variable CpGs in BRCA
