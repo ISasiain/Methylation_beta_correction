@@ -67,13 +67,15 @@ Rscript path_to_script/purity_estimator.r -c [NUM_OF_CORES] -a [ALPHA_VALUE] -s 
 
 * final_beta_correction.r
 ```bash
+RScript path_to_script/final_beta_corerction.r -c [CORES] -P [REF_COHORT_PURITY] -B [REF_COHORT_BETAS] -p [ESTIMATED_PURITIES] -b [BETAS_TO_CORRECT] -o [OUTPUT_PATH] -n [OUTPUT_NAME]
 ```
 
 * final_beta_correction_without_refitting.r
 ```bash
+RScript path_to_script/final_beta_corerction_without_refitting.r -R [PATH_TO_REF_REGRESSIONS] -p [PATH_TO_EST_PURITIES] -b [BETAS_TO_CORRECT] -F [CORRECT_CERTAIN_CPGS: TRUE/FALSE] -f [CPGS_TO_CORRECT] -o [OUTPUT_PATH] -n [OUTPUT_NAME] 
 ```
 
-> A detailed explanation of the usage of all the scripts, also the ones not included in this section, is available in the code documentation.
+> A detailed explanation of the usage of all the scripts, including the ones not added in this section, is available in each script's documentation.
 
 ## EXPERIMENTAL PROCEDURE
 
