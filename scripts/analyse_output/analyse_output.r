@@ -155,7 +155,7 @@ original_betas <- readRDS(arguments$"path_to_original_betas")
 print(purity_validation)
 
 #Adding this to adapt the sample names
-names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
+#names(purity_validation) <- paste(names(purity_validation), "-01A", sep="")
 
 
 # ===========================================================
