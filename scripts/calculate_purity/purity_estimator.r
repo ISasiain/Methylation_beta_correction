@@ -73,10 +73,15 @@
 ## - OUTPUT FILES:
 #
 #    -> R object, whose name must be specified by the user, containing a list with the estimate 1-Purity values and intervals
-#       predicted per each sample
+#       predicted per each sample. If more than one estimates are obtained per samples (possible but extremely rare), more than
+#       one 1-Pur. values and intervals will be generated.
 #
 #    -> R object, whose name's prefix must be specified by the user, containing a list with the cpgs used for the purity estimation 
 #       of  per each sample
+#
+#    -> TSV file, whose name must be specified by the user, containing the identified estimates (it verw exceptrional cases it could be different to 1) 
+#       the estimated 1-Purity values and intervals predicted per each sample. If more than one estimates are obtained, one independent line per estimate
+#       will be created in the tsv vile.
 #
 ## - USAGE:
 #
@@ -85,7 +90,7 @@
 #
 #     """
 #     Rscript path_to_script/purity_estimator.r -c [cores] -a [alpha] -r [threshold_rse] -s [threshold_slope] -p [percentage_to_interval] 
-#     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location] -i [TRUE/FALSE]
+#     -d [path_to_regression_data] -b [path_to_betas] -o [output_filename] -l [output_location]
 #     """
 #     
 #     *The function of the command line options is the following; 
@@ -99,12 +104,10 @@
 #       -o: The name of the output R object containing the predicted values must be entered here. This name 
 #           will also be used as the prefix of the file containing the cpgs used per sample
 #       -l: The name of the location output R object containing the predicted values must be entered here
-#       -i: If the user wants to include only the cpgs that are used in all the samples for the final purity 
-#           estimation this flag should be set to TRUE.
 #
 ## - VERSION: 1.0
 #
-## - DATE: 08/05/2023
+## - DATE: 29/10/2023
 #
 ## - AUTHOR: Iñaki Sasiain Casado
 
@@ -319,7 +322,7 @@ saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$outpu
 # ==========================
 
 # Create a vector with the column names of the output dataframe
-cols <- c("#sample", "num_of_est", "estimate", "low_bound", "top_bound")
+cols <- c("#sample", "num_of_est", "1-purity_estimate", "low_bound", "top_bound")
 
 # Creating a dataframe with the columns below
 output_tsv <- data.frame(matrix(nrow=0, ncol=length(cols)))
