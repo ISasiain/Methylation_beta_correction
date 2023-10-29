@@ -77,6 +77,18 @@ RScript path_to_script/final_beta_corerction_without_refitting.r -R [PATH_TO_REF
 
 > A detailed explanation of the usage of all the scripts, including the ones not added in this section, is available in each script's documentation.
 
+## DATA AVAILABILITY
+
+Preprocessed data set of the genomic CpG context, ploidy of the samples included in the refernce data in BRCA, LUAD and LUSC, the CpGs affecting the BRCA1 gene, the annotation file containing the cancer subtypes that the BRCA-TCGA data set include and the β values of the samples used when the whole correction pipeline was run, obtained from GEO are available in the data.tar.xz compressed file.
+
+The refernce regressions without using any variance filtering, using a 0.05 variance filtering and the raw β and purity values used to obtain them are available in the refernce.tar.xz compressed file.
+
+This two files are deposited using git annex, so the following commands should be used to obtain them after cloning the repository.
+
+```bash
+git annex get <filename>
+```
+
 ## EXPERIMENTAL PROCEDURE
 
 The complete experimental procedure was carried out in the following conda environment;
