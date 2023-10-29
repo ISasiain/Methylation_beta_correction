@@ -75,7 +75,7 @@ RScript path_to_script/final_beta_corerction.r -c [CORES] -P [REF_COHORT_PURITY]
 RScript path_to_script/final_beta_corerction_without_refitting.r -R [PATH_TO_REF_REGRESSIONS] -p [PATH_TO_EST_PURITIES] -b [BETAS_TO_CORRECT] -F [CORRECT_CERTAIN_CPGS: TRUE/FALSE] -f [CPGS_TO_CORRECT] -o [OUTPUT_PATH] -n [OUTPUT_NAME] 
 ```
 
-> A detailed explanation of the usage of all the scripts, including the ones not added in this section, is available in each script's documentation.
+> A detailed explanation of the usage of all the scripts, including the ones not added in this section, is available in each script's documentation, or running the scripts with the -h flag.
 
 ## DATA AVAILABILITY
 
