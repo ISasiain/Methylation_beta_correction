@@ -4,8 +4,10 @@
 #
 ## - DESCRIPTION: 
 #
-#   This script correct purities and generates the corrected data and the parameters
-# of the regressions used for the correction.
+#   This script correct purities based on the Staaf-Aine approach, also generating 
+#   the parameters of the regressions used for the correction required for the purity estimation.
+#   This programme also allows the usage of a variance threshold in order to take only into account
+#   most variable CpGs to generate the refernce regressions.
 # 
 ## - USED R PACKAGES:
 #
@@ -26,12 +28,14 @@
 #
 #   2. Configuring parallelization.
 #
-#   3. Loading the data, adding the seed to run the analysis with and running the adjustBeta() function
+#   3. Loading the data and filtering CpGs based on the variance filtered specified.
+#
+#   4. Adding the seed to run the analysis with and running the adjustBeta() function
 #      per each CpG using a parallelized apply function.
 #
-#   4. Adding the produced results to a result list.
+#   5. Adding the produced results to a result list.
 #
-#   5. Saving each element of the result list as an independent R object.
+#   6. Saving each element of the result list as an independent R object.
 #
 ## - INPUT FILES:
 #
@@ -75,6 +79,7 @@
 #       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
 #       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
 #       -n: The prefix to be used to name the output files. Default: output.
+#       -v: Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default 0
 #
 ## - VERSION: 1.0
 #
@@ -132,7 +137,7 @@ argument_list <- list(
               metavar = "[file path]"),
 
   make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
-              help="Onlt the CpGs whose betas' variance is over this threshold will be used to determine the refrence regressions. Default [%default]",
+              help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
               metavar = "[variance_threshold]")
 
 )
@@ -168,9 +173,9 @@ registerDoParallel(cl)
 invisible(clusterEvalQ(cl, {library("flexmix")}))
 
 
-# ==================================
-# LOADING AND PREPROCESSING THE DATA
-# ==================================
+# ====================================
+# LOADING AND VARIANCE BASED FILTERING
+# ====================================
 
 #Loading the data
 unadjusted_betas <- readRDS(arguments$input_beta)

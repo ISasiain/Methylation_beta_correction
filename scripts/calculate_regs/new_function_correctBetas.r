@@ -24,9 +24,9 @@ if(! "flexmix" %in% names(sessionInfo()$otherPkgs) ) {
 # ==================================
 
 ## Input = betas (methylation), purity estimates and sample names
-## Output = corrected betas and line parameters for the populations idnetified
+## Output = corrected betas and line parameters for the populations identified
 
-adjustBeta<-function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed=TRUE) {
+adjustBeta <- function(methylation=NULL,purity=NULL,snames=NULL,nmax=3,nrep=3,seed=TRUE) {
 
     #If a seed is provided as the first element of the methylation vector (seed=TRUE) 
     #set seed for the cluster detremination and remove it from the methylation vector 
