@@ -616,6 +616,15 @@ cd /home/Illumina/Iñaki_Sasiain/reference/LUSC_regs/var_0;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUSC_raw/betas.RData -p ../../LUSC_raw/purity.RData -o LUSC_var0. -v 0;
 ```
 
+4. Compressing directory to be added to GitHub repo
+
+```bash
+cd /home/Illumina/Iñaki_Sasiain/;
+
+#Using tar and xz compression 
+tar -Jcvf reference.tar.xz ./reference;
+```
+
 ### V. Running the whole pipeline: BRCA1 CpGs in TNBC
 
 * USING THE WHOLE BRCA-TCGA TO CREATE REGRESSIONS USED TO CORRECT BETAS
@@ -669,7 +678,7 @@ saveRDS(GSE148748, file="GSE148748_betas.RData")
 ```R
 #Producing and saving a R vector with the CpGs to correct
 BRCA_cpgs <- read.table("promoterData_BRCA1.txt")[-1,7];
-saveRDS(BRCA_cpgs, file="BRCA_cpgs.RData");
+saveRDS(BRCA_cpgs, file="BRCA1_cpgs.RData");
 ```
 
 3. Estimate purity for the GSE data
@@ -687,11 +696,11 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -d ../reference_data/r
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/corrected_betas;
 
 #Running beta correction refitting the regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n ;
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../reference_data/ref_betas_and_purities/purity.RData -B ../reference_data/ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA1_cpgs.RData -n ;
 
 
 #Running beta correction without refittig refernce regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../reference_data/ref_regressions/all_the_cpgs -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_without_refitting;
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../reference_data/ref_regressions/all_the_cpgs -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA1_cpgs.RData -n TNBC_without_refitting;
 ```
 
 4. Analysisng results
@@ -760,11 +769,11 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../ref_beta
 cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/corrected_betas;
 
 #Refitting the regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../ref_betas_and_purities/purity.RData -B ../ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_refitting;
+Rscript ../../scripts/final_beta_correction/final_beta_correction.r -c 1 -P ../ref_betas_and_purities/purity.RData -B ../ref_betas_and_purities/betas.RData -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA1_cpgs.RData -n TNBC_refitting;
 
 
 #Without refitting the regressions
-Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../ref_regressions -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA_cpgs.RData -n TNBC_without_refitting;
+Rscript ../../scripts/final_beta_correction/final_beta_correction_without_refitting.r -R ../ref_regressions -p ../purity_estimation/GSE148748_est_pur.tsv -b ../data_to_correct/GSE148748_betas.RData -F TRUE -f ../data_to_correct/BRCA1_cpgs.RData -n TNBC_without_refitting;
 ```
 
 4. Plotting results
