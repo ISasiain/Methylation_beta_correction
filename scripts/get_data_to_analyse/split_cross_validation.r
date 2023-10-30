@@ -45,19 +45,7 @@ argument_list <- list(
 
   make_option(c("-u", "--purity"), type="character",  
               help="The name of the object that contains the beta values inside the R object must be entered here",
-              metavar = "[var_name]"),
-
-  make_option(c("-S", "--split_in_training_and_validation"), type="logical", default=FALSE,
-              help="This argument must be set to true to specify if the data has to be splitted to create training and test datasets.",
-              metavar = "[boolean]"),
-
-  make_option(c("-v", "--percentage_to_validation"), type="double", default=20.0,
-              help="The percentage of the samples to be included in the test data must be entered here. Default [%default]",
-              metavar = "[number]"),
-
-  make_option(c("-C", "--split_for_cross_validation"), type="logical", default=FALSE,
-              help="This argument must be set to true to specify if the data has to be splitted to create different training and test datasets to perform a cross-test.",
-              metavar = "[boolean]"),
+              metavar = "[var_name]")
 
   make_option(c("-k", "--groups_in_k_fold_cross_validation"), type="numeric",
               help="The number of groups in which the data will be splitted to perform the cross validation can be entered here",
@@ -154,8 +142,6 @@ if (arguments$filter_non_autosomes) {
 # CREATING GROUPS FOR CROSS VALIDATION
 # ====================================
 
-if (arguments$split_for_cross_validation) {
-
     cat("\n\nSplitting the data for the cross validation...\n")
 
     # Using the createFoldas from the caret package to create groups for the cross validation
@@ -189,33 +175,6 @@ if (arguments$split_for_cross_validation) {
     # Using the name of ecah fold as the id of the elements of fold_list
     names(folds_list) <- names(groups)
 
-}
-
-# ========================================
-# CREATING TRAINING AND TEST SUBSETS
-# ========================================
-
-#If the user has selected to filter sexual chromosomes the following code will be run
-if (arguments$split_in_training_and_validation) {
-
-    cat("\n\nCreating training and test datasets...\n")
-
-    #Setting the seed for spliting the data
-    set.seed(1)
-
-    #Splitting the data
-    split_ratio <- 1 - arguments$percentage_to_validation/100
-    train_samples <- sample.split(colnames(betas), SplitRatio=split_ratio)
-
-    #Creating training and test datasets for the beta values
-    unadj_training <- betas[,train_samples]
-    unadj_validation <- betas[,!train_samples]
-
-    #Creating training and test datasets for the purity_vector
-    purity_training <- purities[train_samples]
-    purity_validation <- purities[!train_samples]
-    
-}
 
 
 # =====================================================
@@ -224,23 +183,6 @@ if (arguments$split_in_training_and_validation) {
 
 # If the user has selected to get only the most variable CpGs the following code will be run
 if(arguments$get_only_CpGs_with_highest_variance) {
-    
-    if (arguments$split_in_training_and_validation) {
-
-        # Detemine the variance of all the rows (CpGs)
-        cpgs_variance <- apply(
-                        unadj_training,
-                        MARGIN=1,
-                        FUN=var)
-
-        # Create a vector to sort the rows. Get only the number of rows containing the CpGs that want to be included
-        sorting_vec <- order(cpgs_variance)[1:arguments$number_of_most_variable_CpGs_to_include]
-
-        # Sorting the betas dataframe and getting only the number of CpGs selected
-        unadj_training <- unadj_training[sorting_vec,]
-    
-    } else if (arguments$split_for_cross_validation) {
-
 
         for (fold in names(folds_list)) {
 
@@ -261,26 +203,11 @@ if(arguments$get_only_CpGs_with_highest_variance) {
 
         }
     }
-}
 
 
 # ===========================================================
 # CREATING OUTPUT FILES FOR EACH FOLD OF THE CROSS VALIDATION
 # ===========================================================
-
-if (arguments$split_in_training_and_validation) {
-
-    cat("\n\nSaving output files...\n")
-
-    #Saving beta values
-    saveRDS(unadj_training, paste(arguments$output_directory, "/BetasTraining.RData", sep=""))
-    saveRDS(unadj_validation, paste(arguments$output_directory, "/BetasTest.RData", sep=""))
-
-    #Saving purity values
-    saveRDS(purity_training, paste(arguments$output_directory, "/PurityTraining.RData", sep=""))
-    saveRDS(purity_validation, paste(arguments$output_directory, "/PurityTest.RData", sep=""))
-
-} else if (arguments$split_for_cross_validation) {
 
     cat("\n\nSaving output files...\n")
 
@@ -294,7 +221,6 @@ if (arguments$split_in_training_and_validation) {
         saveRDS(folds_list[[fold]][["Purity_test"]], paste(arguments$output_directory, "/", fold, "_PurityTest.RData", sep=""))
     }
 
-}
 
 cat("\n\n****************\n")
 cat("PROCESS FINISHED\n")
