@@ -1,5 +1,57 @@
 #!/usr/bin/Rscript
 
+# Script Name: compare_cross_validation.r
+
+# Description:
+# This script compares and analyzes sample purity predictions from different datasets. It takes as input R objects containing predicted purity values for various folds and cancer types and generates boxplots and quality metrics to assess the predictions.
+
+# Required R Packages:
+# - ggplot2: For creating data visualizations.
+# - stringr: For string manipulation.
+# - tibble: For data manipulation.
+# - tidyr: For data tidying.
+# - dplyr: For data manipulation.
+# - optparse: For parsing command-line arguments.
+
+# Loading Required Packages:
+# - The script sets a specific CRAN mirror and installs the required packages if not already installed.
+# - It also loads the 'ggplot2', 'stringr', 'tibble', 'tidyr', 'dplyr', and 'optparse' packages for data analysis and argument parsing.
+
+# Configuration of Command Line Arguments:
+# - The script uses the 'optparse' package to configure and parse command-line arguments.
+# - The available options include:
+#   - "--names_of_the_folds": Names of the different folds used, separated by a comma.
+#   - "--names_of_the_predictions_to_compare": Names of the different predictions to compare, separated by a comma.
+#   - "--plot_multiple_cancer_types": Set to TRUE if multiple cancer types will be plotted.
+#   - "--directory/es": The name of the directory, or directories separated by a comma, containing the different predictions and folds.
+#   - "--reference_purity/es": The path of the R object, or R objects separated by a comma, containing the reference purity values.
+#   - "--output_prefix": Prefix for the output plots.
+
+# Parsing Command Line Arguments:
+# - The 'optparse' package is used to parse the command-line arguments, including names of folds, predictions, directories, reference purities, and output prefix.
+
+# Processing Command Line Arguments:
+# - The script processes the provided arguments, splitting them into vectors and ordering them if necessary.
+
+# Getting Values to Compare:
+# - The script loads actual purities and predicted values for each prediction, fold, and cancer type.
+# - It calculates a quality metric, the distance to the estimate, for each prediction.
+
+# Determining Quality Metrics:
+# - The script determines quality metrics for each prediction and fold and stores the results in a data frame.
+
+# Plotting Results:
+# - The script creates boxplots and quality metric visualizations for the predictions.
+# - The generated plots are saved as PNG files with appropriate names based on the dataset type.
+
+# Example Usage:
+# - Users can run the script from the command line with various options to compare and analyze sample purity predictions.
+
+# Author: Iñaki Sasiain Casado
+# Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
+
+
+
 # ==========================================
 #      IMPORTING THE REQUIRED PACKAGES 
 # ==========================================
@@ -192,11 +244,10 @@ print(dti_df)
 
 # Plotting the results 
 ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
-  geom_boxplot(fill="olivedrab4", ) +
-  labs(x = "Prediction", y = "Mean distance to estimate", color="Splits' mean") +
+  geom_boxplot(fill="palegreen1", ) +
+  geom_smooth(aes(group=1), linewidth=2, se=FALSE, color="palegreen4") +
+  labs(x = "Prediction", y = "Mean distance to estimate") +
   theme_classic() + 
-  scale_fill_manual(values = c("palegreen1")) +
-  scale_color_manual(values = c("palegreen4")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 # Saving the plot
@@ -345,7 +396,7 @@ print(to_plot_df)
 ggplot(to_plot_df, aes(x = factor(Prediction, levels = vec_of_preds), y = as.numeric(Distance_to_estimate) , fill = Type)) +
   geom_boxplot() +
   geom_smooth(aes(group=Type, color=Type), linewidth=2, se=FALSE) +
-  labs(x = "Prediction", y = "Mean distance to estimate", fill = "Cancer Type", color="Splits' mean") +
+  labs(x = "Prediction", y = "Mean distance to estimate", fill = "Cancer Type", color="Mean dis. to est.") +
   scale_fill_manual(values = c("palegreen1", "tomato", "steelblue1")) +
   scale_color_manual(values = c("palegreen4", "tomato4", "steelblue4")) +
   theme_classic() +
