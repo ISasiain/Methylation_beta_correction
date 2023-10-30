@@ -91,7 +91,7 @@ git annex get <filename>
 tar -xvf <filename.tar.xz>
 ```
 
-If the raw unpreprocessed data is available in the TCGA data base (BRCA, LUAD and LUSC refernece)  or deposited in the [Gene Expression Omnibus](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE148748) (example TNBC data set).
+If the raw unpreprocessed data is available in the TCGA data base (BRCA, LUAD and LUSC refernece)  or deposited in the [Gene Expression Omnibus](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE148748) (example TNBC data set). The most variant 5000 CpGs in BRCA used for the preliminary analysis was obtained from the following [Github repository](https://github.com/StaafLab/adjustBetas).
 
 ## EXPERIMENTAL PROCEDURE
 
