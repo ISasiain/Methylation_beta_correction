@@ -86,7 +86,8 @@
 #
 #     """
 #     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -B [path_to_ref_betas] 
-#     -P [path_to_ref:purities] -b [path_to_betas_to_correct] -p [path_to_estimated purities] 
+#     -P [path_to_ref:purities] -b [path_to_betas_to_correct] -p [path_to_estimated purities]
+#     -F [correct_only_certain_CpGs: TRUE/FALSE] -f [vec_CpGs_to_correct]
 #     -o [path_to_save_output_files] -n [prefix_output_files]
 #     """
 #     
@@ -97,6 +98,8 @@
 #       -P: The path to the file with the purity values of the refrence cohort must be entered here. The file must be an R object containing a dictionary vector.
 #       -b: Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
 #       -p: Path to the tsv file with the predicted sample purity values of the samples whose betas have to be corrected. The file must be the tsv text file generated as an output of run_all_validation.r.
+#       -F: This argument should be set TRUE if a list with the CpGs to correct wants to be provided.
+#       -f: The path of the Robject containing a vector with the CpGs to correct should be entered here.
 #       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
 #       -n: The prefix to be used to name the output files. Default: output.
 #
