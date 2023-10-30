@@ -93,7 +93,7 @@ argument_list <- list(
 
   make_option(c("-u", "--purity"), type="character",  
               help="The name of the object that contains the beta values inside the R object must be entered here",
-              metavar = "[var_name]")
+              metavar = "[var_name]"),
 
   make_option(c("-k", "--groups_in_k_fold_cross_validation"), type="numeric",
               help="The number of groups in which the data will be splitted to perform the cross validation can be entered here",
