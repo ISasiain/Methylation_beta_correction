@@ -1,5 +1,49 @@
 #!/usr/bin/Rscript
 
+# Script Name: analyze_cpg_context.r
+
+# Description:
+# This script analyzes the context of CpGs in different datasets and generates pie charts to visualize the distribution of CpG contexts. It uses input R objects containing CpG vectors and an R object containing the annotated CpG context to create these visualizations.
+
+# Required R Packages:
+# - optparse: For parsing command-line arguments.
+# - ggplot2: For creating and customizing pie charts.
+# - VennDiagram: For generating Venn diagrams.
+
+# Loading Required Packages:
+# - The script sets a specific CRAN mirror and installs the required packages if not already installed.
+# - It also loads the 'optparse', 'ggplot2', and 'VennDiagram' packages for argument parsing, pie chart creation, and Venn diagram generation, respectively.
+
+# Configuration of Command Line Arguments:
+# - The script uses the 'optparse' package to configure and parse command-line arguments.
+# - The available options include:
+#   - "--cpgs_to_compare": Comma-separated paths to R objects containing CpG vectors for analysis.
+#   - "--context_annotation": Path to the R object file containing the annotated CpG context.
+#   - "--prefix": Prefix for output file names (optional, default is 'output').
+
+# Parsing Command Line Arguments:
+# - The 'optparse' package is used to parse the command-line arguments, including input files and the output file prefix.
+
+# Loading Data:
+# - The script reads CpG context annotation data from the specified R object file.
+# - It also loads multiple sets of CpG vectors from separate R object files.
+
+# Checking Common CpGs:
+# - The script creates Venn diagrams to visualize common CpGs among different datasets and saves them as PNG files.
+
+# Checking Context of the CpGs:
+# - The script generates pie charts to show the distribution of CpG contexts for each dataset.
+# - It differentiates between promoter, proximal, distal, CGI, shore, ocean, and chromatin accessibility contexts.
+# - The generated pie charts are saved as PNG files with appropriate names based on the dataset type.
+
+# Example Usage:
+# - Users can run the script from the command line with various options to analyze CpG context and create visualizations.
+
+# Author: Iñaki Sasiain Casado
+# Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
+
+
+
 # =============================
 # LOADING THE REQUIRED PACKAGES
 # =============================
@@ -150,7 +194,6 @@ for (type in rownames(context_df)) {
 
   gg_prom_prox_dis <- ggplot(data=prom_prox_dis, aes(x="", y=count, fill=context)) +
          geom_bar(stat="identity") +
-         labs(title=paste(type, ": promoter, proximal and distal", sep="")) +
          theme_void() +
          coord_polar("y", start=0) +
          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
@@ -162,7 +205,6 @@ for (type in rownames(context_df)) {
 
   gg_cgi_shore_ocean <- ggplot(data=cgi_shore_ocean, aes(x="", y=count, fill=context)) +
          geom_bar(stat="identity") +
-         labs(title=paste(type, ": cgi, shore and ocean", sep="")) +
          theme_void() +
          coord_polar("y", start=0) +
          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
@@ -176,7 +218,6 @@ for (type in rownames(context_df)) {
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
-          labs(title=paste(type, ": chromatin accessibility", sep="")) +
           theme_void() +
           coord_polar("y", start=0) +
           geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
@@ -190,7 +231,6 @@ for (type in rownames(context_df)) {
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
-          labs(title=paste(type, ": chromatin accessibility", sep="")) +
           theme_void() +
           coord_polar("y", start=0) +
           geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
@@ -203,7 +243,6 @@ for (type in rownames(context_df)) {
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
-          labs(title=paste(type, ": chromatin accessibility", sep="")) +
           theme_void() +
           coord_polar("y", start=0) +
           geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
@@ -217,7 +256,6 @@ for (type in rownames(context_df)) {
 
     gg_atac <- ggplot(data=atac, aes(x="", y=count, fill=context)) +
           geom_bar(stat="identity") +
-          labs(title=paste(type, ": chromatin accessibility", sep="")) +
           theme_void() +
           coord_polar("y", start=0) +
           geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
