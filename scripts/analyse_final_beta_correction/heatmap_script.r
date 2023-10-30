@@ -1,5 +1,42 @@
 #!/usr/bin/Rscript
 
+# Script Name: heatmap_script.r
+
+# Description:
+# This script generates a heatmap to visualize the methylation status of CpGs in different samples. It uses three sets of beta values (original, cancer-corrected, and microenvironment-corrected) and an annotation file to create the heatmap. The generated heatmap provides insights into methylation changes in various samples.
+
+# Required R Packages:
+# - ComplexHeatmap: For creating and customizing the heatmap.
+# - optparse: For parsing command-line arguments.
+
+# Loading Required Packages:
+# - The script sets a specific CRAN mirror and installs the 'ComplexHeatmap' package if not already installed.
+# - It also loads the 'ComplexHeatmap' and 'optparse' packages for heatmap generation and command-line argument parsing, respectively.
+
+# Configuration of Command Line Arguments:
+# - The script uses the 'optparse' package to configure and parse command-line arguments.
+# - The available options include:
+#   - "--original_betas": Path to the RObject file containing the original uncorrected beta values.
+#   - "--cancer_corrected_betas": Path to the RObject file containing the corrected tumor beta values.
+#   - "--microenvironment_corrected_betas": Path to the RObject file containing the corrected microenvironment beta values.
+#   - "--annotation_file": Path to the annotation CSV file with the methylation status of each sample.
+#   - "--output_prefix": Prefix for the output PNG heatmap file.
+
+# Loading Data:
+# - The script reads the beta values and annotation data from the specified files using the 'readRDS' and 'read.table' functions, respectively.
+
+# Creating the Heatmap:
+# - The script generates a heatmap with three panels, one for each set of beta values (original, cancer-corrected, microenvironment-corrected).
+# - The heatmap is customized with various options, including colors, labels, and clustering parameters.
+# - The resulting heatmap is saved as a PNG file with the user-defined prefix.
+
+# Example Usage:
+# - Users can run the script from the command line with various options to create a customized methylation heatmap.
+
+# Author: Iñaki Sasiain Casado
+# Affiliation: Johan Staaf lab @ Lund University / Oncology & Pathology
+
+
 # =============================
 # LOADING THE REQUIRED PACKAGES
 # =============================
@@ -13,7 +50,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("ComplexHeatmap")
 
 #Loading R package
-uppressPackageStartupMessages(library("ComplexHeatmap"))
+suppressPackageStartupMessages(library("ComplexHeatmap"))
 
 if(!requireNamespace("optparse", quietly = TRUE)) {
   install.packages("optparse") }
@@ -44,7 +81,7 @@ argument_list <- list(
               help="The path to the annotation csv file with the methylation status of each sample must be entered here.",
               metavar="[path]"),
 
-  make_option(c("-p", "--output_prefix"), type="character", default="Heatmap"
+  make_option(c("-p", "--output_prefix"), type="character", default="Heatmap",
               help="The prefix pf the png file in which the created heatmap will be saved can be entered here",
               metavar="[prefix]")         
 
@@ -76,7 +113,7 @@ annotation <- annotation[colnames(original_values),] #Removing non used samples
 
 
 # Plotting heat map
-png("original_and_corrected_heatmap.png", width=800, height=800)
+png(paste(arguments$output_prefix, ".png", sep=""), width=400, height=300)
 
 a <- HeatmapAnnotation(
         Pyroseq=annotation,
@@ -89,6 +126,7 @@ Heatmap(original_values,
         name="β value", 
         show_row_dend = FALSE,
         show_column_names = FALSE,
+        show_row_name = FALSE,
         top_annotation=a,
         clustering_distance_rows = "euclidean",
         clustering_distance_columns = "euclidean",
@@ -101,6 +139,7 @@ Heatmap(corrected_values,
         name="β value",
         show_row_dend = FALSE,
         show_column_names = FALSE, 
+        show_row_name = FALSE,
         top_annotation=a,
         clustering_distance_rows = "euclidean",
         clustering_distance_columns = "euclidean",
@@ -112,7 +151,8 @@ Heatmap(microenvironment_values,
         row_title="CpGs",
         name="β value",
         show_row_dend = FALSE,
-        show_column_names = FALSE, 
+        show_column_names = FALSE,
+        show_row_name = FALSE,
         top_annotation=a,
         clustering_distance_rows = "euclidean",
         clustering_distance_columns = "euclidean",
