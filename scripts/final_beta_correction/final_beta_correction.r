@@ -5,7 +5,8 @@
 ## - DESCRIPTION: 
 #
 #   This script correct beta values of samples whose purity has been estimated based on
-#   a reference cohort
+#   a reference cohort refitting the refernce regressions to include both, the reference data 
+#   points and the new ones (betas to correct + estimated purity).
 # 
 ## - USED R PACKAGES:
 #
@@ -26,28 +27,46 @@
 #
 #   2. Configuring parallelization.
 #
-#   3. Loading the data, adding the seed to run the analysis with and running the adjustBeta() function
-#      per each CpG using a parallelized apply function.
+#   3. Loading the data, if one of the samples has more than one purity estimates remove it sample, 
+#      as no reliable correction is possible Adding the seed to run the analysis with and running 
+#      the adjustBeta() function per each CpG using a parallelized apply function.
 #
-#   4. Adding the produced results to a result list.
+#   4. Filtering CpGs. The CpG to correct not included in the refernce data set must be removed, as
+#      they can not be corrected. Also, the CpGs in the refernce data set not included in the data to
+#      correct are removed to speed up the process.
 #
-#   5. Saving each element of the result list as an independent R object.
+#   5. Generating results and adding the them to a result list.
+#
+#   6. Saving each element of the result list as an independent R object or TSV file.
 #
 ## - INPUT FILES:
 #
-#    -> Dataframe stored as an R object containig the original beta values of the cpgs and samples
-#       to be corrected.
+#    -> Dataframe stored as an R object containig the refernce beta values.
 #
-#    -> Named vector stored as an R object containing the purity values of the samples used for the analysis
+#    -> Named vector stored as an R object containing the purity of the reference samples.
+#
+#    -> TSV file containing the purity estimates of the samples whose betas are to be corrected. This 
+#       must be the output of purity_estimator.r
+#
+#    -> Dataframe stored as an R object containig the beta values with the betas of the samples to correct.
+#
+#    -> Vector of CpGs to correct stored as an R object. This must be only provided if the user chooses to limit
+#       the beta correction to certain CpGs.
 #
 #
 ## - OUTPUT FILES:
 #
-#    -> R object file containinga dataframe with the original beta values
+#    -> R object file containing a dataframe with the original beta values
+#
+#    -> TSV file containing the original beta values of each sample
 #
 #    -> R object file containing a dataframe with the corrected tumor beta values
 #
+#    -> TSV file containing the corrected cancer cell beta values of each sample
+#
 #    -> R object file containing a dataframe with the corrected microenvironment beta values
+#
+#    -> TSV file containing the corrected microenvironment beta values of each sample
 #
 #    -> R object file containing a dataframe with the slopes of the regressions used for the beta correction
 #
@@ -64,8 +83,9 @@
 #     The script must be run on the command line using the following flags. 
 #
 #     """
-#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -b [path_to_betas] 
-#     -p [path_to_puritied] -o [path_to_save_output_files] -n [prefix_output_files]
+#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -B [path_to_ref_betas] 
+#     -P [path_to_ref:purities] -b [path_to_betas_to_correct] -p [path_to_estimated purities] 
+#     -o [path_to_save_output_files] -n [prefix_output_files]
 #     """
 #     
 #     *The function of the command line options are the following; 
@@ -80,10 +100,9 @@
 #
 ## - VERSION: 1.0
 #
-## - DATE: 17/05/2023
+## - DATE: 30/10/2023
 #
-## - AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
-## - ADAPTED BY: Iñaki Sasiain
+## - AUTHOR: Iñaki Sasiain
 ## - AFFILIATION: Johan Staaf lab @ Lund University / Oncology & Pathology
 
 # =============================
@@ -133,6 +152,14 @@ argument_list <- list(
               help="Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.",
               metavar = "[file path]"),
 
+  make_option(c("-F", "--only_certain_CpGs"), type="logical", default=FALSE,   
+              help="This argument should be set TRUE if a list with the CpGs to correct wants to be provided.",
+              metavar = "[TRUE/FALSE]"),
+
+  make_option(c("-f", "--CpGs_to_correct_vec"), type="character",  
+              help="The path of the Robject containing a vector with the CpGs to correct should be entered here.",
+              metavar = "[file path]"),
+
   make_option(c("-o", "--output"), type="character", default="./",
               help="The path to the location where the output files will be saved must be entered here. The output is an R object. Default [%default]",
               metavar = "[file path]"),
@@ -153,8 +180,9 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 # =====================================
 
 dir <- commandArgs()[4]
+
 dir <- gsub("--file=", "", dir)
-dir <- gsub("new_purity_corrector.r", "new_function_correctBetas.r", dir)
+dir <- gsub("final_beta_correction.r", "new_function_correctBetas.r", dir)
 
 source(dir)
 
@@ -188,26 +216,37 @@ to_correct_betas <- readRDS(arguments$betas_to_correct)
 
 # Loading predicted purities
 predicted_purities <- read.table(arguments$est_purity, 
-                                header=TRUE,
                                 sep="\t")
 
+
 # Removing samples with more than one estimates (if any)
-predicted_purities <- predicted_purities[which(predicted_purities[,"num_of_est"]==1),]
+predicted_purities <- predicted_purities[which(predicted_purities[,2]==1),]
 
 # Transforming the predicted_purities dataframe into a vector
-predicted_purities_vec <- predicted_purities[,"estimate"]
-names(predicted_purities_vec) <- predicted_purities[,"sample"]
+predicted_purities_vec <- 1-predicted_purities[,3]
+names(predicted_purities_vec) <- predicted_purities[,1]
 
 # ================
 # FILTERING CPGS
 # ================
 
 cat("\nChecking cpgs...\n\n")
+# Use only the specified CpGs if that option has been selected
+if (arguments$only_certain_CpGs) {
 
-if (length(!(rownames(to_correct_betas) %in% rownames(cohort_betas))) != 0) {
+  #Getting the vector
+  vec_of_cpgs <- readRDS(arguments$CpGs_to_correct_vec)
+
+  #Keeping only CpGs of interest
+  to_correct_betas <- to_correct_betas[vec_of_cpgs,]
+
+}
+
+# Checking if the CpGs are included in the reference data
+if (sum(!(rownames(to_correct_betas) %in% rownames(cohort_betas))) != 0) {
 
     # Printing warning message
-    cat("\n",  length(!(rownames(to_correct_betas) %in% rownames(cohort_betas))), "CpGs are not included into the refernce cohort, so they can not be corrected.\n\n")
+    cat("\n",  sum(!(rownames(to_correct_betas) %in% rownames(cohort_betas))), "CpG(s) is/are not included into the refernce cohort, so it/they can not be corrected.\n\n")
 
     # Filtering not included CpGs
     to_correct_betas <- to_correct_betas[rownames(to_correct_betas) %in% rownames(cohort_betas),]
@@ -215,6 +254,10 @@ if (length(!(rownames(to_correct_betas) %in% rownames(cohort_betas))) != 0) {
 
 # Remove CpGs from the cohort dataset that are not included into the data to correct to speed up the process.
 cohort_betas <- cohort_betas[rownames(cohort_betas) %in% rownames(to_correct_betas),]
+
+#Sorting the cohort betas dataframe based on the rownames of to_correct_betas
+cohort_betas <- cohort_betas[rownames(to_correct_betas),]
+
 
 # ============
 # MERGING DATA
@@ -224,11 +267,14 @@ cohort_betas <- cohort_betas[rownames(cohort_betas) %in% rownames(to_correct_bet
 purities <- c(cohort_purities, predicted_purities_vec)
 
 # Creating a single betas dataframe
-betas <- merge(cohort_betas, to_correct_betas, by="row.name")
+betas <- cbind(cohort_betas, to_correct_betas)
+
+#Adapt name of betas
+colnames(betas) <- lapply(colnames(betas), 
+                         function (name) {strsplit(name, "-01")[[1]][1]})
 
 #Removing sample purities not contained into the beta dataset. It generates errors
 purities <- purities[colnames(betas)]
-
 
 # ====================================
 # PREPROCESSING AND ANALYSING THE DATA
@@ -258,22 +304,18 @@ res <- parRapply(cl = cl, #ClusterS to run the process
 
 # Creating a list to add the results (Only of the samples to be corrected) ADAPT THIS!!!!
 result_list <- list(
-
   betas.original = do.call("rbind",lapply(res,function(x) x$y.orig)), #Original beta values
   betas.tumor = do.call("rbind",lapply(res,function(x) x$y.tum)), #Corrected tumor beta values
-  betas.microenvironment = do.call("rbind",lapply(res,function(x) x$y.norm)), #Corrected microenvironment beta values
-
+  betas.microenvironment = do.call("rbind",lapply(res,function(x) x$y.norm)) #Corrected microenvironment beta values
 )
 
 # Creating a list to add the parameters of the correction regressions
 reg_list <- list(
-
   cpg.populations =  do.call("rbind",lapply(res,function(x) x$groups)), #Methylation patterns (populations) of each CpG
   reg.slopes = do.call("rbind",lapply(res,function(x) x$res.slopes)), #Slopes of the populations
   reg.intercepts = do.call("rbind",lapply(res,function(x) x$res.int)), #Intercepts of the populations
   reg.RSE = do.call("rbind",lapply(res,function(x) x$res.rse)), #Residual standard error
   reg.df = do.call("rbind",lapply(res,function(x) x$res.df)) #Degrees of freedom of the reversed regressions
-
 )
 
 # =====================
@@ -282,7 +324,7 @@ reg_list <- list(
 
 #Defining a function to store the elements of the result list to RData files
 df_to_RObj <- function(df, filename) {
-  saveRDS(df, filename)
+  saveRDS(df, file=filename)
 }
 
 #Defining a function to store the elements of the result list as tsv files
@@ -302,12 +344,12 @@ lapply(names(result_list), function(n) {
 
 #Creating output files per each dataframe of the reg_list list
 lapply(names(reg_list), function(n) {
-  df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
+  df_to_RObj(reg_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
 })
 
 # Stop clusters used in parallelization
 stopCluster(cl)
 
-#cat("\n=================\n")
-#cat ("PROCESS FINISHED")
-#cat("\n=================\n")
+cat("\n=================\n")
+cat ("PROCESS FINISHED")
+cat("\n=================\n")
