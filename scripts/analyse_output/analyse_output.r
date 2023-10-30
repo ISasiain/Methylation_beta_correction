@@ -1,86 +1,69 @@
 #!/usr/bin/Rscript
 
-## -SCRIPT'S NAME: analyse_output.r
-#
-## - DESCRIPTION: 
-#
-#   This scripts produces plots to analyse the output of the run_all_validation.r
-# beta value based sample purity estimation script-
-# 
-## - USED R PACKAGES:
-#
-#   *OPTPARSE. Parsing command line arguments
-#   *GGPLOT2. Creating plots
-#   *RESHAPE2. Reshaping R data to produce plots
-#
-## - USER DEFINED FUNCTIONS:
-#   
-#   None
-#
-## - PROCEDURE:
-#
-#   1. Installing (if necessary) and loading packages, configuring command line arguments and loading the data
-#
-#   2. Calculating parameters about the prediction's quality; distance to interval, distance to estimate,
-#      interval's width and distance to estimate * interval's width.
-#
-#   3. Processing the data to unravell the usage of each CpG in the samples' purity estimation
-#
-#   3. Calculating summary statistics from the quality parameters dataframe and printing the into the terminal.
-#
-#   4. Plotting the results and saving the created plots. The following plots are produced;
-#
-#     4.1. Plotting and saving histogram of distance to interval
-#     4.2. Plotting and saving histogram of distance to estimate
-#     4.3. Plotting and saving histogram of intervals' width
-#     4.4. Plotting and saving scatterplot of the actual VS the estimated purity values.
-#     4.5. Plotting and saving distribution of the error (distance to interval) in function of the estimated and actual purities.
-#     4.6. Plotting and saving a density plot of the percentage of error (% deviation of the actual value) of all the samples
-#     4.7. Plotting and saving a cumulative density plot of the percentage of error (% deviation of the actual value) of all the samples
-#     4.8. Plotting and saving a histogram with the number of times in which the cpgs are used in the purity estimation
-#     4.9. Plotting and saving a histogram with the number of cpgs used to estimate each sample's purity
-#     4.10. Plotting and saving heatmap of the CpGs included in the purity estimation of each sample
-#
-## - INPUT FILES:
-#
-#    -> List stored as an R object with the estimated 1-Purity value. The format of the list must be the one produced
-#       by the run_all_validation.r script.
-#
-#    -> List stored as an R object with the cpgs used per sample value. The format of the list must be the one produced
-#       by the run_all_validation.r script.
-#
-#    -> Dataframe stored as an R object with the original beta values used to estimate the purity.
-#
-#    -> Vector stored as an R object with the actual 1 - Purity values of the samples analysed
-#
-#
-## - OUTPUT FILES:
-#
-#    -> All the plots mentioned on the procedure part will be generated and saved using the prefix provided 
-#       as a command line input
-#
-## - USAGE:
-#
-#     The script must be run on the command line using the following flags. 
-#
-#     """
-#     Rscript path_to_script/analyse_output.r -e [path_to_estimated_betas] -c [path_to_cpgs_used_per_sample]
-#     -b [path_to_original_betas] -a [path_to_actual_1-P] -o [output_prefix]
-#     """
-#     
-#     *The function of the command line options is the following; 
-#
-#       -e: The user must especify the path of the R object containing the estimated 1-Pur values
-#       -c: The user must especify the path of the R object containing the cpgs used to estimate purity per sample
-#       -b: The user must especify the path of the R object containing the original betas used to estimate purity per sample
-#       -a: The user must especify the path of the R object containing the actual 1-Pur values
-#       -o: The user can especify a prefox for the output plots. Default "result_analysis"
-#
-## - VERSION: 1.0
-#
-## - DATE: 17/05/2023
-#
-## - AUTHOR: Iñaki Sasiain Casado
+# Script Name: analyze_output.r
+
+# Description:
+# This script performs an analysis of sample purity predictions from different datasets.
+# It takes R objects containing predicted purity values for various folds and cancer types as input and generates boxplots
+# along with quality metrics to assess the accuracy of these predictions.
+
+# Required R Packages:
+# - ggplot2: Used for creating data visualizations.
+# - stringr: Employed for string manipulation.
+# - tibble: Useful for data manipulation.
+# - tidyr: Essential for data tidying.
+# - dplyr: Needed for data manipulation.
+# - optparse: Utilized for parsing command-line arguments.
+
+# Loading Required Packages:
+# The script first ensures a specific CRAN mirror is set, and it installs the required packages if not already installed.
+# Then, it loads the 'ggplot2', 'stringr', 'tibble', 'tidyr', 'dplyr', and 'optparse' packages for data analysis and argument parsing.
+
+# Configuration of Command Line Arguments:
+# This script uses the 'optparse' package to configure and parse command-line arguments.
+# The available options include:
+# - "--path_to_estimated_1-P": Path to an R object containing estimated 1-Purity values.
+# - "--path_to_cpgs_used_per_sample": Path to an R object with cpgs used for estimating purity per sample.
+# - "--path_to_original_betas": Path to an R object with original betas used for estimating purity per sample.
+# - "--path_to_actual_1-P": Path to an R object containing actual 1-Purity values.
+# - "--output_prefix": Prefix for the output plots (default: "result_analysis").
+# - "--plot_dis_vs_ploidy": Set to TRUE to plot the Distance to estimate VS ploidy (default: FALSE).
+# - "--path_to_ploidy": Path to an R object containing actual ploidy values if "--plot_dis_vs_ploidy" is set to TRUE.
+
+# Parsing Command Line Arguments:
+# The script uses the 'optparse' package to parse the command-line arguments, including paths to various R objects and configuration options.
+
+# Processing Command Line Arguments:
+# The provided arguments are processed, and relevant data is loaded, including estimated purities, actual purities, cpgs used, and original betas.
+
+# Quality Metric Calculation:
+# The script calculates quality metrics, such as interval width, distance to interval, distance to estimate, and distance multiplied by width, for each prediction.
+
+# Quality Metrics Determination:
+# Quality metrics for each prediction and fold are determined and stored in a data frame.
+
+# Plotting Results:
+# The script generates various data visualizations to assess the quality of predictions. These include:
+# - Histogram of Distance to Interval
+# - Histogram of Distance to Estimate
+# - Histogram of Interval Width
+# - Scatterplot of Actual Purity vs. Estimated Purity
+# - Scatterplot of Distance to Estimate vs. Actual Purity
+# - Scatterplot of Distance to Estimate vs. Estimated Purity
+# - Scatterplot of Distance to Estimate vs. Ploidy (if enabled)
+# - Density Plot of Error Percentage (Distance to Estimate)
+# - Cumulative Density Plot of Error Percentage (Distance to Estimate)
+# - Histogram of the Percentage of Times Each CpG is Used to Estimate Purity
+# - Histogram of the Number of CpGs Used to Estimate Purity per Sample
+# - Heatmap of CpGs Used in Each Sample
+# - Scatterplot of the Number of CpGs vs. Actual Purity of Samples
+
+# Example Usage:
+# Users can run the script from the command line with various options to analyze and visualize sample purity predictions.
+
+# Author: Iñaki Sasiain Casado
+# Affiliation: Johan Staaf lab, LU
+
 
 
 # ==========================================
@@ -379,6 +362,8 @@ plot_df <- data.frame(
 )
 
 
+## SCATTERPLOT WITH INTERVAL. 
+
 ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlim(0,1) + ylim(0,1) +
   geom_point(size=1.5) +
@@ -394,8 +379,6 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
 
-
-## SCATTERPLOT WITH INTERVAL. 
 
 
 
