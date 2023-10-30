@@ -1,5 +1,53 @@
 #!/usr/bin/Rscript
 
+# Script Name: split_cross_validation.r
+
+# Description:
+# This script processes and splits a dataset of beta values and purities for cross-validation. 
+# It can work with data where beta values and purities are in separate R objects or in the same object.
+# It allows users to filter CpGs from sexual chromosomes, select the number of most variable CpGs to include, and perform cross-validation.
+
+# Required R Packages:
+# - optparse: Used for parsing command-line arguments.
+# - caret: Required for data splitting and cross-validation.
+# - Other standard packages are used for data manipulation and analysis.
+
+# Loading Required Packages:
+# The script sets a specific CRAN mirror and installs the required packages if not already installed.
+# It also loads the 'optparse' and 'caret' packages for argument parsing and data splitting.
+
+# Configuration of Command Line Arguments:
+# The script uses the 'optparse' package to configure and parse command-line arguments.
+# The available options include paths to data files, argument flags for various data processing steps, and more.
+
+# Parsing Command Line Arguments:
+# The script parses the command-line arguments to configure the data processing tasks, such as data file paths, cross-validation settings, and filtering options.
+
+# Processing Command Line Arguments:
+# The provided arguments are processed, and relevant data is loaded. It determines whether beta values and purities are in separate objects or the same object.
+
+# Data Loading and Preprocessing:
+# Depending on the configuration, the script loads beta values and purities from the provided R objects. It adapts column names for beta values.
+
+# Filtering CpGs from Sexual Chromosomes:
+# If the user opts to filter CpGs from sexual chromosomes, the script loads an annotation file, matches it with the beta values, and removes relevant rows.
+
+# Creating Groups for Cross-Validation:
+# The script uses the 'caret' package to split the data into groups for cross-validation. The number of groups can be customized.
+
+# Getting Most Variable CpGs:
+# If specified, the script selects the most variable CpGs based on variance for inclusion in the output data.
+
+# Creating Output Files for Each Fold:
+# The script saves training and test datasets for each fold of the cross-validation as separate R objects in the specified output directory.
+
+# Example Usage:
+# Users can run the script from the command line with various options to preprocess and split beta values and purities for cross-validation.
+
+# Author: [Your Name]
+# Affiliation: [Your Affiliation]
+
+
 # =============================
 # LOADING THE REQUIRED PACKAGES
 # =============================
