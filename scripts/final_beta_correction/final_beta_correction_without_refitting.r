@@ -1,5 +1,94 @@
 #!/usr/bin/Rscript
 
+## -SCRIPT'S NAME: final_beta_correction_without_refitting.r
+#
+## - DESCRIPTION: 
+#
+#   This script correct beta values of samples whose purity has been estimated based on
+#   a reference cohort without refitting the refernce regressions, as it directly uses the
+#   original refernce regressions for the correction.
+# 
+## - USED R PACKAGES:
+#
+#   *OPTPARSE. Parsing command line arguments
+#
+## - PROCEDURE:
+#
+#   1. Installing (if necessary) and loading packages, configuring command line arguments.
+#
+#   3. Loading the data, if one of the samples has more than one purity estimates remove it sample, 
+#      as no reliable correction is possible.
+#
+#   4. Filtering CpGs. The CpG to correct not included in the refernce data set must be removed, as
+#      they can not be corrected. Also, the CpGs in the refernce data set not included in the data to
+#      correct are removed to speed up the process.
+#
+#   5. Configure parallelization.
+#
+#   6. Define functions to run the correction. Create function to identify the regression that each beta
+#      to correct belongs "idnetify_regressions()", and a functiom to correct beta values based on the 
+#      reference regressions "correctiong_betas()".
+#
+#   7. Generating results through a for loop and store them in dataframes.
+#
+#   8. Saving results as an R object or TSV file.
+#
+## - INPUT FILES:
+#
+#    -> Dataframes stored as an R objects with the parameters of the refernce regressions
+#
+#    -> TSV file containing the purity estimates of the samples whose betas are to be corrected. This 
+#       must be the output of purity_estimator.r
+#
+#    -> Dataframe stored as an R object containig the beta values with the betas of the samples to correct.
+#
+#    -> Vector of CpGs to correct stored as an R object. This must be only provided if the user chooses to limit
+#       the beta correction to certain CpGs.
+#
+#
+## - OUTPUT FILES:
+#
+#    -> R object file containing a dataframe with the original beta values
+#
+#    -> TSV file containing the original beta values of each sample
+#
+#    -> R object file containing a dataframe with the corrected tumor beta values
+#
+#    -> TSV file containing the corrected cancer cell beta values of each sample
+#
+#    -> R object file containing a dataframe with the corrected microenvironment beta values
+#
+#    -> TSV file containing the corrected microenvironment beta values of each sample
+#
+## - USAGE:
+#
+#     The script must be run on the command line using the following flags. 
+#
+#     """
+#     Rscript path_to_script/new_purity_corrector_without_refitting.r -c [num_of_cores] -R [path_to_ref_regressions] 
+#     -b [path_to_betas_to_correct] -p [path_to_estimated purities] -F [correct_only_certain_CpGs: TRUE/FALSE] 
+#     -f [vec_CpGs_to_correct] -o [path_to_save_output_files] -n [prefix_output_files]
+#     """
+#     
+#     *The function of the command line options are the following; 
+#
+#       -c: Number of cores to be used to run the program. Default: 1.
+#       -R: Path of the directory containing the RObjects with the parameters of the refernce regressions.
+#       -b: Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -p: Path to the tsv file with the predicted sample purity values of the samples whose betas have to be corrected. The file must be the tsv text file generated as an output of run_all_validation.r.
+#       -F: This argument should be set TRUE if a list with the CpGs to correct wants to be provided.
+#       -f: The path of the Robject containing a vector with the CpGs to correct should be entered here.
+#       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
+#       -n: The prefix to be used to name the output files. Default: output.
+#
+## - VERSION: 1.0
+#
+## - DATE: 30/10/2023
+#
+## - AUTHOR: Iñaki Sasiain
+## - AFFILIATION: Johan Staaf lab @ Lund University / Oncology & Pathology
+
+
 # =============================
 # LOADING THE REQUIRED PACKAGES
 # =============================
@@ -11,12 +100,25 @@ if(!requireNamespace("optparse", quietly = TRUE)) {
 
 suppressPackageStartupMessages(library(optparse))
 
+if(!requireNamespace("doParallel", quietly = TRUE)) {
+  install.packages("doParallel") }
+
+suppressPackageStartupMessages(library(doParallel))
+
+if(!requireNamespace("foreach", quietly = TRUE)) {
+  install.packages("foreach") }
+
+suppressPackageStartupMessages(library(foreach))
 
 # ==================================
 # CONFIGURING COMMAND LINE ARGUMENTS
 # ==================================
 
 argument_list <- list(
+
+  make_option(c("-c", "--cores"), type="integer", default=1,  
+              help="Number of cores to be used to run the program [default %default]",
+              metavar = "[number]"),
 
   make_option(c("-R", "--ref_regressions"), type="character",  
               help="Path of the directory containing the RObjects with the parameters of the refernce regressions",
@@ -80,7 +182,6 @@ predicted_1mPurities_vec <- predicted_1mPurities[,3]
 names(predicted_1mPurities_vec) <- predicted_1mPurities[,1]
 
 
-
 # ================
 # FILTERING CPGS
 # ================
@@ -111,6 +212,20 @@ if (sum(!(rownames(to_correct_betas) %in% rownames(my_slopes))) != 0) {
 my_slopes <- my_slopes[rownames(my_slopes) %in% rownames(to_correct_betas),]
 my_intercepts <- my_intercepts[rownames(my_intercepts) %in% rownames(to_correct_betas),]
 
+# ===========================
+# CONFIGURING PARALLELIZATION
+# ===========================
+
+cat("\nUsing", arguments$cores,"cores\n\n")
+
+#Creating the cluster to run the process in parallel
+cl <- makeCluster(arguments$cores)  
+registerDoParallel(cl)  
+
+#Making sure that all packages have access to the flexmix package. Using invisible()
+#to avoid proning anything in the terminal
+
+invisible(clusterEvalQ(cl, {library("flexmix")}))
 
 
 # ==============================================
@@ -188,7 +303,8 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
  corrected_tumor <- data.frame()
  corrected_microenvironment <- data.frame()
 
- for (cpg in rownames(to_correct_betas)) {
+ # Correcting betas through a parallelized for loop
+ foreach(cpg=rownames(to_correct_betas)) %dopar% {
 
     corrected_tumor[cpg,colnames(to_correct_betas)] <- sapply(names(predicted_1mPurities_vec), 
 
@@ -240,7 +356,8 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
     )
  }
 
-
+ # Stop clusters used in parallelization
+ stopCluster(cl)
 
 # =======================
 # GENERATING OUTPUT FILES
