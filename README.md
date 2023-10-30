@@ -43,8 +43,6 @@ This repository contains the code to correct β values of samples with unknown s
     * **analyse_output.r**. This script produces plots from the output of the purity estimation algorithm to analyse the obtained result. The experimentally determined actual purity must be provided.
 
     * **compare_cross_validation.r**. This script compares the results of the different folds and checked parameters of the cross validation. It generates a plot showing the evolution of the estimation's performance.
-    
-    * **plot_ind_cpg.r**. This script plots the different populations identified per each CpG in the reference data. This plot was used to generate plots for the report's methods section.
 
     * **compare_CpGs.r**. This script compares the CpG context of the CpGs used for the purity prediction and the total CpGs to analyse their representativity.
  
