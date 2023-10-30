@@ -5,7 +5,7 @@
 ## - DESCRIPTION: 
 #
 #   This script correct beta values of samples whose purity has been estimated based on
-#   a reference cohort refitting the refernce regressions to include both, the reference data 
+#   a reference cohort refitting the reference regressions to include both, the reference data 
 #   points and the new ones (betas to correct + estimated purity).
 # 
 ## - USED R PACKAGES:
@@ -31,17 +31,19 @@
 #      as no reliable correction is possible Adding the seed to run the analysis with and running 
 #      the adjustBeta() function per each CpG using a parallelized apply function.
 #
-#   4. Filtering CpGs. The CpG to correct not included in the refernce data set must be removed, as
-#      they can not be corrected. Also, the CpGs in the refernce data set not included in the data to
+#   4. Filtering CpGs. The CpG to correct not included in the reference data set must be removed, as
+#      they can not be corrected. Also, the CpGs in the reference data set not included in the data to
 #      correct are removed to speed up the process.
 #
-#   5. Generating results and adding the them to a result list.
+#   5. Mergining reference and data to analyse to refit the regresisions
 #
-#   6. Saving each element of the result list as an independent R object or TSV file.
+#   6. Generating results and adding the them to a result list.
+#
+#   7. Saving each element of the result list as an independent R object or TSV file.
 #
 ## - INPUT FILES:
 #
-#    -> Dataframe stored as an R object containig the refernce beta values.
+#    -> Dataframe stored as an R object containig the reference beta values.
 #
 #    -> Named vector stored as an R object containing the purity of the reference samples.
 #
@@ -91,7 +93,7 @@
 #     *The function of the command line options are the following; 
 #
 #       -c: Number of cores to be used to run the program. Default: 1.
-#       -B: The path to the file with the beta values of the refernce cohort must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -B: The path to the file with the beta values of the reference cohort must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
 #       -P: The path to the file with the purity values of the refrence cohort must be entered here. The file must be an R object containing a dictionary vector.
 #       -b: Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
 #       -p: Path to the tsv file with the predicted sample purity values of the samples whose betas have to be corrected. The file must be the tsv text file generated as an output of run_all_validation.r.
@@ -137,11 +139,11 @@ argument_list <- list(
               metavar = "[number]"),
 
   make_option(c("-P", "--ref_cohort_purity"), type="character",  
-              help="Path to the file with the purity values of of the refernce cohort. The file must be an R object containing a dictionary vector.",
+              help="Path to the file with the purity values of of the reference cohort. The file must be an R object containing a dictionary vector.",
               metavar = "[file path]"),
 
   make_option(c("-B", "--ref_cohort_betas"), type="character",  
-              help="Path to the file with the beta values of the refernce cohort. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.",
+              help="Path to the file with the beta values of the reference cohort. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.",
               metavar = "[file path]"),
 
   make_option(c("-p", "--est_purity"), type="character",  
@@ -207,7 +209,7 @@ invisible(clusterEvalQ(cl, {library("flexmix")}))
 
 cat("\nLoading the data...\n\n")
 
-# Loading refernce files (cohort)
+# Loading reference files (cohort)
 cohort_betas <- readRDS(arguments$ref_cohort_betas)
 cohort_purities <- readRDS(arguments$ref_cohort_purity)
 
@@ -246,7 +248,7 @@ if (arguments$only_certain_CpGs) {
 if (sum(!(rownames(to_correct_betas) %in% rownames(cohort_betas))) != 0) {
 
     # Printing warning message
-    cat("\n",  sum(!(rownames(to_correct_betas) %in% rownames(cohort_betas))), "CpG(s) is/are not included into the refernce cohort, so it/they can not be corrected.\n\n")
+    cat("\n",  sum(!(rownames(to_correct_betas) %in% rownames(cohort_betas))), "CpG(s) is/are not included into the reference cohort, so it/they can not be corrected.\n\n")
 
     # Filtering not included CpGs
     to_correct_betas <- to_correct_betas[rownames(to_correct_betas) %in% rownames(cohort_betas),]
