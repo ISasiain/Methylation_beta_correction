@@ -95,7 +95,7 @@
 #       -A: Specify the name of the path containing the annotation file.
 #       -a: Specify the name of the dataframe containing the annotation information.
 #       -c: Select the name of column of the dataframe containig the information about the chromosomes.
-#       -N: This argument should be sent to true if the user wants to get only the betas of the CpGs with the highest variance
+#       -N: This argument should be set to true if the user wants to get only the betas of the CpGs with the highest variance
 #       -n: The number of the most variant CpGs to be included in the output should be included here
 #
 ## - VERSION: 1.0
@@ -180,7 +180,7 @@ argument_list <- list(
               metavar="[column name]"),
 
   make_option(c("-N", "--get_only_CpGs_with_highest_variance"), type="logical", default=FALSE,
-              help="This argument should be sent to true if the user wants to get only the betas of the CpGs with the highest variance",
+              help="This argument should be set to true if the user wants to get only the betas of the CpGs with the highest variance",
               metavar="[TRUE/FALSE]"),
 
   make_option(c("-n", "--number_of_most_variable_CpGs_to_include"), type="numeric",
