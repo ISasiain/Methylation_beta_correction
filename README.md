@@ -72,7 +72,7 @@ RScript path_to_script/final_beta_corerction.r -c [CORES] -P [REF_COHORT_PURITY]
 
 * final_beta_correction_without_refitting.r
 ```bash
-RScript path_to_script/final_beta_corerction_without_refitting.r -R [PATH_TO_REF_REGRESSIONS] -p [PATH_TO_EST_PURITIES] -b [BETAS_TO_CORRECT] -F [CORRECT_CERTAIN_CPGS: TRUE/FALSE] -f [CPGS_TO_CORRECT] -o [OUTPUT_PATH] -n [OUTPUT_NAME] 
+RScript path_to_script/final_beta_corerction_without_refitting.r -c [CORES] -R [PATH_TO_REF_REGRESSIONS] -p [PATH_TO_EST_PURITIES] -b [BETAS_TO_CORRECT] -F [CORRECT_CERTAIN_CPGS: TRUE/FALSE] -f [CPGS_TO_CORRECT] -o [OUTPUT_PATH] -n [OUTPUT_NAME] 
 ```
 
 > NOTE: A detailed explanation of the usage of all the scripts, including the ones not added in this section, is available in each script's documentation, or running the scripts with the -h flag.
@@ -83,11 +83,17 @@ Preprocessed data set of the genomic CpG context, ploidy of the samples included
 
 The reference regressions without using any variance filtering, using a 0.05 variance filtering and the raw β and purity values used to obtain them are available in the reference.tar.xz compressed file.
 
-This two files are deposited using git annex, so the following commands should be used to obtain them after cloning the repository.
+This two files are deposited using git annex, so the following commands should be used to obtain them after cloning the repository. The scripts must also be uncompressed using the following command.
 
 ```bash
+# Get the compressed files
 git annex get <filename>
+
+# Uncompress the files
+tar -xvf <filename.tar.xz>
 ```
+
+If the raw unpreprocessed data is available in the TCGA data base (BRCA, LUAD and LUSC refernece)  or deposited in the [Gene Expression Omnibus](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE148748) (example TNBC data set).
 
 ## EXPERIMENTAL PROCEDURE
 
