@@ -211,19 +211,19 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
 # Splitting BRCA data
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
        
-Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -k 6 -N FALSE;
 
 
 # Splitting LUAD data (lines 125 and 126 have been commented)
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUAD;
        
-Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUAD -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUAD -k 6  -N FALSE;
 
 
 # Splitting LUSC data (lines 125 and 126 have been commented)
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
        
-Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUSC -S FALSE -C TRUE -k 6 -c chr -N FALSE;
+Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUSC -k 6  -N FALSE;
 ```
 
 2. Determining regressions per variance threshold and fold
@@ -308,7 +308,7 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered;
 
 #Lines 124 and 125 of split_cross_validation.r were uncommented to adapt sample name. 
-Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
+Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -k 6 -N TRUE -n 30000;
 ```
 
 2. Determining regressions per each fold
@@ -371,7 +371,7 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha;
 
 #Lines 124 and 125 of split_cross_validation.r were commented to adapt sample name. 
-Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -S FALSE -C TRUE -k 6 -c chr -N TRUE -n 30000;
+Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -k 6 -N TRUE -n 30000;
 ```
 
 2. Determining regressions per each fold
