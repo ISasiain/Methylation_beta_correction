@@ -504,7 +504,7 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regression
 # Estimating purities for LUSC using alpha=0.7 and slope_threshold=0.25
 cd /home/Illumina/Iñaki_Sasiain/11_LUSC_final/estimate_purity;
 
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.75 -s 0.25 -p 5;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../regressions/training_test -b ../data/training_test/betas_validation.RData -o LUSC_training_test -a 0.7 -s 0.25 -p 5;
 ```
 
 4. Analysing output
@@ -539,16 +539,19 @@ cp /home/Illumina/Iñaki_Sasiain/11_LUSC_final/data/full_data/betas.RData LUSC_r
 
 cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/data;
 
-#Getting Cpg list for breast cancer
+#Getting Cpg list for breast cancer. 
+#Using the same variance threshold than in the script to generate the regressions; 0.05
 Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/BRCA_ref.RData -a ./cohorts/BRCA_ref.RData -l TRUE -V TRUE -v 0.05 -p BRCA_var0.05;
 
 #Getting CpG list for LUAC
+#Using the same variance threshold than in the script to generate the regressions; 0.05
 Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUAC_ref.RData -a ./cohorts/LUAC_ref.RData -l TRUE -V TRUE -v 0.05 -p LUAD_var0.05;
 
 #Getting CpG list for LUSC
+#Using the same variance threshold than in the script to generate the regressions; 0.05
 Rscript ../../scripts/get_data_to_analyse/get_most_variables_cpgs.r -r ./cohorts/LUSC_ref.RData -a ./cohorts/LUSC_ref.RData -l TRUE -V TRUE -v 0.05 -p LUSC_var0.05;
 ```
-
+> The following code was run directly in R
 ```R
 #Integrating annotation of BRCA LUAC and LUSC in a single file
 
@@ -580,9 +583,11 @@ saveRDS(merged_annotation, file="annotation_file.RData")
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/13_CpG_analysis/plots;
 
+#Creting a list of the files containing CpG lists to plot
 cpg_list=$(find "${PWD%/*}" -name '*_var0.05_CpG_vector.RData' | tr "\n" ",");
 
-nohup Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p BRCA_LUAC_LUSC;
+#Plot the results
+Rscript ../../scripts/analyse_output/compare_CpGs.r -c ${cpg_list} -a ../data/annotation_file.RData -p BRCA_LUAC_LUSC;
 ```
 
 ### IV. Computing reference regressions
@@ -653,15 +658,6 @@ cd /home/Illumina/Iñaki_Sasiain/reference/LUSC_regs/var_0;
 Rscript ../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b ../../LUSC_raw/betas.RData -p ../../LUSC_raw/purity.RData -o LUSC_var0. -v 0;
 ```
 
-4. Compressing directory to be added to GitHub repo
-
-```bash
-cd /home/Illumina/Iñaki_Sasiain/;
-
-#Using tar and xz compression 
-tar -Jcvf reference.tar.xz ./reference;
-```
-
 ### V. Running the whole pipeline: BRCA1 CpGs in TNBC
 
 * USING THE WHOLE BRCA-TCGA TO CREATE REGRESSIONS USED TO CORRECT BETAS
@@ -711,7 +707,7 @@ GSE148748 <- GSE148748[-which(rowSums(is.na(GSE148748))==ncol(GSE148748)),]
 #Saving the dataframe as an R object
 saveRDS(GSE148748, file="GSE148748_betas.RData")
 ```
-
+> The following code was run directly in R
 ```R
 #Producing and saving a R vector with the CpGs to correct
 BRCA_cpgs <- read.table("promoterData_BRCA1.txt")[-1,7];
@@ -723,7 +719,7 @@ saveRDS(BRCA_cpgs, file="BRCA1_cpgs.RData");
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/purity_estimation;
 
-# Estimating purity
+# Estimating purity using optimized parameters
 Rscript ../../scripts/calculate_purity/purity_estimator.r -d ../reference_data/ref_regressions -b ../data_to_correct/GSE148748_betas.RData -c 40 -a 0.7 -s 0.25 -p 5;
 ```
 
@@ -770,7 +766,7 @@ cp ../data/TNBC_from_TCGA_annotation.RData ./ref_betas_and_purities/;
 cd /home/Illumina/Iñaki_Sasiain/15_example_BRCA1_from_TNBC/ref_betas_and_purities;
 cp ../../14_example_BRCA1/reference_data/ref_betas_and_purities/* .;
 ```
-
+> The following code was run directly in R
 ```R
 #Getting the data
 betas <- readRDS("betas.RData")
