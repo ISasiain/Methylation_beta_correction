@@ -211,23 +211,24 @@ for my_file in $(ls ./data_to_plot/uncorrected/betas_from_*_to_*[0-9].RData);
 1. Splitting BRCA, LUAC and LUSC data
 
 ```bash
-cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered;
-
-# Splitting BRCA data
+# Splitting BRCA data for cross valdiation (lines 125 and 126 have been uncommented)
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/BRCA;
-       
+
+#Generating 6 folds (-k 6). The purity and betas are not stored in the same object (-s FALSE.)       
 Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -k 6 -N FALSE;
 
 
-# Splitting LUAD data (lines 125 and 126 have been commented)
+# Splitting LUAD data 
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUAD;
-       
+
+#Generating 6 folds (-k 6). The purity and betas are not stored in the same object (-s FALSE.)       
 Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUAD_data/LUAD_data450k_421368x418_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUAD_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUAD -k 6  -N FALSE;
 
 
-# Splitting LUSC data (lines 125 and 126 have been commented)
+# Splitting LUSC data 
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/LUSC;
-       
+
+#Generating 6 folds (-k 6). The purity and betas are not stored in the same object (-s FALSE.)       
 Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../../data/LUSC_data/LUSC_data450k_421368x333_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../../data/LUSC_data/LUAD_LUSC_purity.RData -b betaOrig -u purity_LUSC -k 6  -N FALSE;
 ```
 
@@ -236,11 +237,12 @@ Rscript ../../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALS
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered;
 
-#Defining cancer type list
+#Defining cancer type list to iterate 
 type_ls=(BRCA LUAD LUSC);
 
 for cancer_type in ${type_ls[@]};
 
+    #Generate and go to directory per acnecr type
     do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
     cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
 
@@ -251,10 +253,12 @@ for cancer_type in ${type_ls[@]};
     for var in ${var_list[@]};
         do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}; 
         cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type};
-        for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);                           
+        for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);
+            #Get list of folds and use them to calculate regressions                           
             do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
             mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
             cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold};
+            #Estimate regressions with the var_thresholds tio analyse
             Rscript ../../../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/var_filtered/${cancer_type}/${fold}_PurityTraining.RData -o ${cancer_type}_${var}_${fold} -v ${var};
         done;
     done;
@@ -266,23 +270,26 @@ done;
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered;
 
-#Defining cancer type list
+#Defining cancer type list to iterate
 type_ls=(BRCA LUAD LUSC);
 
 for cancer_type in ${type_ls[@]};
-   do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
+    #Generate directory per cancer type
+    do mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
 
-      #Defining var cpg number list 
+    #Defining var list
     var_list=(0.03 0.035 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.075 0.08);
 
       #Determining purity for each cpg number and fold
-      for var in ${var_list[@]}; 
+      for var in ${var_list[@]};
         do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type};
            mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var};
-           for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);                           
+           for dir in $(ls ../../../data/var_filtered/${cancer_type}/*_BetasTraining.RData);
+                  #Define list of folds                           
                   do fold=$(echo ${dir} | cut -d \/ -f 7 | cut -d _ -f 1);
                   mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
                   cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/var_filtered/${cancer_type}/var_${var}/${fold};
+                  #Estimate purity
                   Rscript ../../../../../../scripts/calculate_purity/run_all_validation.r -c 40 -d ../../../../../calculate_regressions/var_filtered/${cancer_type}/var_${var}/${fold} -b ../../../../../data/var_filtered/${cancer_type}/${fold}_BetasTest.RData  -o PredPurity_${cancer_type}_${fold}_var${var} -a 0.75 -s 0.25 -p 5;
         done;
     done;
@@ -312,7 +319,8 @@ Rscript /home/Illumina/Iñaki_Sasiain/scripts/analyse_output/compare_cross_valid
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered;
 
-#Lines 124 and 125 of split_cross_validation.r were uncommented to adapt sample name. 
+#Lines 124 and 125 of split_cross_validation.r were uncommented to adapt sample name. Using only the
+#30000 most variable CpGs (-n 30000) to split data in 6 folds.
 Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -B ../../../data/BRCA_data/data450k_421368x630_minfiNormalized_ringnerAdjusted_purityAdjusted_originalBetaValues.RData -P ../../../data/BRCA_data/450k_CpGs_purities.RData -b betaOrig -u purityVector -k 6 -N TRUE -n 30000;
 ```
 
@@ -321,12 +329,14 @@ Rscript ../../../scripts/get_data_to_analyse/split_cross_validation.r -s FALSE -
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered;
 
-#Determining reference regressions per each
+#Determining reference regressions per each fold
 for dir in $(ls ../../data/slope_filtered/*_BetasTraining.RData);                           
     do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
         echo ${fold};
+        #Create directories
         mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered/${fold};
         cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/slope_filtered/${fold};
+        #Generating regressions using 37 cores. No variance threshold was used (-v 0)
         Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 37 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/slope_filtered/${fold}_PurityTraining.RData -o ${fold} -v 0
     done;
 ```
@@ -339,10 +349,11 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 #Running the scripts using nohup
 #Defining slope threshold list 
 slopes=(0.01 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8)
-#Determining purity for each slope threshold and fold
+#Iterate through slope thresholds
 for num in ${slopes[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
        mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num};
+       #Iterate through folds
        for dir in $(ls ../data/slope_filtered/*_BetasTraining.RData);
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
              mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/slope_${num}/${fold};
@@ -388,13 +399,15 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/alpha
 for dir in $(ls ../../data/alpha/*_BetasTraining.RData);                           
     do fold=$(echo ${dir} | cut -d \/ -f 5 | cut -d _ -f 1);
         echo ${fold};
+        # Create and go to directory
         mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/alpha/${fold};
         cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/calculate_regressions/alpha/${fold};
+        #Determine purity using 40 cores
         Rscript ../../../../scripts/calculate_regs/new_purity_corrector.r -c 40 -b /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_BetasTraining.RData -p /home/Illumina/Iñaki_Sasiain/08_Cross_validation/data/alpha/${fold}_PurityTraining.RData -o ${fold} -v 0
     done;
 ```
 
-3. Calculating purity  per alpha value
+3. Calculating purity per alpha value
 
 ```bash
 cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
@@ -402,15 +415,18 @@ cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
 
 #Defining alpha list 
 alphas=(0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95);
-#Determining purity for each alpha and fold
+#Iterate through alphas
 for num in ${alphas[@]}; 
     do cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity;
        mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num};
+       #Iterate through folds
        for dir in $(ls ../data/alpha/*_BetasTraining.RData); #Using 30000 cpgs in the prediction
           do fold=$(echo ${dir} | cut -d \/ -f 4 | cut -d _ -f 1);
+             #Create and go to directory
              mkdir /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
              cd /home/Illumina/Iñaki_Sasiain/08_Cross_validation/estimate_purity/alpha_${num}/${fold};
-            Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../../../calculate_regressions/alpha/${fold} -b ../../../data/alpha/${fold}_BetasTest.RData -o PredPurity_${fold}_slope${num} -a ${num} -s 0.25 -p 5;
+             #Estimate purities
+             Rscript ../../../../scripts/calculate_purity/purity_estimator.r -c 40 -d ../../../calculate_regressions/alpha/${fold} -b ../../../data/alpha/${fold}_BetasTest.RData -o PredPurity_${fold}_slope${num} -a ${num} -s 0.25 -p 5;
     done;
 done;
 ```
