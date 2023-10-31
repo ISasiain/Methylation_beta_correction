@@ -109,7 +109,8 @@ conda activate meth_corr;
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data; 
 
-#Splitting dataset in training (80%) and test (20%)
+#Splitting dataset in training (80%) and test (20%). Both purity and betas are located in the same
+#R object (-s TRUE), stored in variables called betaUnadjusted (-b) and purityVector (-p).
 Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ./workspace_tcgaBrca_top5000.RData -b betaUnadjusted -p purityVector -S TRUE -v 20; 
 ```
 
@@ -118,7 +119,8 @@ Rscript ../../scripts/get_data_to_analyse/preprocessing_data.r -s TRUE -B ./work
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/pop_regressions;
 
-#Running the adapted Staaf-Aine correction to generate reference regressions
+#Running the adapted Staaf-Aine correction to generate reference regressions. The script was run 
+#using 7 cores (-c 7) with the Robjects generated in the prevous step
 Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_data/betas_training.RData -p ../original_data/purity_training.RData;
 ```
 
@@ -127,10 +129,10 @@ Rscript ../../scripts/calculate_regs/new_purity_corrector.r -c 7 -b ../original_
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/output;
 
-#Calculating the results with the coverage correction. The defult parameters were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4).
+#Calculating the results with the coverage correction. The defult parameters were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4). Run using 7 cores.
 Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o corr_estimated_purity_5000CpG;
 
-#Calulating the results without the correction method (The lines that correct the coverage were commented, 82 and 121-161 from purity_coverage.r). The default parameterss were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4).
+#Calulating the results without the correction method (The lines that correct the coverage were commented, 82 and 121-161 from purity_coverage.r). The default parameterss were used (slope_threshold=0.3, alpha=0.7 and percentage_to_interval=4). Run using 7 cores.
 Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regressions -b ../original_data/betas_validation.RData -o uncorr_estimated_purity_5000CpG;
 ```
 
@@ -139,30 +141,32 @@ Rscript ../../scripts/calculate_purity/purity_estimator.r -c 7 -d ../pop_regress
 ```bash
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots;
 
-#Generating plots from the corrected data
+#Generating plots from the corrected data. The prefix of the plots was set to 5k_corr.
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/corr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -b ../original_data/betas_validation.RData -c ../output/corr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_corr;
 
-#Generating plots from the uncorrected data
+#Generating plots from the uncorrected data. The prefix of the plots was set to 5k_uncorr.
 Rscript ../../scripts/analyse_output/analyse_output.r -e ../output/uncorr_estimated_purity_5000CpG.RData -a ../original_data/purity_validation.RData -b ../original_data/betas_validation.RData -c ../output/uncorr_estimated_purity_5000CpG.used_cpgs.RData -o 5k_uncorr;
 ```
 
 5. Analyse the signal overestimation in low sample purities;
 
 ```bash
-# SPLITTING DATA
-
+# SPLITTING DATA BASED ON ACTUAL PURITY
 cd ~/Methylation/adjustBetas/01_5000_CpG/original_data/purity_splitted;
 
-#Splitting the original validation dataset based on their actual purity values
+#Splitting the original validation dataset based on their actual purity values. This script is harcoded,
+#so it will only work if the purity_validation.RData and betas_validation.RData are located a directory 
+#befor the sorking one.
 Rscript ../../../scripts/get_data_to_analyse/split_based_on_purity.r;
 
-# GENERATING DATA TO PLOT
 
+# GENERATING DATA TO PLOT
 
 #Predicting purity per for each purity group WITH CORRECTION. Line 235 was uncommented to get the desired coverage data. The default parameters were used.
 
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot/corrected;
 
+#Running the correction per each set of betas using the default parameters
 for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData); 
     do filename=$(echo ${int} | cut -d \/ -f 7 | sed 's/.RData//');
        echo ${filename};
@@ -173,6 +177,7 @@ for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData);
 
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation/data_to_plot/uncorrected;
 
+#Running the correction per each set of betas using the default parameters
 for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData); 
     do filename=$(echo ${int} | cut -d \/ -f 7 | sed 's/.RData//');
        echo ${filename};
@@ -183,14 +188,14 @@ for int in $(ls ../../../../original_data/purity_splitted/betas_*.RData);
 
 cd ~/Methylation/adjustBetas/01_5000_CpG/plots/analyse_overestimation;
 
-#Plotting corrected coverages
+#Plotting corrected coverages per each splitted data set.
 for my_file in $(ls ./data_to_plot/corrected/betas_from_*_to_*[0-9].RData);
     do plotname=$(echo ${my_file} | cut -d \/ -f 4 | sed 's/.RData//' | sed 's/betas_//' );
        echo ${plotname};
        Rscript ../../../scripts/analyse_output/plot_coverage_overestimation.r -i ${my_file} -t ${plotname} -o corrected_${plotname}
     done;
 
-#Plotting uncorrected coverages
+#Plotting uncorrected coverages per each splitted data set.
 for my_file in $(ls ./data_to_plot/uncorrected/betas_from_*_to_*[0-9].RData);
     do plotname=$(echo ${my_file} | cut -d \/ -f 4 | sed 's/.RData//' | sed 's/betas_//' );
        echo ${plotname};
