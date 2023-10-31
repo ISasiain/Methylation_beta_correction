@@ -232,7 +232,7 @@ interval_list <- Filter(function(interval) {
   output_list[["interval(s)"]] <- interval_list
 
   #Uncomment the following command to get to append the original coverage plot to be plotted
-  output_list[["Coverage_plot"]] <- smoothed_coverage_values
+  #output_list[["Coverage_plot"]] <- smoothed_coverage_values
 
   #The maximum coverage interval list will be returned
   return(output_list)
