@@ -332,8 +332,6 @@ for (type in types) {
     # List files in the directory that match the pattern
     matching_files <- list.files(path_to_prediction, pattern = pattern, full.names = TRUE)
 
-    print(matching_files)
-
 
     # Raise an error if more than one paths are identified
     if (length(matching_files) != 1) {
@@ -384,8 +382,6 @@ for (type in types){
 
 #Adding colnames to the new plot
 colnames(to_plot_df) <- c("Type", "Prediction", "Fold", "Distance_to_estimate")
-
-print(to_plot_df)
 
 # ===============================================
 #              PLOTTING THE RESULTS
