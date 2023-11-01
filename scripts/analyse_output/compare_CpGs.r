@@ -196,7 +196,7 @@ for (type in rownames(context_df)) {
          geom_bar(stat="identity") +
          theme_void() +
          coord_polar("y", start=0) +
-         geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+         geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
   ggsave(filename=paste(type, "_prom_prox_dis.CpG_context_piechart.png", sep=""))
   
@@ -207,7 +207,7 @@ for (type in rownames(context_df)) {
          geom_bar(stat="identity") +
          theme_void() +
          coord_polar("y", start=0) +
-         geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+         geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
   ggsave(filename=paste(type, "_cgi_shore_ocean.CpG_context_piechart.png", sep=""))
 
@@ -220,7 +220,7 @@ for (type in rownames(context_df)) {
           geom_bar(stat="identity") +
           theme_void() +
           coord_polar("y", start=0) +
-          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
     ggsave(filename=paste(type, "_atac.CpG_context_piechart.png", sep=""))
 
@@ -233,7 +233,7 @@ for (type in rownames(context_df)) {
           geom_bar(stat="identity") +
           theme_void() +
           coord_polar("y", start=0) +
-          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
     ggsave(filename=paste("ALL_BRCA_atac.CpG_context_piechart.png", sep=""))
 
@@ -245,7 +245,7 @@ for (type in rownames(context_df)) {
           geom_bar(stat="identity") +
           theme_void() +
           coord_polar("y", start=0) +
-          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
     ggsave(filename=paste("ALL_LUSC_atac.CpG_context_piechart.png", sep=""))
 
@@ -258,7 +258,7 @@ for (type in rownames(context_df)) {
           geom_bar(stat="identity") +
           theme_void() +
           coord_polar("y", start=0) +
-          geom_text(aes(label = count), position = position_stack(vjust = 0.5))  # Add labels
+          geom_text(aes(label = count), position = position_stack(vjust = 0.5), show.legend=FALSE)  # Add labels
 
     ggsave(filename=paste("ALL_LUAC_atac.CpG_context_piechart.png", sep=""))
 
