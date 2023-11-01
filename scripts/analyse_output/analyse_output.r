@@ -254,9 +254,8 @@ ggplot(out_df, aes(x=Dis_to_int)) +
   xlab("Distance to interval") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 18),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "dis_to_int.barplot.png", sep="."))
@@ -268,8 +267,8 @@ ggplot(out_df, aes(x=Dis_to_est)) +
   xlab("Distance to estimate") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
+  theme(plot.title = element_text(size = 22),
+        axis.title = element_text(size = 18),
         axis.text = element_text(size = 14),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
@@ -282,9 +281,8 @@ ggplot(out_df, aes(x=Interval.s.width)) +
   xlab("Interval's width") +
   ylab("Frequency") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "int_width.barplot.png",sep="."))
@@ -335,9 +333,8 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlab("Actual proportion of non-cancer DNA") + 
   ylab("Estimated proportion of non-cancer DNA") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "NC_Act_vs_Est.scatterplot.png",sep="."))
@@ -372,9 +369,8 @@ ggplot(data=plot_df, aes(x=actual, y=est)) +
   xlab("Actual 1-Purity") + 
   ylab("Estimated 1-Purity") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "Act_vs_Est.scatterplot.png",sep="."))
@@ -390,9 +386,8 @@ ggplot(out_df[order(index),], aes(x=actual_1_minus_P[order(index)], y=Dis_to_est
   xlab("Actual 1-Purity") +
   ylab("Dis_to_estimate") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -404,8 +399,8 @@ ggplot(out_df, aes(x=plot_df$est, y=out_df$Dis_to_est[order(index)])) +
   xlab("Estimated 1-Purity") +
   ylab("Distance to estimate") + 
   theme_classic() +
-  theme(axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 ggsave(paste(arguments$output_prefix, "Dis_vs_es1-P.scatterplot.png",sep="."))
@@ -421,9 +416,8 @@ if (arguments$plot_dis_vs_ploidy) {
     xlab("Ploidy") +
     ylab("Disance to estimate") + 
     theme_classic() +
-    theme(plot.title = element_text(size = 20),
-          axis.title = element_text(size = 16),
-          axis.text = element_text(size = 14),
+    theme(axis.title = element_text(size = 22),
+          axis.text = element_text(size = 20),
           panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
           panel.grid.minor = element_blank())
   ggsave(paste(arguments$output_prefix, "Dis_vs_ploidy.scatterplot.png",sep="."))
@@ -438,9 +432,8 @@ ggplot(out_df, aes(x=Dis_to_est)) +
   xlim(0,0.2) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -454,9 +447,8 @@ ggplot(out_df, aes(x=Dis_to_est)) +
   xlim(0,0.2) +
   ylab("% of the samples") + 
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -469,9 +461,8 @@ ggplot(cpg_counts_df, aes(x=per_TRUES)) +
   xlab("% of samples in which each CpGs are included") +
   ylab("CpGs") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -485,9 +476,8 @@ ggplot(data.frame(cpgs_per_sample_df), aes(x=num_cpgs)) +
   xlab("Number of CpGs used to estimate purity") +
   ylab("Number of samples") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -518,9 +508,8 @@ ggplot(data=data.frame(cpgs_per_sample_df), aes(x= actual_1_minus_P, y= num_of_c
   xlab("Actual 1-P") +
   ylab("Number of CpGs used to estimate purity") +
   theme_classic() +
-  theme(plot.title = element_text(size = 20),
-        axis.title = element_text(size = 16),
-        axis.text = element_text(size = 14),
+  theme(axis.title = element_text(size = 22),
+        axis.text = element_text(size = 20),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
