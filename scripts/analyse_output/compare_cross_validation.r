@@ -225,8 +225,6 @@ for (pred in vec_of_preds) {
   }
 }
 
-print(dti_df)
-
 # ================================================
 #                PLOTTING RESULTS
 # ================================================
@@ -240,15 +238,16 @@ dti_df <- dti_df %>% pivot_longer(cols=all_of(vec_of_folds),
                                   names_to="Fold", 
                                   values_to="Distance_to_estimate")
 
-print(dti_df)
-
 # Plotting the results 
 ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_to_estimate)) +
   geom_boxplot(fill="palegreen1", ) +
   geom_smooth(aes(group=1), linewidth=2, se=FALSE, color="palegreen4") +
   labs(x = "Prediction", y = "Mean distance to estimate") +
   theme_classic() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme(axis.title = element_text(size = 22),
+        axis.text.x = element_text(size = 20, angle = 45, vjust = 1, hjust=1),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Saving the plot
 ggsave(paste(arguments$output_prefix, "cross_validation.boxplot.png", sep="."))
@@ -400,7 +399,10 @@ ggplot(to_plot_df, aes(x = factor(Prediction, levels = vec_of_preds), y = as.num
   scale_fill_manual(values = c("palegreen1", "tomato", "steelblue1")) +
   scale_color_manual(values = c("palegreen4", "tomato4", "steelblue4")) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+  theme(axis.title = element_text(size = 22),
+        axis.text.x = element_text(size = 20, angle = 45, vjust = 1, hjust=1),
+        panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
+        panel.grid.minor = element_blank())
 
 # Saving the plot
 ggsave(paste(arguments$output_prefix, ".cancer_types_combined.cross_validation.boxplot.png", sep="."))
