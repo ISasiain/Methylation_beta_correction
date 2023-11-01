@@ -244,8 +244,9 @@ ggplot(dti_df, aes(x = factor(Prediction, levels = vec_of_preds), y = Distance_t
   geom_smooth(aes(group=1), linewidth=2, se=FALSE, color="palegreen4") +
   labs(x = "Prediction", y = "Mean distance to estimate") +
   theme_classic() + 
-  theme(axis.title = element_text(size = 22),
-        axis.text.x = element_text(size = 20, angle = 45, vjust = 1, hjust=1),
+  theme(axis.title = element_text(size = 20),
+        axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust=1),
+        axis.text.y = element_text(size = 16),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
@@ -395,8 +396,9 @@ ggplot(to_plot_df, aes(x = factor(Prediction, levels = vec_of_preds), y = as.num
   scale_fill_manual(values = c("palegreen1", "tomato", "steelblue1")) +
   scale_color_manual(values = c("palegreen4", "tomato4", "steelblue4")) +
   theme_classic() +
-  theme(axis.title = element_text(size = 22),
-        axis.text.x = element_text(size = 20, angle = 45, vjust = 1, hjust=1),
+  theme(axis.title = element_text(size = 20),
+        axis.text.x = element_text(size = 16, angle = 45, vjust = 1, hjust=1),
+        axis.text.y = element_text(size = 16),
         panel.grid.major = element_line(colour = "lightgrey", linetype = "dotted"),
         panel.grid.minor = element_blank())
 
