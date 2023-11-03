@@ -721,6 +721,11 @@ cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/purity_estimation;
 
 # Estimating purity using optimized parameters
 Rscript ../../scripts/calculate_purity/purity_estimator.r -d ../reference_data/ref_regressions -b ../data_to_correct/GSE148748_betas.RData -c 40 -a 0.7 -s 0.25 -p 5;
+
+#Analysing output to produce plots
+cd /home/Illumina/Iñaki_Sasiain/14_example_BRCA1/plots;
+
+Rscript ../../scripts/analyse_output/analyse_output.r -e ../purity_estimation/GSE148748_est_pur.RData -a ../../data/GSE148748_data/ascat_purity_vector.RData -c ../purity_estimation/GSE148748_est_pur.used.cpgs.RData -o GSE_pur_est_plots -b ../data_to_correct/GSE148748_betas.RData -P TRUE -p ../../data/GSE148748_data/ascat_ploidy.RData;
 ```
 
 3. Running beta correction 
