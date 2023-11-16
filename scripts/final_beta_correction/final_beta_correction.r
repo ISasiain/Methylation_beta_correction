@@ -25,27 +25,48 @@
 #   1. Installing (if necessary) and loading packages, configuring command line arguments and sourcing 
 #      user defined functions.
 #
-#   2. Configuring parallelization.
+#   2. If the user selects to correct betas without refitting the refrence regressions; 
 #
-#   3. Loading the data, if one of the samples has more than one purity estimates remove it sample, 
+#     2.1. Configuring parallelization.
+#
+#     2.2. Loading the data, if one of the samples has more than one purity estimates remove it sample, 
 #      as no reliable correction is possible Adding the seed to run the analysis with and running 
 #      the adjustBeta() function per each CpG using a parallelized apply function.
 #
-#   4. Filtering CpGs. The CpG to correct not included in the reference data set must be removed, as
+#     2.3. Filtering CpGs. The CpG to correct not included in the reference data set must be removed, as
 #      they can not be corrected. Also, the CpGs in the reference data set not included in the data to
 #      correct are removed to speed up the process.
 #
-#   5. Mergining reference and data to analyse to refit the regresisions
+#     2.4. Mergining reference and data to analyse to refit the regresisions
 #
-#   6. Generating results and adding the them to a result list.
+#     2.5. Generating results and adding the them to a result list.
 #
-#   7. Saving each element of the result list as an independent R object or TSV file.
+#     2.5. Saving each element of the result list as an independent R object or TSV file.
+#
+#  3. If the user selects to correct betas refitting the refrence regressions; 
+#
+#     3.1. Loading the data, if one of the samples has more than one purity estimates remove it sample, 
+#      as no reliable correction is possible.
+#
+#     3.2. Filtering CpGs. The CpG to correct not included in the reference data set must be removed, as
+#      they can not be corrected. Also, the CpGs in the refernce data set not included in the data to
+#      correct are removed to speed up the process.
+#
+#     3.3. Configure parallelization.
+#
+#     3.4. Define functions to run the correction. Create function to identify the regression that each beta
+#      to correct belongs "idnetify_regressions()", and a functiom to correct beta values based on the 
+#      reference regressions "correctiong_betas()".
+#
+#     3.5. Generating results through a for loop and store them in dataframes.
+#
+#     3.6. Saving results as an R object or TSV file.
 #
 ## - INPUT FILES:
 #
-#    -> Dataframe stored as an R object containig the reference beta values.
+#    -> Dataframe stored as an R object containig the reference beta values, in the refitting approach.
 #
-#    -> Named vector stored as an R object containing the purity of the reference samples.
+#    -> Named vector stored as an R object containing the purity of the reference samples, only in the refitting approach.
 #
 #    -> TSV file containing the purity estimates of the samples whose betas are to be corrected. This 
 #       must be the output of purity_estimator.r
@@ -70,22 +91,23 @@
 #
 #    -> TSV file containing the corrected microenvironment beta values of each sample
 #
-#    -> R object file containing a dataframe with the slopes of the regressions used for the beta correction
+#    -> R object file containing a dataframe with the slopes of the regressions used for the beta correction (only if -r TRUE has been selected, as the values of the refrence regressions would be used otherwise)
 #
-#    -> R object containing a dataframe with the intercepts of the regressions used for the beta correction.
+#    -> R object containing a dataframe with the intercepts of the regressions used for the beta correction. (only if -r TRUE has been selected, as the values of the refrence regressions would be used otherwise)
 #
-#    -> R object containing a dataframe with the Residual Standard Error of the regressions used for the beta correction.
+#    -> R object containing a dataframe with the Residual Standard Error of the regressions used for the beta correction. (only if -r TRUE has been selected, as the values of the refrence regressions would be used otherwise)
 #
-#    -> R object containing a dataframe with the degrees of freedom of the regressions used for the beta correction.
+#    -> R object containing a dataframe with the degrees of freedom of the regressions used for the beta correction. (only if -r TRUE has been selected, as the values of the refrence regressions would be used otherwise)
 #
-#    -> R object containing a dataframe with the methylation patterns (populations) detected during the correction.
+#    -> R object containing a dataframe with the methylation patterns (populations) detected during the correction. (only if -r TRUE has been selected, as the values of the refrence regressions would be used otherwise)
 #
 ## - USAGE:
 #
 #     The script must be run on the command line using the following flags. 
 #
 #     """
-#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -B [path_to_ref_betas] 
+#     Rscript path_to_script/new_purity_corrector.r -c [num_of_cores] -r [refitting: TRUE/FALSE]
+#     -R [path to refernce regressions' directory] -B [path_to_ref_betas] 
 #     -P [path_to_ref:purities] -b [path_to_betas_to_correct] -p [path_to_estimated purities]
 #     -F [correct_only_certain_CpGs: TRUE/FALSE] -f [vec_CpGs_to_correct]
 #     -o [path_to_save_output_files] -n [prefix_output_files]
@@ -94,8 +116,10 @@
 #     *The function of the command line options are the following; 
 #
 #       -c: Number of cores to be used to run the program. Default: 1.
-#       -B: The path to the file with the beta values of the reference cohort must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
-#       -P: The path to the file with the purity values of the refrence cohort must be entered here. The file must be an R object containing a dictionary vector.
+#       -r: The user has to set this argument to TRUE to use the regression refitting approach for the beta correction or to FALSE to use directly the precoumputed reference regressions in the correction.
+#       -R: The path to the directory containing the precomputed refernce regressions can be entered here if the non refitting approach has been selected.
+#       -B: The path to the file with the beta values of the reference cohort must be entered here if the refitting approach has been selected. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
+#       -P: The path to the file with the purity values of the refrence cohort must be entered here if the refitting approach has been selected. The file must be an R object containing a dictionary vector.
 #       -b: Path to the file with the beta values to be corrected whose sample purity has been estimated. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
 #       -p: Path to the tsv file with the predicted sample purity values of the samples whose betas have to be corrected. The file must be the tsv text file generated as an output of run_all_validation.r.
 #       -F: This argument should be set TRUE if a list with the CpGs to correct wants to be provided.
@@ -162,15 +186,15 @@ argument_list <- list(
               metavar="[TRUE/FALSE]"),
 
   make_option(c("-R", "--ref_regressions"), type="character",  
-              help="Path of the directory containing the RObjects with the parameters of the refernce regressions",
+              help="Path of the directory containing the RObjects with the parameters of the refernce regressions. This argument should only be used in the non-refitting approach",
               metavar = "[file path]"),
 
   make_option(c("-P", "--ref_cohort_purity"), type="character",  
-              help="Path to the file with the purity values of of the reference cohort. The file must be an R object containing a dictionary vector.",
+              help="Path to the file with the purity values of of the reference cohort. The file must be an R object containing a dictionary vector. This argument should only be used in the refitting approach",
               metavar = "[file path]"),
 
   make_option(c("-B", "--ref_cohort_betas"), type="character",  
-              help="Path to the file with the beta values of the reference cohort. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.",
+              help="Path to the file with the beta values of the reference cohort. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns. This argument should only be used in the refitting approach",
               metavar = "[file path]"),
 
   make_option(c("-p", "--est_purity"), type="character",  
@@ -185,19 +209,6 @@ argument_list <- list(
 arguments <- parse_args(OptionParser(option_list=argument_list, 
                                     description="This program corrects methylation beta values providing parameters of the regressions used for the correction."))
 
-if (arguments$refitting == FALSE) {
-
-# =====================================
-#   SOURCING THE CORRECT BETAS FUNCTION
-# =====================================
-
-dir <- commandArgs()[4]
-
-dir <- gsub("--file=", "", dir)
-dir <- gsub("final_beta_correction.r", "new_function_correctBetas.r", dir)
-
-source(dir)
-
 # ===========================
 # CONFIGURING PARALLELIZATION
 # ===========================
@@ -210,6 +221,24 @@ registerDoParallel(cl)
 
 #Making sure that all packages have access to the flexmix package. Using invisible()
 #to avoid proning anything in the terminal
+
+invisible(clusterEvalQ(cl, {library("flexmix")}))
+
+
+
+#The following approach will be used is the user has selected to refit the refernce regressions
+if (arguments$refitting == TRUE) {
+
+# =====================================
+#   SOURCING THE CORRECT BETAS FUNCTION
+# =====================================
+
+dir <- commandArgs()[4]
+
+dir <- gsub("--file=", "", dir)
+dir <- gsub("final_beta_correction.r", "new_function_correctBetas.r", dir)
+
+source(dir)
 
 invisible(clusterEvalQ(cl, {library("flexmix")}))
 
@@ -293,7 +322,7 @@ purities <- purities[colnames(betas)]
 # ====================================
 
 
-cat("\nRunning the correction...\n\n")
+cat("\nCorrecting betas refitting the regressions...\n\n")
 
 #Adding seed to each row of the beta value dataframe
 betaRun <- cbind(seed=1:nrow(betas),betas)
@@ -366,7 +395,11 @@ cat("\n=================\n")
 cat ("PROCESS FINISHED")
 cat("\n=================\n")
 
+
+
+#The following approach will be used if the user has selected to refit reference regressions
 } else {
+
 
 # ============
 # LOADING DATA
@@ -426,27 +459,12 @@ if (sum(!(rownames(to_correct_betas) %in% rownames(my_slopes))) != 0) {
 my_slopes <- my_slopes[rownames(my_slopes) %in% rownames(to_correct_betas),]
 my_intercepts <- my_intercepts[rownames(my_intercepts) %in% rownames(to_correct_betas),]
 
-# ===========================
-# CONFIGURING PARALLELIZATION
-# ===========================
-
-cat("\nUsing", arguments$cores,"cores\n\n")
-
-#Creating the cluster to run the process in parallel
-cl <- makeCluster(arguments$cores)  
-registerDoParallel(cl)  
-
-#Making sure that all packages have access to the flexmix package. Using invisible()
-#to avoid proning anything in the terminal
-
-invisible(clusterEvalQ(cl, {library("flexmix")}))
-
 
 # ==============================================
 # CORRECTING BETAS BASED ON REFERNCE REGRESSIONS
 # ==============================================
 
-cat("\nCorrecting betas...\n\n")
+cat("\nCorrecting betas without refitting refernce regressions...\n\n")
 
 #Generating function to identify the refernce regression to which each CpG of each sample belongs
 identify_regression <- function(beta, estimated_1mPurity, vec_slopes, vec_intercepts) {
