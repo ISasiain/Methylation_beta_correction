@@ -6,7 +6,8 @@
 #
 #   This script correct beta values of samples whose purity has been estimated based on
 #   a reference cohort refitting the reference regressions to include both, the reference data 
-#   points and the new ones (betas to correct + estimated purity).
+#   points and the new ones (betas to correct + estimated purity) or without refitting the refernce 
+#   regressions, using directly the original refernce regressions for the correction.
 # 
 ## - USED R PACKAGES:
 #
@@ -219,11 +220,6 @@ cat("\nUsing", arguments$cores,"cores\n\n")
 cl <- makeCluster(arguments$cores)  
 registerDoParallel(cl)  
 
-#Making sure that all packages have access to the flexmix package. Using invisible()
-#to avoid proning anything in the terminal
-
-invisible(clusterEvalQ(cl, {library("flexmix")}))
-
 
 
 #The following approach will be used is the user has selected to refit the refernce regressions
@@ -239,6 +235,9 @@ dir <- gsub("--file=", "", dir)
 dir <- gsub("final_beta_correction.r", "new_function_correctBetas.r", dir)
 
 source(dir)
+
+#Making sure that all cores have access to the flexmix package. Using invisible()
+#to avoid printing anything to the terminal
 
 invisible(clusterEvalQ(cl, {library("flexmix")}))
 
