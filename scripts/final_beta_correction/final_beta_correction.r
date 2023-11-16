@@ -207,7 +207,7 @@ argument_list <- list(
 )
 
 arguments <- parse_args(OptionParser(option_list=argument_list, 
-                                    description="This program corrects methylation beta values providing parameters of the regressions used for the correction."))
+                                    description="This program corrects methylation beta values based on estimated sample purities. It can be used refitting the reference regressions to include the betas to correct and estimated purities or using directly the reference regressions."))
 
 # ===========================
 # CONFIGURING PARALLELIZATION
