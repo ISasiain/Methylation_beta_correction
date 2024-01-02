@@ -362,7 +362,7 @@ reg_list <- list(
 # CREATING OUTPUT FILES
 # =====================
 
-#Defining a function to store the elements of the result list to RData files
+#Defining a function to store the elements of the result list to rds files
 df_to_RObj <- function(df, filename) {
   saveRDS(df, file=filename)
 }
@@ -378,13 +378,13 @@ df_to_tsv <- function(df,filename) {
 
 #Creating output files per each dataframe of the result_list list (getting only the results for the CpGs of the predicted samples)
 lapply(names(result_list), function(n) {
-  df_to_RObj(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.RData",sep=""))
+  df_to_RObj(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.rds",sep=""))
   df_to_tsv(result_list[[n]][,names(predicted_purities_vec)],filename=paste(arguments$output, arguments$output_name,"_",n,".samples_to_correct.tsv",sep=""))
 })
 
 #Creating output files per each dataframe of the reg_list list
 lapply(names(reg_list), function(n) {
-  df_to_RObj(reg_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
+  df_to_RObj(reg_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
 })
 
 # Stop clusters used in parallelization
@@ -407,8 +407,8 @@ cat("\n=================\n")
 cat("\nLoading the data...\n\n")
 
 #Reading the R objects containing the regression data as dataframes
-my_slopes <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.slopes.RData", full.names=TRUE))
-my_intercepts <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.intercepts.RData", full.names=TRUE))
+my_slopes <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.slopes.rds", full.names=TRUE))
+my_intercepts <- readRDS(list.files(arguments$ref_regressions, pattern="*reg.intercepts.rds", full.names=TRUE))
 
 
 # Loading betas to correct
@@ -597,9 +597,9 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
 cat("\nGenerating output files...\n\n")
 
 # Generating RObject files
-saveRDS(corrected_tumor, file=paste(arguments$output, arguments$output_name, ".tumor.samples_to_correct.RData", sep=""))
-saveRDS(corrected_microenvironment, file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.RData", sep=""))
-saveRDS(to_correct_betas, file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.RData", sep=""))
+saveRDS(corrected_tumor, file=paste(arguments$output, arguments$output_name, ".tumor.samples_to_correct.rds", sep=""))
+saveRDS(corrected_microenvironment, file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.rds", sep=""))
+saveRDS(to_correct_betas, file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.rds", sep=""))
 
 
 # Generating tsv files
