@@ -157,10 +157,10 @@ cpgs <- rownames(refernce)[cpgs_variance >= arguments$variance]
 
 to_analyse <- to_analyse[cpgs,]
 
-saveRDS(to_analyse, file=paste(arguments$prefix, "_most_variable_CpGs.RData", sep=""))
+saveRDS(to_analyse, file=paste(arguments$prefix, "_most_variable_CpGs.rds", sep=""))
 
 if (arguments$include_CpG_list) {
 
-    saveRDS(cpgs, file=paste(arguments$prefix, "_CpG_vector.RData", sep="")) 
+    saveRDS(cpgs, file=paste(arguments$prefix, "_CpG_vector.rds", sep="")) 
 
 }
