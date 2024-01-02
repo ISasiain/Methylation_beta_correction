@@ -153,7 +153,7 @@ arguments <- parse_args(OptionParser(option_list=argument_list,
 
 dir <- commandArgs()[4]
 dir <- gsub("--file=", "", dir)
-dir <- gsub("new_purity_corrector.r", "new_function_correctBetas.r", dir)
+dir <- gsub("ref_regression_calculator.r", "new_function_correctBetas.r", dir)
 
 source(dir)
 
