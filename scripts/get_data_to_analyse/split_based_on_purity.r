@@ -45,6 +45,6 @@ for (interval in names(list_to_split)) {
     assign(paste("pur_",interval,sep=""),purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])
     assign(paste("betas_",interval,sep=""), betas[,names(purities[purities >= list_to_split[[interval]][1] & purities < list_to_split[[interval]][2]])])
 
-    saveRDS(get(paste("betas_",interval,sep="")), file=paste("betas_",interval,".RData",sep=""))
-    saveRDS(get(paste("pur_",interval,sep="")), file=paste("pur_",interval,".RData",sep=""))
+    saveRDS(get(paste("betas_",interval,sep="")), file=paste("betas_",interval,".rds",sep=""))
+    saveRDS(get(paste("pur_",interval,sep="")), file=paste("pur_",interval,".rds",sep=""))
 }
