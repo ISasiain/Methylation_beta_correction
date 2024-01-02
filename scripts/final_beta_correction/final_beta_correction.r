@@ -260,7 +260,17 @@ predicted_purities <- read.table(arguments$est_purity,
 
 
 # Removing samples with more than one estimates (if any)
-predicted_purities <- predicted_purities[which(predicted_purities[,2]==1),]
+if (nrow(predicted_purities[which(predicted_purities[,2]!=1),])!=0) {
+  print(predicted_purities[which(predicted_purities[,2]!=1),])
+  #Calculate the number of samples to remove
+  samples_to_remove <- nrow(predicted_purities[which(predicted_purities[,2]!=1),]) / 2
+
+  #Print warining message
+  cat("\n", samples_to_remove, "samples have more than one predicted purity. Samples removed from the beta correction.\n")
+
+  #Filtering samples with more than one purity values
+  predicted_purities <- predicted_purities[which(predicted_purities[,2]==1),]
+}
 
 # Transforming the predicted_purities dataframe into a vector
 predicted_purities_vec <- 1-predicted_purities[,3]
@@ -420,13 +430,13 @@ predicted_1mPurities <- read.table(arguments$est_purity,
                                 sep="\t")
 
 # Removing samples with more than one estimates (if any)
-if (nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1)])!=0) {
+if (nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1),])!=0) {
 
   #Calculate the number of samples to remove
-  samples_to_remove <- nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1)]) / 2
+  samples_to_remove <- nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1),]) / 2
 
   #Print warining message
-  cat("\n", samples_to_remove, " samples have more than one predicted purity. Samples removed from the beta correction.\n")
+  cat("\n", samples_to_remove, "samples have more than one predicted purity. Samples removed from the beta correction.\n")
 
   #Filtering samples with more than one purity values
   predicted_1mPurities <- predicted_1mPurities[which(predicted_1mPurities[,2]==1),]
