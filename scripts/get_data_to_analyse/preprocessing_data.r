@@ -302,21 +302,21 @@ cat("\n\nSaving the data...\n")
 if (arguments$split_in_training_and_validation) {
 
     #Saving beta values
-    saveRDS(unadj_training, paste(arguments$output_directory, "/betas_training.RData", sep=""))
-    saveRDS(unadj_validation, paste(arguments$output_directory, "/betas_validation.RData", sep=""))
+    saveRDS(unadj_training, paste(arguments$output_directory, "/betas_training.rds", sep=""))
+    saveRDS(unadj_validation, paste(arguments$output_directory, "/betas_validation.rds", sep=""))
 
     #Saving purity values
-    saveRDS(purity_training, paste(arguments$output_directory, "/purity_training.RData", sep=""))
-    saveRDS(purity_validation, paste(arguments$output_directory, "/purity_validation.RData", sep=""))
+    saveRDS(purity_training, paste(arguments$output_directory, "/purity_training.rds", sep=""))
+    saveRDS(purity_validation, paste(arguments$output_directory, "/purity_validation.rds", sep=""))
 
 #Run if the user has not selected to split the data in training and validation subsets
 } else {
 
     #Saving beta values
-    saveRDS(betas, paste(arguments$output_directory, "/betas.RData", sep=""))
+    saveRDS(betas, paste(arguments$output_directory, "/betas.rds", sep=""))
     
     #Saving purity values
-    saveRDS(purities, paste(arguments$output_directory, "/purity.RData", sep=""))
+    saveRDS(purities, paste(arguments$output_directory, "/purity.rds", sep=""))
 
 }
 
