@@ -309,11 +309,11 @@ purities <- c(cohort_purities, predicted_purities_vec)
 # Creating a single betas dataframe
 betas <- cbind(cohort_betas, to_correct_betas)
 
-#Adapt name of betas
-colnames(betas) <- lapply(colnames(betas), 
-                         function (name) {strsplit(name, "-01")[[1]][1]})
+#Adapt name of betas (if the sample names in the purity and betas data frames do not match completely)
+#colnames(betas) <- lapply(colnames(betas), 
+#                         function (name) {strsplit(name, "-01")[[1]][1]})
 
-#Removing sample purities not contained into the beta dataset. It generates errors
+#Removing sample purities not included into the beta dataset. It generates errors
 purities <- purities[colnames(betas)]
 
 # ====================================
@@ -419,9 +419,19 @@ to_correct_betas <- readRDS(arguments$betas_to_correct)
 predicted_1mPurities <- read.table(arguments$est_purity, 
                                 sep="\t")
 
-
 # Removing samples with more than one estimates (if any)
-predicted_1mPurities <- predicted_1mPurities[which(predicted_1mPurities[,2]==1),]
+if (nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1)])!=0) {
+
+  #Calculate the number of samples to remove
+  samples_to_remove <- nrow(predicted_1mPurities[which(predicted_1mPurities[,2]!=1)]) / 2
+
+  #Print warining message
+  cat("\n", samples_to_remove, " samples have more than one predicted purity. Samples removed from the beta correction.\n")
+
+  #Filtering samples with more than one purity values
+  predicted_1mPurities <- predicted_1mPurities[which(predicted_1mPurities[,2]==1),]
+}
+
 
 # Transforming the predicted_1mPurities dataframe into a vector
 predicted_1mPurities_vec <- predicted_1mPurities[,3]
@@ -507,10 +517,12 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
     if (to_correct=="Tumor") {
         #The tumor beta value will be obtained using the intercept and the calculated distance.
         #The maximum possible value will allways be kept below or equal to 1
-        tum_beta <- if(intercept + distance <= 1) {
+        tum_beta <- if(intercept + distance <= 1 & intercept + distance >= 0) {
                         intercept + distance
-                    } else {
+                    } else if (intercept + distance > 1) {
                         1
+                    } else {
+                      0
                     }
 
         return(tum_beta)
@@ -519,10 +531,12 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
     } else if (to_correct=="Microenvironment") {
         #The microenvironment beta value will be obtained using the intercept and slope when 1-P=1 and the calculated distance.
         #The minimum possible value will allways be kept below or equal to 1
-        env_beta <- if (intercept + slope + distance >= 0) {
+        env_beta <- if (intercept + slope + distance >= 0 & intercept + slope + distance <= 1) {
                         intercept + slope + distance
-                    } else {
+                    } else if (intercept + slope + distance < 0) {
                         0
+                    } else {
+                      1
                     }
         
         return(env_beta)
@@ -530,14 +544,13 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
     }
 }
 
- # Creating dataframes to store the corrected values
- corrected_tumor <- data.frame()
- corrected_microenvironment <- data.frame()
 
  # Correcting betas through a parallelized for loop
- foreach(cpg=rownames(to_correct_betas)) %dopar% {
+ output <- foreach(cpg = rownames(to_correct_betas)) %dopar% {
 
-    corrected_tumor[cpg,colnames(to_correct_betas)] <- sapply(names(predicted_1mPurities_vec), 
+  list(
+
+    corrected_tumor <- sapply(colnames(to_correct_betas), 
 
         function(sample) {
 
@@ -555,14 +568,10 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
             distance=identified_reg["Distance"],
             to_correct="Tumor"
             )
-
-
-        return(corrected_tum)
-
         }
-    )
+    ),
 
-    corrected_microenvironment[cpg,colnames(to_correct_betas)] <- sapply(names(predicted_1mPurities_vec), 
+    corrected_microenvironment <- sapply(colnames(to_correct_betas), 
 
         function(sample) {
 
@@ -581,40 +590,51 @@ correcting_betas <- function(slope, intercept, distance, to_correct) {
             to_correct="Microenvironment"
             )
 
-        return(corrected_env)
-
         }
+      )
     )
  }
 
- # Stop clusters used in parallelization
- stopCluster(cl)
+#Converting output list into dataframe of corrected tumor betas
+corrected_tumor <- as.data.frame(do.call(rbind, lapply(output, function(item) item[[1]])))
+colnames(corrected_tumor) <- colnames(to_correct_betas)
+rownames(corrected_tumor) <- rownames(to_correct_betas)
+
+#Converting output list into dataframe of corrected tumor betas
+corrected_microenvironment <- as.data.frame(do.call(rbind, lapply(output, function(item) item[[2]])))
+colnames(corrected_microenvironment) <- colnames(to_correct_betas)
+rownames(corrected_microenvironment) <- rownames(to_correct_betas)
 
 # =======================
 # GENERATING OUTPUT FILES
 # =======================
 
+
 cat("\nGenerating output files...\n\n")
 
 # Generating RObject files
-saveRDS(corrected_tumor, file=paste(arguments$output, arguments$output_name, ".tumor.samples_to_correct.rds", sep=""))
-saveRDS(corrected_microenvironment, file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.rds", sep=""))
-saveRDS(to_correct_betas, file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.rds", sep=""))
+saveRDS(corrected_tumor, file=paste(arguments$output, arguments$output_name, "_betas.tumor.samples_to_correct.RData", sep=""))
+saveRDS(corrected_microenvironment, file=paste(arguments$output, arguments$output_name, "_betas.microenvironment.samples_to_correct.RData", sep=""))
+saveRDS(to_correct_betas, file=paste(arguments$output, arguments$output_name, "_betas.original.samples_to_correct.RData", sep=""))
 
 
 # Generating tsv files
 write.table(corrected_tumor, 
-            file=paste(arguments$output, arguments$output_name, ".tumor.samples_to_correct.tsv", sep=""),
+            file=paste(arguments$output, arguments$output_name, "_betas.tumor.samples_to_correct.tsv", sep=""),
             col.names=NA, 
             sep="\t")
 write.table(corrected_microenvironment, 
-            file=paste(arguments$output, arguments$output_name, ".microenvironment.samples_to_correct.tsv", sep=""),
+            file=paste(arguments$output, arguments$output_name, "_betas.microenvironment.samples_to_correct.tsv", sep=""),
             col.names=NA, 
             sep="\t")
 write.table(to_correct_betas, 
-            file=paste(arguments$output, arguments$output_name, ".original.samples_to_correct.tsv", sep=""),
+            file=paste(arguments$output, arguments$output_name, "_betas.original.samples_to_correct.tsv", sep=""),
             col.names=NA, 
             sep="\t")
+
+
+ # Stop clusters used in parallelization
+ stopCluster(cl)
 
 cat("\n=================\n")
 cat ("PROCESS FINISHED")
