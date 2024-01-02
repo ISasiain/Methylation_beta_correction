@@ -155,6 +155,8 @@ dir <- commandArgs()[4]
 dir <- gsub("--file=", "", dir)
 dir <- gsub("ref_regression_calculator.r", "new_function_correctBetas.r", dir)
 
+print(dir)
+
 source(dir)
 
 # ===========================
