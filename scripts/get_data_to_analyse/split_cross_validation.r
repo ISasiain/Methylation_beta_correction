@@ -262,11 +262,11 @@ if(arguments$get_only_CpGs_with_highest_variance) {
     for (fold in names(folds_list)) {
 
         # Saving training and test datasets
-        saveRDS(folds_list[[fold]][["Training"]], paste(arguments$output_directory, "/", fold, "_BetasTraining.RData", sep=""))
-        saveRDS(folds_list[[fold]][["Test"]], paste(arguments$output_directory, "/", fold, "_BetasTest.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Training"]], paste(arguments$output_directory, "/", fold, "_BetasTraining.rds", sep=""))
+        saveRDS(folds_list[[fold]][["Test"]], paste(arguments$output_directory, "/", fold, "_BetasTest.rds", sep=""))
 
-        saveRDS(folds_list[[fold]][["Purity_training"]], paste(arguments$output_directory, "/", fold, "_PurityTraining.RData", sep=""))
-        saveRDS(folds_list[[fold]][["Purity_test"]], paste(arguments$output_directory, "/", fold, "_PurityTest.RData", sep=""))
+        saveRDS(folds_list[[fold]][["Purity_training"]], paste(arguments$output_directory, "/", fold, "_PurityTraining.rds", sep=""))
+        saveRDS(folds_list[[fold]][["Purity_test"]], paste(arguments$output_directory, "/", fold, "_PurityTest.rds", sep=""))
     }
 
 
