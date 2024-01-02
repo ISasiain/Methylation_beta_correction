@@ -56,16 +56,16 @@
 ## - INPUT FILES:
 #
 #    -> Dataframe stored as an R object with the SLOPES of the calculated regressions. All the parameters of
-#       the regressions must be stored in the same directory. The name of the file must end with "reg.slopes.RData".
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.slopes.rds".
 #
 #    -> Dataframe stored as an R object with the INTERCEPTS of the calculated regressions. All the parameters of
-#       the regressions must be stored in the same directory. The name of the file must end with "reg.intercepts.RData".
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.intercepts.rds".
 #
 #    -> Dataframe stored as an R object with the RESIDUAL STANDARD ERRORS of the calculated regressions. All the parameters of
-#       the regressions must be stored in the same directory. The name of the file must end with "reg.RSE.RData".
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.RSE.rds".
 #
 #    -> Dataframe stored as an R object with the DEGREES OF FREEDOM of the calculated regressions. All the parameters of
-#       the regressions must be stored in the same directory. The name of the file must end with "reg.df.RData".
+#       the regressions must be stored in the same directory. The name of the file must end with "reg.df.rds".
 #
 #    -> Dataframe stored as an R object with the BETA VALUES of the CpGs of the SAMPLES to analyse. The CpG Ids have to be 
 #       the rows and the sample names the columns of the dataframe. 
@@ -214,10 +214,10 @@ source(fun2)
 
 
 #Reading the R objects containing the regression data as dataframes
-my_slopes <- readRDS(list.files(arguments$regression_data, pattern="*reg.slopes.RData", full.names=TRUE))
-my_intercepts <- readRDS(list.files(arguments$regression_data, pattern="*reg.intercepts.RData", full.names=TRUE))
-my_RSE <- readRDS(list.files(arguments$regression_data, pattern="*reg.RSE.RData", full.names=TRUE))
-my_df <- readRDS(list.files(arguments$regression_data, pattern="*reg.df.RData", full.names=TRUE))
+my_slopes <- readRDS(list.files(arguments$regression_data, pattern="*reg.slopes.rds", full.names=TRUE))
+my_intercepts <- readRDS(list.files(arguments$regression_data, pattern="*reg.intercepts.rds", full.names=TRUE))
+my_RSE <- readRDS(list.files(arguments$regression_data, pattern="*reg.RSE.rds", full.names=TRUE))
+my_df <- readRDS(list.files(arguments$regression_data, pattern="*reg.df.rds", full.names=TRUE))
 
 
 #Reading beta values
@@ -311,10 +311,10 @@ stopCluster(cl)
 cat("\n\nSaving output files...\n")
 
 # Save the list of predicted values as an R object
-saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".RData", sep=""))
+saveRDS(list_of_predicted_intervals, file=paste(arguments$output_location, arguments$output_filename, ".rds", sep=""))
 
 # Save the list containing the cpgs used to estimate each purity value
-saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$output_filename, ".used_cpgs.RData", sep=""))
+saveRDS(list_of_used_cpgs, file=paste(arguments$output_location, arguments$output_filename, ".used_cpgs.rds", sep=""))
 
 
 # ==========================
