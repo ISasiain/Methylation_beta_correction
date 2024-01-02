@@ -235,7 +235,7 @@ df_to_RObj <- function(df, filename) {
 
 #Creating output files per each dataframe of the output_list list
 lapply(names(result_list), function(n) {
-  df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".RData",sep=""))
+  df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
 })
 
 # Stop clusters used in parallelization
