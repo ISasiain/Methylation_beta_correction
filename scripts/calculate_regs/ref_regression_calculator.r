@@ -134,11 +134,13 @@ argument_list <- list(
 
   make_option(c("-n", "--output_name"), type="character", default="output",
               help="The prefix to be used to name the output files. Default [%default]",
-              metavar = "[file path]"),
+              metavar = "[file path]")
+              
+  #            ,
 
-  make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
-              help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
-              metavar = "[variance_threshold]")
+  #make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
+  #            help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
+  #            metavar = "[variance_threshold]")
 
 )
 
@@ -183,9 +185,12 @@ purities <- readRDS(arguments$input_purity)
 
 #Create a vector with the variance of each cpg (row)
 cpg_variance <- apply(unadjusted_betas, 1, var)
+names(cpg_variance) <- rownames(unadjusted_betas)
 
-#Filtering CpGs based on the variance
-unadjusted_betas <- unadjusted_betas[cpg_variance >= arguments$variance_threshold,]
+saveRDS(cpg_variance, file=filename=paste(arguments$output, arguments$output_name,"_CpG_variance.rds",sep=""))
+
+##Filtering CpGs based on the variance
+#unadjusted_betas <- unadjusted_betas[cpg_variance >= arguments$variance_threshold,]
 
 # ==================
 # ANALYSING THE DATA
@@ -228,14 +233,9 @@ result_list <- list(
 # CREATING OUTPUT FILES
 # =====================
 
-#Defining a function to store the elements of the result list to RData files
-df_to_RObj <- function(df, filename) {
-  saveRDS(df, filename)
-}
-
 #Creating output files per each dataframe of the output_list list
 lapply(names(result_list), function(n) {
-  df_to_RObj(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
+  saveRDS(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
 })
 
 # Stop clusters used in parallelization
