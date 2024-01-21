@@ -99,6 +99,7 @@
 #       -a: The alpha value used to determine the prediction intervals from the regressions
 #       -s: Minimum slope allowed per regression. The regressions with lower slopes will be ignored
 #       -p: Percentage of the maximum coverage detected to include in estimated the 1-Purity interval
+#       -v: CpG beta value variance threshold to filter reference regressions.
 #       -d: The directory containing the regression parameters must be entered here
 #       -b: The path to the R object contaoining the betas to analyse must be entered here
 #       -o: The name of the output R object containing the predicted values must be entered here. This name 
