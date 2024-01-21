@@ -164,6 +164,11 @@ argument_list <- list(
               help="Minimum slope allowed per CpG regression [default %default]", 
               metavar="[floating number]"),
 
+
+  make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
+              help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
+              metavar = "[variance_threshold]"),
+
   make_option(c("-p", "--percentage_to_interval"), type="double", default=4.0,
               help="Percentage of the maximum coverage to include in the 1-Purity interval [default %default]",
               metavar="[floating number]"),
@@ -219,12 +224,28 @@ my_intercepts <- readRDS(list.files(arguments$regression_data, pattern="*reg.int
 my_RSE <- readRDS(list.files(arguments$regression_data, pattern="*reg.RSE.rds", full.names=TRUE))
 my_df <- readRDS(list.files(arguments$regression_data, pattern="*reg.df.rds", full.names=TRUE))
 
+#Reading the R objects containing variance of reference CpGs
+my_CpG_variance <- readRDS(list.files(arguments$regression_data, pattern="*CpG_variance.rds", full.names=TRUE))
 
 #Reading beta values
 unadj_validation <- readRDS(arguments$betas_to_analyse)
 
 #Create a list to append all the predicted purity intervals
 list_of_predicted_intervals <- list()
+
+
+# =================================================
+# FILTERING REFERENCE REGRESSIONS BASED ON VARIANCE
+# =================================================
+
+#Generate a vector with the CpGs to filter
+cpgs_to_keep <- names(my_CpG_variance >= arguments$variance_threshold)
+
+#Filtering regression objects
+my_slopes <- my_slopes[cpgs_to_keep,]
+my_intercepts <- my_intercepts[cpgs_to_keep,]
+my_RSE <- my_RSE[cpgs_to_keep,]
+my_df <- my_df[cpgs_to_keep,]
 
 # ===========================
 # CONFIGURING PARALLELIZATION
