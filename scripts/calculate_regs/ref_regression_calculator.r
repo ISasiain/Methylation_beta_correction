@@ -1,13 +1,13 @@
 #!/usr/bin/Rscript
 
-## -SCRIPT'S NAME: new_purity_corrector.r
+## -SCRIPT'S NAME: ref_regression_calculator.r
 #
 ## - DESCRIPTION: 
 #
-#   This script correct purities based on the Staaf-Aine approach, also generating 
+#   This script correct purities based on the Staaf-Aine beta correction approach, also generating 
 #   the parameters of the regressions used for the correction required for the purity estimation.
-#   This programme also allows the usage of a variance threshold in order to take only into account
-#   most variable CpGs to generate the refernce regressions.
+#   This script also outputs a file containing the variance of each of the CpG's betas used to generate
+#   the reference regressions to be used in further steps of the PurEst workflow.
 # 
 ## - USED R PACKAGES:
 #
@@ -28,40 +28,40 @@
 #
 #   2. Configuring parallelization.
 #
-#   3. Loading the data and filtering CpGs based on the variance filtered specified.
-#
-#   4. Adding the seed to run the analysis with and running the adjustBeta() function
+#   3. Adding the seed to run the analysis with and running the adjustBeta() function
 #      per each CpG using a parallelized apply function.
 #
-#   5. Adding the produced results to a result list.
+#   4. Adding the produced results to a result list.
 #
-#   6. Saving each element of the result list as an independent R object.
+#   5. Saving each element of the result list as an independent R object.
 #
 ## - INPUT FILES:
 #
-#    -> Dataframe stored as an R object containig the original beta values of the cpgs and samples
+#    -> Dataframe stored as a .rds containig the original beta values of the cpgs and samples
 #       to be corrected.
 #
-#    -> Named vector stored as an R object containing the purity values of the samples used for the analysis
+#    -> Named vector stored as a .rds containing the purity values of the samples used for the analysis
 #
 #
 ## - OUTPUT FILES:
 #
-#    -> R object file containinga dataframe with the original beta values
+#    -> .rds file containinga dataframe with the original beta values
 #
-#    -> R object file containing a dataframe with the corrected tumor beta values
+#    -> .rds file containing a dataframe with the corrected tumor beta values
 #
-#    -> R object file containing a dataframe with the corrected microenvironment beta values
+#    -> .rds file containing a dataframe with the corrected microenvironment beta values
 #
-#    -> R object file containing a dataframe with the slopes of the regressions used for the beta correction
+#    -> .rds file containing a dataframe with the slopes of the regressions used for the beta correction
 #
-#    -> R object containing a dataframe with the intercepts of the regressions used for the beta correction.
+#    -> .rds containing a dataframe with the intercepts of the regressions used for the beta correction.
 #
-#    -> R object containing a dataframe with the Residual Standard Error of the regressions used for the beta correction.
+#    -> .rds containing a dataframe with the Residual Standard Error of the regressions used for the beta correction.
 #
-#    -> R object containing a dataframe with the degrees of freedom of the regressions used for the beta correction.
+#    -> .rds containing a dataframe with the degrees of freedom of the regressions used for the beta correction.
 #
-#    -> R object containing a dataframe with the methylation patterns (populations) detected during the correction.
+#    -> .rds containing a dataframe with the methylation patterns (populations) detected during the correction.
+#
+#    -> .rds containing a named vector with the variance of the betas of each CpG to be used during the purity estimation.
 #
 ## - USAGE:
 #
@@ -79,11 +79,10 @@
 #       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
 #       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
 #       -n: The prefix to be used to name the output files. Default: output.
-#       -v: Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default 0
 #
 ## - VERSION: 1.0
 #
-## - DATE: 17/05/2023
+## - DATE: 22/01/2024
 #
 ## - AUTHOR: Mattias Aine  (mattias.aine@med.lu.se)
 ## - ADAPTED BY: Iñaki Sasiain
@@ -135,28 +134,24 @@ argument_list <- list(
   make_option(c("-n", "--output_name"), type="character", default="output",
               help="The prefix to be used to name the output files. Default [%default]",
               metavar = "[file path]")
-              
-  #            ,
-
-  #make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
-  #            help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
-  #            metavar = "[variance_threshold]")
 
 )
 
+#Parsing command line arguments
 arguments <- parse_args(OptionParser(option_list=argument_list, 
                                     description="This program corrects methylation beta values providing parameters of the regressions used for the correction."))
-
 
 
 # =====================================
 #   SOURCING THE CORRECT BETAS FUNCTION
 # =====================================
 
+#Getting path of the file containing the function to be sourced
 dir <- commandArgs()[4]
 dir <- gsub("--file=", "", dir)
 dir <- gsub("ref_regression_calculator.r", "new_function_correctBetas.r", dir)
 
+#Sourcing function
 source(dir)
 
 # ===========================
@@ -170,8 +165,7 @@ cl <- makeCluster(arguments$cores)
 registerDoParallel(cl)  
 
 #Making sure that all packages have access to the flexmix package. Using invisible()
-#to avoid proning anything in the terminal
-
+#to avoid printing anything to the terminal.
 invisible(clusterEvalQ(cl, {library("flexmix")}))
 
 
@@ -186,11 +180,6 @@ purities <- readRDS(arguments$input_purity)
 #Create a vector with the variance of each cpg (row)
 cpg_variance <- apply(unadjusted_betas, 1, var)
 names(cpg_variance) <- rownames(unadjusted_betas)
-
-saveRDS(cpg_variance, file=filename=paste(arguments$output, arguments$output_name,"_CpG_variance.rds",sep=""))
-
-##Filtering CpGs based on the variance
-#unadjusted_betas <- unadjusted_betas[cpg_variance >= arguments$variance_threshold,]
 
 # ==================
 # ANALYSING THE DATA
@@ -237,6 +226,9 @@ result_list <- list(
 lapply(names(result_list), function(n) {
   saveRDS(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
 })
+
+#Generating output file with variace values of each CpG
+saveRDS(cpg_variance, file=filename=paste(arguments$output, arguments$output_name,"_CpG_variance.rds",sep=""))
 
 # Stop clusters used in parallelization
 stopCluster(cl)
