@@ -42,16 +42,18 @@
 #   2. Loading the required data. The R objects containing the parameters of the regressions and the beta
 #      values which will be used for the analysis are loaded.
 #
-#   3. Configure parallelization of the script. The number of cores tu be used mut be specified using the
+#   3. Filtering rrefrence regressions based on variance.
+#
+#   4. Configure parallelization of the script. The number of cores tu be used mut be specified using the
 #      corresponding command line flag.
 #
-#   4. Running the analysis per each sample. Firstly the predicting_purity() function is used to predict
+#   5. Running the analysis per each sample. Firstly the predicting_purity() function is used to predict
 #      1-Purity intervals per each CpG of the sample analysed. Then, the purity_coverage() function is
 #      used to calculate a single 1-Purity estimate and an interval per each sample based on all the 
 #      predicted intervals calculated for each CpG. If the analysed CpG is not included into the reference 
 #      regression dataset it will be ignored.
 #
-#   5. Storing the output data, a list with teh estimate and interval calculated per sample, as an R object.
+#   6. Storing the output data, a list with teh estimate and interval calculated per sample, as an R object.
 #
 ## - INPUT FILES:
 #
@@ -68,7 +70,9 @@
 #       the regressions must be stored in the same directory. The name of the file must end with "reg.df.rds".
 #
 #    -> Dataframe stored as an R object with the BETA VALUES of the CpGs of the SAMPLES to analyse. The CpG Ids have to be 
-#       the rows and the sample names the columns of the dataframe. 
+#       the rows and the sample names the columns of the dataframe.
+#
+#    -> Named vector stored as an R object with the VARIANCE of the CpGs used to calculate the refrence regressions. 
 #
 ## - OUTPUT FILES:
 #
@@ -99,7 +103,7 @@
 #       -a: The alpha value used to determine the prediction intervals from the regressions
 #       -s: Minimum slope allowed per regression. The regressions with lower slopes will be ignored
 #       -p: Percentage of the maximum coverage detected to include in estimated the 1-Purity interval
-#       -v: CpG beta value variance threshold to filter reference regressions.
+#       -v: CpG beta value variance cutoff to filter reference regressions.
 #       -d: The directory containing the regression parameters must be entered here
 #       -b: The path to the R object contaoining the betas to analyse must be entered here
 #       -o: The name of the output R object containing the predicted values must be entered here. This name 
@@ -161,16 +165,15 @@ argument_list <- list(
               help="Alpha value to determine the prediction intervals of each CpG [default %default]",
               metavar= "[floating number]"),
 
-  make_option(c("-s", "--min_slope"), type="double", default=0.3,
+  make_option(c("-s", "--min_slope"), type="double", default=0.25,
               help="Minimum slope allowed per CpG regression [default %default]", 
               metavar="[floating number]"),
 
-
-  make_option(c("-v", "--variance_threshold"), type="numeric", default="0",
+  make_option(c("-v", "--variance_threshold"), type="numeric", default=0.05,
               help="Only the CpGs whose betas' variance are over this threshold will be used to determine the refrence regressions. Default [%default]",
               metavar = "[variance_threshold]"),
 
-  make_option(c("-p", "--percentage_to_interval"), type="double", default=4.0,
+  make_option(c("-p", "--percentage_to_interval"), type="double", default=0.96,
               help="Percentage of the maximum coverage to include in the 1-Purity interval [default %default]",
               metavar="[floating number]"),
 
@@ -225,6 +228,7 @@ my_intercepts <- readRDS(list.files(arguments$regression_data, pattern="*reg.int
 my_RSE <- readRDS(list.files(arguments$regression_data, pattern="*reg.RSE.rds", full.names=TRUE))
 my_df <- readRDS(list.files(arguments$regression_data, pattern="*reg.df.rds", full.names=TRUE))
 
+
 #Reading the R objects containing variance of reference CpGs
 my_CpG_variance <- readRDS(list.files(arguments$regression_data, pattern="*CpG_variance.rds", full.names=TRUE))
 
@@ -240,7 +244,7 @@ list_of_predicted_intervals <- list()
 # =================================================
 
 #Generate a vector with the CpGs to filter
-cpgs_to_keep <- names(my_CpG_variance >= arguments$variance_threshold)
+cpgs_to_keep <- names(my_CpG_variance[my_CpG_variance >= arguments$variance_threshold])
 
 #Filtering regression objects
 my_slopes <- my_slopes[cpgs_to_keep,]
@@ -301,7 +305,7 @@ out_list <- foreach(s = samples, .packages = "Kendall", .options.snow = opts) %d
                                               intercepts=my_intercepts[cpg, ],
                                               RSE=my_RSE[cpg, ],
                                               degrees_of_freedom=my_df[cpg, ],
-                                              slope_threshold=arguments$min_slope,
+                                              100*(1-slope_threshold=arguments$min_slope),
                                               alpha=arguments$alpha)
     
     }
