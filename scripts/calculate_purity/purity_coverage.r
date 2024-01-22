@@ -40,42 +40,42 @@ purity_value_per_sample <- function(pred_purity_confidence,
 
 
 
-  ### COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Uncorrected coverage
-  #uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
+  # ## COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Uncorrected coverage
+  # uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
+  #                  y=unname(coverage_per_section),
+  #                  n=40)
+  
+  # pdf("uncorrected_coverage*.pdf")
+  # plot(uncor_smooth,
+  #      type="l",
+  #      col="darkolivegreen4",
+  #      lwd=7, 
+  #      xlab="1-Purity",
+  #      ylab="Raw coverage")
+  
+  # dev.off()
+  # ## COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage
+
+  # ## COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Uncorrected coverage + correction regression
+  # uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
   #                 y=unname(coverage_per_section),
   #                 n=40)
-  #
-  #png("uncorrected_coverage.png")
-  #plot(uncor_smooth,
+  
+  # pdf("uncorrected_coverage+reg.pdf")
+  # plot(uncor_smooth,
   #     type="l",
   #     col="darkolivegreen4",
   #     lwd=7, 
   #     xlab="1-Purity",
   #     ylab="Raw coverage")
-  #
-  #dev.off()
-  ## COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage
-
-  ### COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Uncorrected coverage + correction regression
-  #uncor_smooth <- spline(x=as.numeric(names(coverage_per_section)), 
-  #                 y=unname(coverage_per_section),
-  #                 n=40)
-  #
-  #png("uncorrected_coverage+reg.png")
-  #plot(uncor_smooth,
-  #     type="l",
-  #     col="darkolivegreen4",
-  #     lwd=7, 
-  #     xlab="1-Purity",
-  #     ylab="Rax coverage")
-  #
-  #abline(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section))), 
+  
+  # abline(lm(unname(coverage_per_section)~as.numeric(names(coverage_per_section))), 
   #       col="red", 
   #       lwd=4)
-  #
-  #dev.off()
-  #
-  ### COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage + correction regression 
+  
+  # dev.off()
+  
+  # ## COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage + correction regression 
 
 
   #Correcting the overrepresentation of purity values between 0.8 and 1. Fitting linear regression and using the resiuduals
@@ -86,20 +86,20 @@ purity_value_per_sample <- function(pred_purity_confidence,
                    y=unname(coverage_per_section),
                    n=30)
 
-  ### COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Corrected coverage
-  #png("corrected_coverage.png")                  
-  #plot(smooth,
+  # ## COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Corrected coverage
+  # pdf("corrected_coverage.pdf")                  
+  # plot(smooth,
   #     type="l",
   #     col="darkolivegreen4",
   #     lwd=7, 
   #     xlab="1-Purity",
   #     ylab="Corrected coverage")
-  #
-  #abline(h=0, col="red", lwd=4)
-  #
-  #dev.off()
-  #
-  ### COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Corrected coverage
+  
+  # abline(h=0, col="red", lwd=4)
+  
+  # dev.off()
+  
+  # ## COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Corrected coverage
 
   #Predict values per each section using the smoothed function
   smoothed_coverage_values <- predict(smooth, newdata=list(x=sections))$y
@@ -115,7 +115,7 @@ purity_value_per_sample <- function(pred_purity_confidence,
   # In some cases, when there is only one peak between 0.75 and 1 because
   # the noise peak and the actual peak are mixed, the correctionmethod may
   # generate the predicted 1-Purity to be 0. In order to deal with that, the
-  # intercept of the regerssion used to correct the data will be set to the first coverage value when
+  # intercept of the regerssion used to correct the data will be set to the first corrected coverage value when
   # the 1-P is predicted to be 0 and the 1-P recalculated based on that.
 
   if (sections[which(smoothed_coverage_values == max_ccov)] == 0) {
@@ -133,23 +133,23 @@ purity_value_per_sample <- function(pred_purity_confidence,
                    y=unname(corrected_coverage),
                    n=30)
 
-  ### COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Second correction + reg
-  #
-  #png("second_correction+reg.png")
-  #plot(smooth,
+  # ## COMMENT NEXT LINES WHEN PLOTTING IS NOT REQUIRED -> Second correction + reg
+  
+  # pdf("second_correction+reg.pdf")
+  # plot(smooth,
   #     type="l",
   #     col="darkolivegreen4",
   #     lwd=7, 
   #     xlab="1-Purity",
   #     ylab="Corrected coverage")
-  #
-  #abline(h=0, 
+  
+  # abline(h=0, 
   #       col="red", 
   #       lwd=4)
-  #
-  #dev.off()
-  #
-  ## COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage + correction regression 
+  
+  # dev.off()
+  
+  # # COMMENT PREVIOUS LINES WHEN PLOTTING IS NOT REQUIRED- > Uncorrected coverage + correction regression 
 
   #Predict values per each section using the smoothed function
   smoothed_coverage_values <- predict(smooth, newdata=list(x=sections))$y
