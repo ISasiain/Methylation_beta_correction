@@ -1,27 +1,25 @@
 **USAGE EXAMPLE**
 
-This file shows the usage of the complete beta correction pipeline for samples without known purity values. We recommend to run this scripts in a conda environment with the required packages, which are detailed in the spec.txt file available at the project's GitHub page. The example dataset used consists of the 5000 most variable CpGs from the TCGA-BRCA data set, which was splitted into a subset containing 80% of the samples to generate the reference regressions, and the remaining 20% to estimate sample purity values and to correct betas. The whole pipeline can be run following the next steps;
+This file shows the usage of the complete beta correction pipeline for samples without known purity values. We recommend to run this scripts in a conda environment with the required packages, which are detailed in the spec.txt file available at the project's GitHub page. The example dataset used consists of the 5000 most variable CpGs from the TCGA-BRCA data set, which was splitted into a subset containing 80% of the samples to generate the reference regressions, and the remaining 20% to estimate sample purity values and to correct betas.
+
+* IMPORTANT: This example data set is not intended to be used to evaluate the tool's performace. Due to the low number of CpGs included aiming to speed up the process the performance may not be optimal.
+
+The whole pipeline can be run following the next steps;
 
 1. Generation of reference regressions
 ```bash
 cd ./generating_regressions; 
 
-#Running the reference regression calculator script using 0.05 as the variance threshold using 6 cores
-cd ../var_0.05;
-Rscript ../../../scripts/calculate_regs/ref_regression_calculator.r -c 6 -b ../../data/reference_data/betas_ref.rds -p ../../data/reference_data/purity_ref.rds -o ./ -n BRCA_var0.05 -v 0.05;
-
-#Running the reference regression calculator script using 0.05 as the variance threshold using 6 cores
-cd ../var_0;
-Rscript ../../../scripts/calculate_regs/ref_regression_calculator.r -c 6 -b ../../data/reference_data/betas_ref.rds -p ../../data/reference_data/purity_ref.rds -o ./ -n BRCA_var0 -v 0;
+Rscript ../../scripts/calculate_regs/ref_regression_calculator.r -c 6 -b ../data/reference_data/betas_ref.rds -p ../data/reference_data/purity_ref.rds -o ./ -n example_ref;
 ```
 
 2. Sample purity estimation
 
 ```bash
-cd ../../estimating_purities;
+cd ../estimating_purities;
 
 #Running the purity estimation script using 6 cores
-Rscript ../../scripts/calculate_purity/purity_estimator.r -c 6 -a 0.7 -s 0.25 -p 4 -d ../generating_regressions/var_0.05/ -b ../data/data_to_correct/betas_toCorrect.rds -o example_estimated_purity;
+Rscript ../../scripts/calculate_purity/purity_estimator.r -c 6 -a 0.7 -s 0.25 -v 0.05 -p 0.096 -d ../generating_regressions/ -b ../data/data_to_correct/betas_toCorrect.rds -o example_estimated_purity;
 ```
 
 3. Beta correction
@@ -35,5 +33,5 @@ Rscript ../../../scripts/final_beta_correction/final_beta_correction.r -c 6 -F F
 #Correcting betas without refitting the reference regressions
 cd ../not_refitting;
 
-Rscript ../../../scripts/final_beta_correction/final_beta_correction.r -c 6 -F FALSE -o ./ -n example_refitting -r FALSE -R ../../generating_regressions/var_0/ -b ../../data/data_to_correct/betas_toCorrect.rds -p ../../estimating_purities/example_estimated_purity.tsv;
+Rscript ../../../scripts/final_beta_correction/final_beta_correction.r -c 6 -F FALSE -o ./ -n example_refitting -r FALSE -R ../../generating_regressions -b ../../data/data_to_correct/betas_toCorrect.rds -p ../../estimating_purities/example_estimated_purity.tsv
 ``````
