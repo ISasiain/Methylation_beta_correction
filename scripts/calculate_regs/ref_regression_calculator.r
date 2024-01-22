@@ -224,11 +224,11 @@ result_list <- list(
 
 #Creating output files per each dataframe of the output_list list
 lapply(names(result_list), function(n) {
-  saveRDS(result_list[[n]],filename=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
+  saveRDS(result_list[[n]],file=paste(arguments$output, arguments$output_name,"_",n,".rds",sep=""))
 })
 
 #Generating output file with variace values of each CpG
-saveRDS(cpg_variance, file=filename=paste(arguments$output, arguments$output_name,"_CpG_variance.rds",sep=""))
+saveRDS(cpg_variance, file=paste(arguments$output, arguments$output_name,"_CpG_variance.rds",sep=""))
 
 # Stop clusters used in parallelization
 stopCluster(cl)
