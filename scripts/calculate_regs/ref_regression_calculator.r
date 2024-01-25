@@ -4,10 +4,8 @@
 #
 ## - DESCRIPTION: 
 #
-#   This script correct purities based on the Staaf-Aine beta correction approach, also generating 
-#   the parameters of the regressions used for the correction required for the purity estimation.
-#   This script also outputs a file containing the variance of each of the CpG's betas used to generate
-#   the reference regressions to be used in further steps of the PurEst workflow.
+#   This script generates the reference regressions' parameters and variance of the used reference CpGs
+#   required to be used in subsequent steps of the PurEst workflow.
 # 
 ## - USED R PACKAGES:
 #
@@ -28,40 +26,35 @@
 #
 #   2. Configuring parallelization.
 #
-#   3. Adding the seed to run the analysis with and running the adjustBeta() function
-#      per each CpG using a parallelized apply function.
+#   3. Running the adjustBeta() function for each CpG using a parallelized apply function.
 #
 #   4. Adding the produced results to a result list.
 #
-#   5. Saving each element of the result list as an independent R object.
+#   5. Saving each element of the result list as an independent R object. As the prupose of this script is 
+#      to generate the reference data required in the PurEst workflow, the corrected tumour and microenvironment
+#      betas following the original Staaf & Aine approach are not provided. In order to get them lines 209, 210 and 
+#      211 should be uncommented.
 #
 ## - INPUT FILES:
 #
-#    -> Dataframe stored as a .rds containig the original beta values of the cpgs and samples
-#       to be corrected.
+#    -> Beta values per sample should be previously saved in .rds format. The file should contain a matrix with Illumina 
+#       CpG identifiers as row names and samples as column names.
 #
 #    -> Named vector stored as a .rds containing the purity values of the samples used for the analysis
 #
 #
 ## - OUTPUT FILES:
 #
-#    -> .rds file containinga dataframe with the original beta values
 #
-#    -> .rds file containing a dataframe with the corrected tumor beta values
+#    -> .rds file containing a matrix with the slopes of the regressions used for the purity estimation and the beta correction
 #
-#    -> .rds file containing a dataframe with the corrected microenvironment beta values
+#    -> .rds file containing a matrix with the intercepts of the regressions used for the purity estimation and the beta correction.
 #
-#    -> .rds file containing a dataframe with the slopes of the regressions used for the beta correction
+#    -> .rds file containing a matrix with the Residual Standard Error of the regressions used for the purity estimation and the beta correction.
 #
-#    -> .rds containing a dataframe with the intercepts of the regressions used for the beta correction.
+#    -> .rds file containing a matrix with the degrees of freedom of the regressions used for the purity estimation and the beta correction.
 #
-#    -> .rds containing a dataframe with the Residual Standard Error of the regressions used for the beta correction.
-#
-#    -> .rds containing a dataframe with the degrees of freedom of the regressions used for the beta correction.
-#
-#    -> .rds containing a dataframe with the methylation patterns (populations) detected during the correction.
-#
-#    -> .rds containing a named vector with the variance of the betas of each CpG to be used during the purity estimation.
+#    -> .rds file containing a named vector with the variance of the betas of each CpG to be used for the purity estimation.
 #
 ## - USAGE:
 #
@@ -75,8 +68,8 @@
 #     *The function of the command line options are the following; 
 #
 #       -c: Number of cores to be used to run the program. Default: 1.
-#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a dataframe with the CpGs as rows and samples as columns.
-#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a dictionary vector.
+#       -b: The path to the file with the beta values to be analysed must be entered here. The file must be an R object containing a matrix with the CpGs as rows and samples as columns.
+#       -p: The path to the file with the purity values of the samples to be analysed must be entered here. The file must be an R object containing a named vector.
 #       -o: The path to the location where the output files will be saved must be entered here. The output is an R object. Default: working directory.
 #       -n: The prefix to be used to name the output files. Default: output.
 #
@@ -204,13 +197,14 @@ res <- parRapply(cl = cl, #ClusterS to run the process
 # CREATING RESULT LIST
 # ====================
 
-# Creating a list to add the results
+# Creating a list to add the results. If the user wants to get the corrected betas based on the original Staaf & Aine
+# approach and the methylation patterns detected per CpG the corresponding line should be uncommented.
 result_list <- list(
 
-  betas.original = do.call("rbind",lapply(res,function(x) x$y.orig)), #Original beta values
-  betas.tumor = do.call("rbind",lapply(res,function(x) x$y.tum)), #Corrected tumor beta values
-  betas.microenvironment = do.call("rbind",lapply(res,function(x) x$y.norm)), #Corrected microenvironment beta values
-  cpg.populations =  do.call("rbind",lapply(res,function(x) x$groups)), #Methylation patterns (populations) of each CpG
+  #betas.original = do.call("rbind",lapply(res,function(x) x$y.orig)), #Original beta values
+  #betas.tumor = do.call("rbind",lapply(res,function(x) x$y.tum)), #Corrected tumor beta values
+  #betas.microenvironment = do.call("rbind",lapply(res,function(x) x$y.norm)), #Corrected microenvironment beta values
+  #cpg.populations =  do.call("rbind",lapply(res,function(x) x$groups)), #Methylation patterns (populations) of each CpG
   reg.slopes = do.call("rbind",lapply(res,function(x) x$res.slopes)), #Slopes of the populations
   reg.intercepts = do.call("rbind",lapply(res,function(x) x$res.int)), #Intercepts of the populations
   reg.RSE = do.call("rbind",lapply(res,function(x) x$res.rse)), #Residual standard error
